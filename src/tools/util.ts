@@ -1,8 +1,16 @@
 import { ColorResolvable, EmbedBuilder } from 'discord.js';
-import { AnyCommandHaltData, CommandHaltReason, RecipleClient, SlashCommandBuilder, SlashCommandHaltData } from 'reciple';
+import { AnyCommandHaltData, CommandHaltReason, cwd, RecipleClient, SlashCommandBuilder, SlashCommandHaltData } from 'reciple';
 import BaseModule from '../BaseModule';
 import { RecipleScriptWithInteractionEvents } from './InteractionEvents';
 import ms from 'ms';
+import path from 'path';
+import yml from 'yaml';
+import createConfig from '../_createConfig';
+
+export interface UtilModuleConfig {
+    embedColor: ColorResolvable;
+    errorEmbedColor: ColorResolvable;
+}
 
 export class UtilModule extends BaseModule implements RecipleScriptWithInteractionEvents {
     public embedColor: ColorResolvable = 'Blue';
@@ -11,6 +19,15 @@ export class UtilModule extends BaseModule implements RecipleScriptWithInteracti
 
     public onStart(client: RecipleClient): boolean{
         this.client = client;
+        
+        const configPath: string = path.join(cwd, 'config/util/config.yml');
+        const config: UtilModuleConfig = yml.parse(createConfig<UtilModuleConfig>(configPath, {
+            embedColor: 'Blue',
+            errorEmbedColor: 'Red'
+        }));
+
+        this.embedColor = config.embedColor;
+        this.errorEmbedColor = config.errorEmbedColor;
 
         return true;
     }
