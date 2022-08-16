@@ -115,7 +115,7 @@ ignoredFiles: []
 ## Modifying the values below could break reciple ##
 
 # Modules folder
-modulesFolder: 'modules'
+modulesFolder: ['modules', 'modules/fun', 'modules/moderation', 'modules/staff', 'modules/tools']
 
 # Load modules regardless of its supported versions
 disableVersionCheck: false
