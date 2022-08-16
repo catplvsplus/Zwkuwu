@@ -59,7 +59,14 @@ export class InteractionEventsModule extends BaseModule implements RecipleScript
             for (const handler of handlers) {
                 if (!handler) continue;
 
-                handler.forEach(h => h.handle(interaction as Interaction<'cached'|'raw'>));
+                handler.forEach(h => {
+                    try {
+                        Promise.resolve(h.handle(interaction as Interaction<'cached'|'raw'>))
+                            .catch(err => this.logger.err(err));
+                    } catch (err) {
+                        this.logger.err(err);
+                    }
+                });
             }
         });
     }
@@ -80,3 +87,5 @@ export class InteractionEventsModule extends BaseModule implements RecipleScript
         return null;
     }
 }
+
+export default new InteractionEventsModule();
