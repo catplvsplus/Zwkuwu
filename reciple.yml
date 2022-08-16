@@ -1,0 +1,124 @@
+# Your bot token here
+# To use env variable as a token just do it like this env:TOKEN_ENV
+token: env:TOKEN
+
+# Commands options
+commands:
+  # message command options
+  messageCommand:
+    # enable message commands
+    enabled: true
+    # command prefix
+    prefix: '!'
+    # reply when an error occured
+    replyOnError: false
+    # enable the use of command cooldowns
+    enableCooldown: true
+    # allow executing commands via aliases
+    allowCommandAlias: true
+    # command argument separator
+    commandArgumentSeparator: ' '
+    # overwrite command permissions
+    permissions:
+      # enable overwriten command permissions
+      enabled: false
+      commands:
+        - command: example-command
+          permissions:
+            - Administrator
+
+  # Interaction command options
+  slashCommand:
+    # enable interaction commands
+    enabled: true
+    # reply when an error occured
+    replyOnError: false
+    # enable the use of command cooldowns
+    enableCooldown: true
+    # register interaction commands on bot ready
+    registerCommands: true
+    # set required permissions for interaction commands
+    setRequiredPermissions: true
+    # register commands to specific guild(s) empty to make it global
+    guilds: []
+    # overwrite command permissions
+    permissions:
+      # enable overwriten command permissions
+      enabled: false
+      commands:
+        - command: example-command
+          permissions:
+            - Administrator
+
+
+# Logger options
+fileLogging:
+  # enable console output to file
+  enabled: true
+  # enable debug mode
+  debugmode: false
+  # enable if reciple will use the logger
+  clientLogs: true
+  # stringify logged JSONs
+  stringifyLoggedJSON: true
+  # log file path
+  logFilePath: logs/latest.log
+
+# Client options
+# Learn more about client options at https://discord.js.org/#/docs/discord.js/main/typedef/ClientOptions
+client:
+  allowedMentions:
+    repliedUser: false
+    parse:
+      - roles
+      - users
+  partials:
+    - 'Channel'
+  failIfNotExists: false
+  intents:
+    - Guilds
+    - GuildBans
+    - GuildMembers
+    - GuildMessages
+    - MessageContent
+
+# Bot messages
+messages:
+  missingArguments: Not enough arguments.
+  invalidArguments: Invalid argument(s) given.
+  insufficientBotPerms:
+    content: Insufficient bot permissions.
+    ephemeral: true
+  noPermissions:
+    content: You do not have permission to use this command.
+    ephemeral: true
+  cooldown:
+    content: You cannot execute this command right now due to the cooldown.
+    ephemeral: true
+  error:
+    content: An error occurred.
+    ephemeral: true
+
+# Ignored Files
+ignoredFiles: []
+
+
+####################################################
+#                                                  #
+#    #####  #####  #    #   ###   #####  ####      #
+#    #   #  #   #  # #  #  #      #      #   #     #
+#    #   #  #####  #  # #  # ###  ###    ####      #
+#    #  #   #   #  #    #  #   #  #      #   #     #
+#    ###    #   #  #    #   ###   #####  #    #    #
+#                                                  #
+####################################################
+## Modifying the values below could break reciple ##
+
+# Modules folder
+modulesFolder: 'modules'
+
+# Load modules regardless of its supported versions
+disableVersionCheck: false
+
+# Current version
+version: ^5.1.1
