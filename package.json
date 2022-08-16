@@ -1,9 +1,17 @@
 {
   "name": "jenny",
+  "scripts": {
+    "clean": "yarn exec rimraf modules",
+    "build": "yarn run clean && yarn exec tsc",
+    "start": "yarn exec reciple",
+    "test": "yarn run build && yarn exec reciple -D",
+    "postinstall": "yarn run build"
+  },
   "dependencies": {
     "@ghextercortes/djs-pagination": "^2.1.0",
     "@prisma/client": "^4.2.1",
     "discord.js": "^14.2.0",
+    "fallout-utility": "^1.4.6",
     "reciple": "^5.1.1"
   },
   "devDependencies": {
