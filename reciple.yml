@@ -40,7 +40,7 @@ commands:
     # set required permissions for interaction commands
     setRequiredPermissions: true
     # register commands to specific guild(s) empty to make it global
-    guilds: []
+    guilds: ['876039624814899220', '830456204735807529']
     # overwrite command permissions
     permissions:
       # enable overwriten command permissions
