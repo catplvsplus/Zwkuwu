@@ -1,8 +1,9 @@
 import { MessageCommandBuilder, RecipleClient, SlashCommandBuilder } from 'reciple';
-import { EmbedBuilder, GuildMember, User } from 'discord.js';
+import { ActionRowBuilder, ContextMenuCommandBuilder, EmbedBuilder, GuildMember, ModalBuilder, PermissionsBitField, TextInputBuilder, TextInputStyle, User } from 'discord.js';
 import BaseModule from '../BaseModule';
 import util from '../tools/util';
 import ms from 'ms';
+import { InteractionEventType } from '../tools/InteractionEvents';
 
 export class BanModule extends BaseModule {
     public onStart(client: RecipleClient<boolean>): boolean {
@@ -46,7 +47,7 @@ export class BanModule extends BaseModule {
 
                     await interaction.reply({
                         embeds: [
-                            await this.banMember(member, interaction.user, reason ?? undefined, deleteMessagesTime ? await Promise.resolve(ms(deleteMessagesTime)).catch(() => undefined) : undefined)
+                            await this.banMember(member, interaction.user, reason, deleteMessagesTime ? await Promise.resolve(ms(deleteMessagesTime)).catch(() => undefined) : undefined)
                         ]
                     });
                 }),
@@ -84,19 +85,63 @@ export class BanModule extends BaseModule {
 
                     await message.reply({
                         embeds: [
-                            await this.banMember(member, message.author, reason ?? undefined)
+                            await this.banMember(member, message.author, reason)
                         ]
                     });
                 })
         ];
 
+        this.interactionEventHandlers = [
+            {
+                type: InteractionEventType.ContextMenu,
+                commandName: 'ban-user',
+                handle: async interaction => {
+                    if (!interaction.isUserContextMenuCommand()) return;
+
+                    await interaction.showModal(this.getContextMenuModal(interaction.targetUser))
+                }
+            },
+            {
+                type: InteractionEventType.ModalSubmit,
+                customId: id => id.startsWith(`ban-modal-`),
+                handle: async interaction => {
+                    if (!interaction.isModalSubmit() || !interaction.inCachedGuild()) return;
+                    if (!interaction.memberPermissions.has('BanMembers')) return;
+
+                    await interaction.deferReply();
+
+                    const user = await util.resolveMentionOrId(interaction.customId.split('-').pop()!);
+                    const reason = interaction.fields.getTextInputValue('reason');
+                    const deleteMessages = interaction.fields.getTextInputValue('delete-messages');
+
+                    const member = user ? interaction.guild.members.resolve(user) : null;
+
+                    if (!member) {
+                        await interaction.editReply({ embeds: [util.errorEmbed(`Member not found`)] });
+                        return;
+                    }
+
+                    await interaction.editReply({
+                        embeds: [
+                            await this.banMember(member, interaction.user, reason, deleteMessages ? await Promise.resolve(ms(deleteMessages)).catch(() => undefined) : undefined)
+                        ]
+                    });
+                }
+            }
+        ];
+
+        client.additionalApplicationCommands.push(
+            new ContextMenuCommandBuilder()
+                .setName('Ban')
+        );
+
         return true;
     }
 
-    public async banMember(member: GuildMember, moderator: User, reason?: string, deleteMessagesTime?: number): Promise<EmbedBuilder> {
+    public async banMember(member: GuildMember, moderator: User, reason?: string|null, deleteMessagesTime?: number): Promise<EmbedBuilder> {
         const banned = await member.ban({
             deleteMessageSeconds: deleteMessagesTime,
-            reason: reason
+            reason: reason ? `${moderator.tag} — ${reason}` : undefined
         }).catch(() => null);
 
         if (!banned) return util.errorEmbed(`Failed to ban **${member}**`, true);
@@ -106,6 +151,32 @@ export class BanModule extends BaseModule {
             .setDescription(reason || null)
             .setFooter({ text: `${moderator.tag} banned ${member.user.tag}`, iconURL: moderator.displayAvatarURL() })
             .setTimestamp();
+    }
+
+    public getContextMenuModal(user: User): ModalBuilder {
+        return new ModalBuilder()
+            .setTitle(`Ban ${user.tag}`)
+            .setCustomId(`ban-modal-${user.id}`)
+            .setComponents(
+                new ActionRowBuilder<TextInputBuilder>()
+                    .setComponents(
+                        new TextInputBuilder()
+                            .setCustomId(`reason`)
+                            .setLabel(`Reason why you hate this mf`)
+                            .setPlaceholder(`Annoying and stupid`)
+                            .setStyle(TextInputStyle.Paragraph)
+                            .setRequired(false)
+                    ),
+                new ActionRowBuilder<TextInputBuilder>()
+                    .setComponents(
+                        new TextInputBuilder()
+                            .setCustomId(`delete-messages`)
+                            .setLabel(`Delete messages before what time`)
+                            .setPlaceholder(`1m, 1h, 1d or 1w`)
+                            .setStyle(TextInputStyle.Short)
+                            .setRequired(false)
+                    )
+            );
     }
 }
 

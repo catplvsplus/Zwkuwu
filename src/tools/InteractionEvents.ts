@@ -1,5 +1,5 @@
 import { RecipleClient, RecipleScript } from 'reciple';
-import { Awaitable, Interaction } from 'discord.js';
+import { AutocompleteInteraction, Awaitable, ContextMenuCommandInteraction, Interaction } from 'discord.js';
 import { Logger } from 'fallout-utility';
 import BaseModule from '../BaseModule';
 
@@ -11,16 +11,16 @@ export enum InteractionEventType {
     ModalSubmit
 }
 
-export interface InteractionEvent {
-    customId: string;
-    type: Omit<InteractionEventType, 'AutoComplete'>;
-    cached?: boolean;
-    handle: (interaction: Interaction<this['cached'] extends true ? 'cached' : this['cached'] extends false ? 'raw' : 'cached'|'raw'>) => Awaitable<void>;
+export interface ComponentInteractionEvent {
+    customId: string|((id: string) => Awaitable<boolean>);
+    type: InteractionEventType.Button|InteractionEventType.ModalSubmit|InteractionEventType.SelectMenu;
+    handle: (interaction: Interaction) => Awaitable<void>;
 }
 
-export interface AutocompleteInteractionEvent extends Omit<InteractionEvent, 'customId'> {
-    commandName: string;
-    type: InteractionEventType.AutoComplete;
+export interface CommandInteractionEvent {
+    commandName: string|((name: string) => Awaitable<boolean>);
+    type: InteractionEventType.AutoComplete|InteractionEventType.ContextMenu;
+    handle: (interaction: Interaction) => Awaitable<void>;
 }
 
 export class InteractionEventsModule extends BaseModule {
@@ -33,38 +33,39 @@ export class InteractionEventsModule extends BaseModule {
     }
 
     public onLoad(client: RecipleClient) {
-        client.on('interactionCreate', interaction => {
-            const handlers = [...client.modules
-                .map(m => m.script)
-                .filter((m: RecipleScript) => (m as BaseModule).interactionEventHandlers
-                    ?.some(i =>
-                        i.type == InteractionEventsModule.getInteractionEventType(interaction)
-                        &&
-                        (
-                            i.cached && interaction.inCachedGuild()
-                            ||
-                            i.cached === false && interaction.inRawGuild()
-                            ||
-                            i.cached === undefined
-                        )
-                    )
-                )
-                .map((m: RecipleScript) => (m as BaseModule).interactionEventHandlers)
-            ];
+        client.on('interactionCreate', async interaction => {
+            const handlers: (ComponentInteractionEvent|CommandInteractionEvent)[] = [];
+
+            client.modules.forEach(m => handlers.push(...(m.script as BaseModule).interactionEventHandlers));
 
             for (const handler of handlers) {
-                if (!handler) continue;
+                if (handler.type !== InteractionEventsModule.getInteractionEventType(interaction)) continue;
 
-                handler.forEach(h => {
-                    try {
-                        Promise.resolve(h.handle(interaction as Interaction<'cached'|'raw'>))
-                            .catch(err => this.logger.err(err));
-                    } catch (err) {
-                        this.logger.err(err);
-                    }
-                });
+
             }
         });
+    }
+
+    public async handleComponentInteraction(interaction: Interaction, handler: ComponentInteractionEvent): Promise<void> {
+        if (interaction.isAutocomplete() || interaction.isChatInputCommand() || interaction.isContextMenuCommand()) return;
+        if (
+            typeof handler.customId === 'function'
+                ? !handler.customId(interaction.customId)
+                : handler.customId !== interaction.customId
+        ) return;
+
+        return handler.handle(interaction);
+    }
+
+    public async handleCommandInteraction(interaction: Interaction, handler: CommandInteractionEvent): Promise<void> {
+        if (!interaction.isAutocomplete() && !interaction.isChatInputCommand() && !interaction.isContextMenuCommand()) return;
+        if (
+            typeof handler.commandName === 'function'
+                ? !handler.commandName(interaction.commandName)
+                : handler.commandName !== interaction.commandName
+        ) return;
+
+        return handler.handle(interaction);
     }
 
     public static getInteractionEventType(interaction: Interaction): InteractionEventType|null {
