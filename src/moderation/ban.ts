@@ -1,5 +1,5 @@
 import { MessageCommandBuilder, RecipleClient, SlashCommandBuilder } from 'reciple';
-import { ActionRowBuilder, ContextMenuCommandBuilder, EmbedBuilder, GuildMember, ModalBuilder, PermissionsBitField, TextInputBuilder, TextInputStyle, User } from 'discord.js';
+import { ActionRowBuilder, ApplicationCommandType, ContextMenuCommandBuilder, EmbedBuilder, GuildMember, ModalBuilder, PermissionsBitField, TextInputBuilder, TextInputStyle, User } from 'discord.js';
 import BaseModule from '../BaseModule';
 import util from '../tools/util';
 import ms from 'ms';
@@ -133,6 +133,7 @@ export class BanModule extends BaseModule {
         client.additionalApplicationCommands.push(
             new ContextMenuCommandBuilder()
                 .setName('Ban')
+                .setType(ApplicationCommandType.User)
         );
 
         return true;
