@@ -7,4 +7,5 @@ export default abstract class BaseModule implements RecipleScript {
     public interactionEventHandlers: (ComponentInteractionEvent|CommandInteractionEvent)[] = [];
 
     public abstract onStart(client: RecipleClient<boolean>): boolean | Promise<boolean>;
+    public onLoad(client: RecipleClient<boolean>): void | Promise<void> {}
 }

@@ -152,7 +152,7 @@ export class BanModule extends BaseModule {
         const banned = await member.ban({
             deleteMessageSeconds: deleteMessagesTime,
             reason: reason ? `${moderator.tag} — ${reason}` : undefined
-        }).catch(this.logger.err);
+        }).catch(err => this.logger.err(err));
 
         if (!banned) return util.errorEmbed(`Failed to ban **${member}**`, true);
 

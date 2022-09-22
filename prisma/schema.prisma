@@ -6,6 +6,25 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
-  url      = env("DATABASE_URL")
+  provider = "sqlite"
+  url      = "file:database.db"
+}
+
+model Snipes {
+  id              String   @id @unique
+  authorId        String
+  channelId       String
+  content         String
+  repliedToUserId String?
+  edited          Boolean  @default(false)
+  attachments     Int      @default(0)
+  createdAt       DateTime @default(now())
+}
+
+model Confessions {
+  id        String   @id @unique
+  authorId  String
+  channelId String
+  content   String
+  createdAt DateTime @default(now())
 }

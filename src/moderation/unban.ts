@@ -97,7 +97,7 @@ export class UnbanModule extends BaseModule {
         const bannedUser = guild.bans.cache.find(u => u.user.id == user || u.user.tag == user) || await guild.bans.fetch(user).catch(() => null);
         if (!bannedUser) return util.errorEmbed(`User **${query}** not found`, true);
 
-        const unbanned = await guild.bans.remove(user, reason ? `${moderator.tag} — ${reason}` : undefined).catch(this.logger.err);
+        const unbanned = await guild.bans.remove(user, reason ? `${moderator.tag} — ${reason}` : undefined).catch(err => this.logger.err(err));
         if (!unbanned) return util.errorEmbed(`Failed to unban **${query}**`, true);
 
         return new EmbedBuilder()

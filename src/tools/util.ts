@@ -1,10 +1,11 @@
-import { ColorResolvable, EmbedBuilder, MessageMentions, User, userMention, UserMention, UserResolvable } from 'discord.js';
 import { AnyCommandHaltData, CommandHaltReason, cwd, RecipleClient, SlashCommandBuilder, SlashCommandHaltData } from 'reciple';
+import { ColorResolvable, EmbedBuilder, User,UserMention, UserResolvable } from 'discord.js';
+import createConfig from '../_createConfig';
 import BaseModule from '../BaseModule';
-import ms from 'ms';
 import path from 'path';
 import yml from 'yaml';
-import createConfig from '../_createConfig';
+import ms from 'ms';
+import { PrismaClient } from '@prisma/client';
 
 export interface UtilModuleConfig {
     embedColor: ColorResolvable;
@@ -14,6 +15,7 @@ export interface UtilModuleConfig {
 export class UtilModule extends BaseModule {
     public embedColor: ColorResolvable = 'Blue';
     public errorEmbedColor: ColorResolvable = 'Red';
+    public prisma: PrismaClient = new PrismaClient();
     public client!: RecipleClient;
 
     public onStart(client: RecipleClient): boolean {

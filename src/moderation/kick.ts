@@ -140,7 +140,7 @@ export class KickModule extends BaseModule {
         if (member.id == moderator.id) return util.errorEmbed(`You cannot kick yourself`);
         if (!member.manageable || !member.moderatable || !member.kickable) return util.errorEmbed(`No permissions to kick ${member}`, true);
 
-        const kicked = await member.kick(reason ? `${moderator.tag} — ${reason}` : undefined).catch(this.logger.err);
+        const kicked = await member.kick(reason ? `${moderator.tag} — ${reason}` : undefined).catch(err => this.logger.err(err));
 
         if (!kicked) return util.errorEmbed(`Failed to kick **${member}**`, true);
 
