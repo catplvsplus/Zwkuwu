@@ -2,6 +2,7 @@ import { EmbedBuilder, Guild, User } from 'discord.js';
 import { Logger } from 'fallout-utility';
 import { MessageCommandBuilder, RecipleClient, SlashCommandBuilder } from 'reciple';
 import BaseModule from '../BaseModule';
+import { InteractionEventType } from '../tools/InteractionEvents';
 import util from '../tools/util';
 
 export class UnbanModule extends BaseModule {
@@ -70,6 +71,24 @@ export class UnbanModule extends BaseModule {
                 })
         ];
 
+        this.interactionEventHandlers = [
+            {
+                type: InteractionEventType.AutoComplete,
+                commandName: 'unban',
+                handle: async interaction => {
+                    if (!interaction.inCachedGuild() || !interaction.isAutocomplete()) return;
+                    if (!interaction.memberPermissions.has('BanMembers')) return;
+
+                    if (!interaction.guild.bans.cache.size) await interaction.guild.bans.fetch().catch(() => null);
+
+                    const query = interaction.options.getFocused();
+                    const bannedUsers = interaction.guild.bans.cache.filter(u => !query || (u.user.tag === query || u.user.id === query || u.user.tag.includes(query))).toJSON();
+
+                    await interaction.respond(bannedUsers.slice(0, 15).map(u => ({ name: u.user.tag, value: u.user.id })));
+                }
+            }
+        ];
+
         return true;
     }
 
@@ -89,3 +108,5 @@ export class UnbanModule extends BaseModule {
             .setTimestamp();
     }
 }
+
+export default new UnbanModule();
