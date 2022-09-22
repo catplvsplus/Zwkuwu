@@ -23,7 +23,7 @@ export interface AutocompleteInteractionEvent extends Omit<InteractionEvent, 'cu
     type: InteractionEventType.AutoComplete;
 }
 
-export class InteractionEventsModule extends BaseModule implements RecipleScript {
+export class InteractionEventsModule extends BaseModule {
     public logger!: Logger;
 
     public onStart(client: RecipleClient): boolean {

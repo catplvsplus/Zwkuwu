@@ -1,7 +1,6 @@
 import { ColorResolvable, EmbedBuilder } from 'discord.js';
 import { AnyCommandHaltData, CommandHaltReason, cwd, RecipleClient, SlashCommandBuilder, SlashCommandHaltData } from 'reciple';
 import BaseModule from '../BaseModule';
-import { RecipleScriptWithInteractionEvents } from './InteractionEvents';
 import ms from 'ms';
 import path from 'path';
 import yml from 'yaml';
@@ -12,7 +11,7 @@ export interface UtilModuleConfig {
     errorEmbedColor: ColorResolvable;
 }
 
-export class UtilModule extends BaseModule implements RecipleScriptWithInteractionEvents {
+export class UtilModule extends BaseModule {
     public embedColor: ColorResolvable = 'Blue';
     public errorEmbedColor: ColorResolvable = 'Red';
     public client!: RecipleClient;

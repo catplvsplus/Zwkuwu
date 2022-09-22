@@ -1,8 +1,8 @@
-import { RecipleClient, RecipleScript } from 'reciple';
+import { RecipleClient } from 'reciple';
 import { Logger } from 'fallout-utility';
 import BaseModule from '../BaseModule';
 
-export class FetchMembersModule extends BaseModule implements RecipleScript {
+export class FetchMembersModule extends BaseModule {
     public logger!: Logger;
 
     public onStart(client: RecipleClient): boolean {
