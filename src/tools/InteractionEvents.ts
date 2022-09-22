@@ -1,7 +1,7 @@
-import { RecipleClient, RecipleScript } from 'reciple';
-import { AutocompleteInteraction, Awaitable, ContextMenuCommandInteraction, Interaction } from 'discord.js';
+import { Awaitable, Interaction } from 'discord.js';
 import { Logger } from 'fallout-utility';
 import BaseModule from '../BaseModule';
+import { RecipleClient} from 'reciple';
 
 export enum InteractionEventType {
     ContextMenu,
@@ -41,7 +41,11 @@ export class InteractionEventsModule extends BaseModule {
             for (const handler of handlers) {
                 if (handler.type !== InteractionEventsModule.getInteractionEventType(interaction)) continue;
 
-
+                if (handler.type == InteractionEventType.AutoComplete || handler.type == InteractionEventType.ContextMenu) {
+                    await this.handleCommandInteraction(interaction, handler);
+                } else if (handler.type == InteractionEventType.SelectMenu || handler.type == InteractionEventType.Button || handler.type == InteractionEventType.ModalSubmit) {
+                    await this.handleComponentInteraction(interaction, handler);
+                }
             }
         });
     }
