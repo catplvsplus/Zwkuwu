@@ -28,7 +28,7 @@ export class MuteModule extends BaseModule {
                 .addStringOption(reason => reason
                     .setName('reason')
                     .setDescription('Say fuck off')
-                    .setRequired(true)    
+                    .setRequired(false)    
                 )
                 .setExecute(async data => {
                     const interaction = data.interaction;
@@ -112,7 +112,7 @@ export class MuteModule extends BaseModule {
                 .addStringOption(reason => reason
                     .setName('reason')
                     .setDescription('Why?')
-                    .setRequired(true)    
+                    .setRequired(false)    
                 )
                 .setExecute(async data => {
                     const interaction = data.interaction;
@@ -190,7 +190,7 @@ export class MuteModule extends BaseModule {
         return new EmbedBuilder()
             .setAuthor({ name: `Muted ${mute.displayName}`, iconURL: mute.displayAvatarURL() })
             .setDescription(reason || null)
-            .setFooter({ text: `${moderator.tag} muted ${mute.user.tag}`, iconURL: mute.displayAvatarURL() })
+            .setFooter({ text: `${moderator.tag} muted ${mute.user.tag} | ${ms(time, { long: true })}`, iconURL: mute.displayAvatarURL() })
             .setTimestamp();
     }
 
@@ -209,3 +209,5 @@ export class MuteModule extends BaseModule {
             .setColor(util.embedColor);
     }
 }
+
+export default new MuteModule();
