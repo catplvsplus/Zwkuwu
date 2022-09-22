@@ -1,6 +1,6 @@
 # Your bot token here
 # To use env variable as a token just do it like this env:TOKEN_ENV
-token: env:TOKEN
+token: env:TESTING_TOKEN
 
 # Commands options
 commands:
@@ -42,7 +42,7 @@ commands:
     # accept replied or deffered command interaction
     acceptRepliedInteractions: false
     # register commands to specific guild(s) empty to make it global
-    guilds: ['876039624814899220','830456204735807529']
+    guilds: ['876039624814899220']
     # overwrite command permissions
     permissions:
       # enable overwriten command permissions
