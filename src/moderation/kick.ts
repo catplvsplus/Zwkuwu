@@ -1,42 +1,34 @@
-import { MessageCommandBuilder, RecipleClient, SlashCommandBuilder } from 'reciple';
-import { ActionRowBuilder, ApplicationCommandType, ContextMenuCommandBuilder, EmbedBuilder, GuildMember, ModalBuilder, PermissionsBitField, TextInputBuilder, TextInputStyle, User } from 'discord.js';
-import BaseModule from '../BaseModule';
-import util from '../tools/util';
-import ms from 'ms';
-import { InteractionEventType } from '../tools/InteractionEvents';
+import { ActionRowBuilder, ApplicationCommandType, ContextMenuCommandBuilder, EmbedBuilder, GuildMember, ModalBuilder, TextInputBuilder, TextInputStyle, User } from 'discord.js';
 import { Logger } from 'fallout-utility';
+import { MessageCommandBuilder, RecipleClient, SlashCommandBuilder } from 'reciple';
+import BaseModule from '../BaseModule';
+import { InteractionEventType } from '../tools/InteractionEvents';
+import util from '../tools/util';
 
-export class BanModule extends BaseModule {
+export class KickModule extends BaseModule {
     public logger!: Logger;
 
     public onStart(client: RecipleClient<boolean>): boolean {
-        this.logger = client.logger.cloneLogger({ loggerName: `BanModule` });
-
+        this.logger = client.logger.cloneLogger({ loggerName: `KickModule` });
         this.commands = [
             new SlashCommandBuilder()
-                .setName('ban')
-                .setDescription('Ban hammer')
-                .setRequiredMemberPermissions('BanMembers')
+                .setName('kick')
+                .setDescription('Kick an annoying peice of shit')
+                .setRequiredMemberPermissions('KickMembers')
                 .addUserOption(user => user
                     .setName('member')
-                    .setDescription('Ban this bitch')
+                    .setDescription('Kick this mf')
                     .setRequired(true)
                 )
                 .addStringOption(reason => reason
                     .setName('reason')
-                    .setDescription('Reason why you hate this mf')
-                    .setRequired(false)
-                )
-                .addStringOption(deleteMessages => deleteMessages
-                    .setName('delete-messages')
-                    .setDescription('Delete messages before what time?')
+                    .setDescription('What\'s your problem with this monkey?')
                     .setRequired(false)
                 )
                 .setExecute(async data => {
                     const interaction = data.interaction;
                     const user = interaction.options.getUser('member', true);
                     const reason = interaction.options.getString('reason');
-                    const deleteMessagesTime = interaction.options.getString('delete-messages');
 
                     if (!interaction.inCachedGuild()) {
                         await interaction.reply({ embeds: [util.errorEmbed(`You're not in a server`)], ephemeral: true });
@@ -53,23 +45,23 @@ export class BanModule extends BaseModule {
                     await interaction.deferReply();
                     await interaction.editReply({
                         embeds: [
-                            await this.banMember(member, interaction.user, reason, deleteMessagesTime ? await Promise.resolve(ms(deleteMessagesTime)).catch(() => undefined) : undefined)
+                            await this.kickMember(member, interaction.user, reason)
                         ]
                     });
                 }),
             new MessageCommandBuilder()
-                .setName('ban')
-                .setDescription('Ban hammer')
-                .setRequiredMemberPermissions('BanMembers')
+                .setName('kick')
+                .setDescription('Kick an annoying peice of shit')
+                .setRequiredMemberPermissions('KickMembers')
                 .addOption(user => user
                     .setName('member')
-                    .setDescription('Ban this bitch')
+                    .setDescription('Kick this mf')
                     .setRequired(true)
                     .setValidator(async value => !!await util.resolveMentionOrId(value))
                 )
                 .addOption(reason => reason
                     .setName('reason')
-                    .setDescription('Reason why you hate this mf')
+                    .setDescription('What\'s your problem with this monkey?')
                     .setRequired(false)
                 )
                 .setExecute(async data => {
@@ -91,7 +83,7 @@ export class BanModule extends BaseModule {
 
                     await message.reply({
                         embeds: [
-                            await this.banMember(member, message.author, reason)
+                            await this.kickMember(member, message.author, reason)
                         ]
                     });
                 })
@@ -100,7 +92,7 @@ export class BanModule extends BaseModule {
         this.interactionEventHandlers = [
             {
                 type: InteractionEventType.ContextMenu,
-                commandName: 'Ban',
+                commandName: 'Kick',
                 handle: async interaction => {
                     if (!interaction.isUserContextMenuCommand()) return;
 
@@ -109,16 +101,15 @@ export class BanModule extends BaseModule {
             },
             {
                 type: InteractionEventType.ModalSubmit,
-                customId: id => id.startsWith(`ban-modal-`),
+                customId: id => id.startsWith(`kick-modal-`),
                 handle: async interaction => {
                     if (!interaction.isModalSubmit() || !interaction.inCachedGuild()) return;
-                    if (!interaction.memberPermissions.has('BanMembers')) return;
+                    if (!interaction.memberPermissions.has('KickMembers')) return;
 
                     await interaction.deferReply();
 
                     const user = await util.resolveMentionOrId(interaction.customId.split('-').pop()!);
                     const reason = interaction.fields.getTextInputValue('reason');
-                    const deleteMessages = interaction.fields.getTextInputValue('delete-messages');
 
                     const member = user ? interaction.guild.members.resolve(user) : null;
 
@@ -129,7 +120,7 @@ export class BanModule extends BaseModule {
 
                     await interaction.editReply({
                         embeds: [
-                            await this.banMember(member, interaction.user, reason, deleteMessages ? await Promise.resolve(ms(deleteMessages)).catch(() => undefined) : undefined)
+                            await this.kickMember(member, interaction.user, reason)
                         ]
                     });
                 }
@@ -138,56 +129,44 @@ export class BanModule extends BaseModule {
 
         client.additionalApplicationCommands.push(
             new ContextMenuCommandBuilder()
-                .setName('Ban')
+                .setName('Kick')
                 .setType(ApplicationCommandType.User)
         );
 
         return true;
     }
 
-    public async banMember(member: GuildMember, moderator: User, reason?: string|null, deleteMessagesTime?: number): Promise<EmbedBuilder> {
-        if (member.id == moderator.id) return util.errorEmbed(`You cannot ban yourself`);
-        if (!member.manageable || !member.moderatable || !member.bannable) return util.errorEmbed(`No permissions to ban ${member}`, true);
-        
-        const banned = await member.ban({
-            deleteMessageSeconds: deleteMessagesTime,
-            reason: reason ? `${moderator.tag} — ${reason}` : undefined
-        }).catch(this.logger.err);
+    public async kickMember(member: GuildMember, moderator: User, reason?: string|null): Promise<EmbedBuilder> {
+        if (member.id == moderator.id) return util.errorEmbed(`You cannot kick yourself`);
+        if (!member.manageable || !member.moderatable || !member.kickable) return util.errorEmbed(`No permissions to kick ${member}`, true);
 
-        if (!banned) return util.errorEmbed(`Failed to ban **${member}**`, true);
+        const kicked = await member.kick(reason ? `${moderator.tag} — ${reason}` : undefined).catch(this.logger.err);
+
+        if (!kicked) return util.errorEmbed(`Failed to kick **${member}**`, true);
 
         return new EmbedBuilder()
-            .setAuthor({ name: `Banned ${member.displayName}`, iconURL: member.displayAvatarURL() })
+            .setAuthor({ name: `Kicked ${member.displayName}`, iconURL: member.displayAvatarURL() })
             .setDescription(reason || null)
-            .setFooter({ text: `${moderator.tag} banned ${member.user.tag}`, iconURL: moderator.displayAvatarURL() })
+            .setFooter({ text: `${moderator.tag} kicked ${member.user.tag}`, iconURL: moderator.displayAvatarURL() })
             .setTimestamp();
     }
-
+    
     public getContextMenuModal(user: User): ModalBuilder {
         return new ModalBuilder()
-            .setTitle(`Ban ${user.tag}`)
-            .setCustomId(`ban-modal-${user.id}`)
+            .setTitle(`Kick ${user.tag}`)
+            .setCustomId(`kick-modal-${user.id}`)
             .setComponents(
                 new ActionRowBuilder<TextInputBuilder>()
                     .setComponents(
                         new TextInputBuilder()
                             .setCustomId(`reason`)
-                            .setLabel(`Reason why you hate this mf`)
-                            .setPlaceholder(`Annoying and stupid`)
+                            .setLabel(`Why?`)
+                            .setPlaceholder(`Piece of shit`)
                             .setStyle(TextInputStyle.Paragraph)
-                            .setRequired(false)
-                    ),
-                new ActionRowBuilder<TextInputBuilder>()
-                    .setComponents(
-                        new TextInputBuilder()
-                            .setCustomId(`delete-messages`)
-                            .setLabel(`Delete messages before what time`)
-                            .setPlaceholder(`1m, 1h, 1d or 1w`)
-                            .setStyle(TextInputStyle.Short)
                             .setRequired(false)
                     )
             );
     }
 }
 
-export default new BanModule();
+export default new KickModule();

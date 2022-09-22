@@ -9,7 +9,7 @@ export class UnbanModule extends BaseModule {
     public logger!: Logger;
 
     public async onStart(client: RecipleClient<boolean>): Promise<boolean> {
-        this.logger = client.logger.cloneLogger({ loggerName: `BanModule` });
+        this.logger = client.logger.cloneLogger({ loggerName: `UnbanModule` });
         this.commands = [
             new SlashCommandBuilder()
                 .setName('unban')
