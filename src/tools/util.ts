@@ -91,10 +91,14 @@ export class UtilModule extends BaseModule {
         return String(number);
     }
 
-    public async resolveMentionOrId(user: UserResolvable|UserMention): Promise<User|null> {
-        const id = typeof user === 'string'
+    public getMentionId(user: UserResolvable|UserMention): string {
+        return typeof user === 'string'
             ? user.match(/<@!?(\d{17,19})>/)?.[0] ?? user
             : user.id;
+    }
+
+    public async resolveMentionOrId(user: UserResolvable|UserMention): Promise<User|null> {
+        const id = this.getMentionId(user);
 
         return this.client.users.cache.find(user => user.id === id || user.tag.toLowerCase() === id.toLowerCase()) ?? this.client.users.fetch(id).catch(() => null);
     }

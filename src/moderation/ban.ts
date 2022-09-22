@@ -145,8 +145,8 @@ export class BanModule extends BaseModule {
     }
 
     public async banMember(member: GuildMember, moderator: User, reason?: string|null, deleteMessagesTime?: number): Promise<EmbedBuilder> {
-        if (member.id == moderator.id) return util.smallEmbed(`You cannot ban yourself`);
-        if (!member.manageable || !member.moderatable) return util.smallEmbed(`No permissions to ban ${member}`, true);
+        if (member.id == moderator.id) return util.errorEmbed(`You cannot ban yourself`);
+        if (!member.manageable || !member.moderatable) return util.errorEmbed(`No permissions to ban ${member}`, true);
         
         const banned = await member.ban({
             deleteMessageSeconds: deleteMessagesTime,
