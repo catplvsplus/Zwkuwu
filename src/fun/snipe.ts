@@ -1,7 +1,8 @@
-import { Collection, EmbedBuilder, Message, TextBasedChannel, User } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, Collection, EmbedBuilder, Message, MessageActionRowComponentBuilder, TextBasedChannel, User } from 'discord.js';
 import { Logger } from 'fallout-utility';
 import { MessageCommandBuilder, RecipleClient, SlashCommandBuilder } from 'reciple';
 import BaseModule from '../BaseModule';
+import { InteractionEventType } from '../tools/InteractionEvents';
 import util from '../tools/util';
 import { RawSnipedMessage, SnipedMessage } from './Snipe/SnipedMessage';
 
@@ -11,6 +12,15 @@ export class SnipeModule extends BaseModule {
 
     public async onStart(client: RecipleClient<boolean>): Promise<boolean> {
         this.logger = client.logger.cloneLogger({ loggerName: 'MessageSniper' });
+
+        const snipeButton = new ActionRowBuilder<MessageActionRowComponentBuilder>()
+            .setComponents(
+                new ButtonBuilder()
+                    .setCustomId('snipe-message')
+                    .setLabel('Snipe')
+                    .setStyle(ButtonStyle.Secondary)
+            );
+
         this.commands = [
             new SlashCommandBuilder()
                 .setName('snipe')
@@ -23,7 +33,8 @@ export class SnipeModule extends BaseModule {
                     await interaction.editReply({
                         embeds: [
                             await this.snipe(interaction.channel, interaction.user)
-                        ]
+                        ],
+                        components: [snipeButton]
                     });
                 }),
             new MessageCommandBuilder()
@@ -35,9 +46,32 @@ export class SnipeModule extends BaseModule {
                     await message.reply({
                         embeds: [
                             await this.snipe(message.channel, message.author)
-                        ]
+                        ],
+                        components: [snipeButton]
                     });
                 })
+        ];
+
+        this.interactionEventHandlers = [
+            {
+                type: InteractionEventType.Button,
+                customId: `snipe-message`,
+                handle: async interaction => {
+                    if (!interaction.isButton() || !interaction.inCachedGuild() || !interaction.channel) return;
+
+                    const message = interaction.message;
+                    
+                    await interaction.deferReply();
+                    await message.edit({ components: [] });
+
+                    await interaction.editReply({
+                        embeds: [
+                            await this.snipe(interaction.channel, interaction.user)
+                        ],
+                        components: [snipeButton]
+                    });
+                }
+            }
         ];
 
         return true;
