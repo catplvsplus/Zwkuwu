@@ -4,7 +4,6 @@ import BaseModule from '../BaseModule';
 export class BanModule extends BaseModule implements RecipleScript {
     public onStart(client: RecipleClient<boolean>): boolean {
 
-
         return true;
     }
 }

@@ -23,10 +23,6 @@ export interface AutocompleteInteractionEvent extends Omit<InteractionEvent, 'cu
     type: InteractionEventType.AutoComplete;
 }
 
-export interface RecipleScriptWithInteractionEvents extends RecipleScript {
-    interactionEventHandlers?: (InteractionEvent|AutocompleteInteractionEvent)[];
-}
-
 export class InteractionEventsModule extends BaseModule implements RecipleScript {
     public logger!: Logger;
 
@@ -40,7 +36,7 @@ export class InteractionEventsModule extends BaseModule implements RecipleScript
         client.on('interactionCreate', interaction => {
             const handlers = [...client.modules
                 .map(m => m.script)
-                .filter((m: RecipleScriptWithInteractionEvents) => m.interactionEventHandlers
+                .filter((m: RecipleScript) => (m as BaseModule).interactionEventHandlers
                     ?.some(i =>
                         i.type == InteractionEventsModule.getInteractionEventType(interaction)
                         &&
@@ -53,7 +49,7 @@ export class InteractionEventsModule extends BaseModule implements RecipleScript
                         )
                     )
                 )
-                .map((m: RecipleScriptWithInteractionEvents) => m.interactionEventHandlers)
+                .map((m: RecipleScript) => (m as BaseModule).interactionEventHandlers)
             ];
 
             for (const handler of handlers) {
