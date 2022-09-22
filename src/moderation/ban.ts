@@ -4,9 +4,14 @@ import BaseModule from '../BaseModule';
 import util from '../tools/util';
 import ms from 'ms';
 import { InteractionEventType } from '../tools/InteractionEvents';
+import { Logger } from 'fallout-utility';
 
 export class BanModule extends BaseModule {
+    public logger!: Logger;
+
     public onStart(client: RecipleClient<boolean>): boolean {
+        this.logger = client.logger.cloneLogger({ loggerName: `BanModule` });
+
         this.commands = [
             new SlashCommandBuilder()
                 .setName('ban')
@@ -94,7 +99,7 @@ export class BanModule extends BaseModule {
         this.interactionEventHandlers = [
             {
                 type: InteractionEventType.ContextMenu,
-                commandName: 'ban-user',
+                commandName: 'Ban',
                 handle: async interaction => {
                     if (!interaction.isUserContextMenuCommand()) return;
 
@@ -140,15 +145,18 @@ export class BanModule extends BaseModule {
     }
 
     public async banMember(member: GuildMember, moderator: User, reason?: string|null, deleteMessagesTime?: number): Promise<EmbedBuilder> {
+        if (member.id == moderator.id) return util.smallEmbed(`You cannot ban yourself`);
+        if (!member.manageable || !member.moderatable) return util.smallEmbed(`No permissions to ban ${member}`, true);
+        
         const banned = await member.ban({
             deleteMessageSeconds: deleteMessagesTime,
             reason: reason ? `${moderator.tag} — ${reason}` : undefined
-        }).catch(() => null);
+        }).catch(this.logger.err);
 
         if (!banned) return util.errorEmbed(`Failed to ban **${member}**`, true);
 
         return new EmbedBuilder()
-            .setAuthor({ name: member.displayName, iconURL: member.displayAvatarURL() })
+            .setAuthor({ name: `Banned ${member.displayName}`, iconURL: member.displayAvatarURL() })
             .setDescription(reason || null)
             .setFooter({ text: `${moderator.tag} banned ${member.user.tag}`, iconURL: moderator.displayAvatarURL() })
             .setTimestamp();
