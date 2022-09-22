@@ -3,8 +3,8 @@
   "scripts": {
     "clean": "yarn exec rimraf modules",
     "build": "yarn run clean && yarn exec tsc",
-    "start": "yarn exec reciple",
-    "test": "yarn run build && yarn exec reciple -D",
+    "start": "yarn exec reciple --token env:TOKEN -y",
+    "test": "yarn run build && yarn exec reciple -D --token env:TESTING_TOKEN -y",
     "postinstall": "yarn run build"
   },
   "dependencies": {

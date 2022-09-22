@@ -1,4 +1,4 @@
-import { ColorResolvable, EmbedBuilder } from 'discord.js';
+import { ColorResolvable, EmbedBuilder, MessageMentions, User, userMention, UserMention, UserResolvable } from 'discord.js';
 import { AnyCommandHaltData, CommandHaltReason, cwd, RecipleClient, SlashCommandBuilder, SlashCommandHaltData } from 'reciple';
 import BaseModule from '../BaseModule';
 import ms from 'ms';
@@ -89,6 +89,14 @@ export class UtilModule extends BaseModule {
         if (number >= 1000000) return (number / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
         if (number >= 1000) return (number / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
         return String(number);
+    }
+
+    public async resolveMentionOrId(user: UserResolvable|UserMention): Promise<User|null> {
+        const id = typeof user === 'string'
+            ? user.match(/<@!?(\d{17,19})>/)?.[0] ?? user
+            : user.id;
+
+        return this.client.users.cache.find(user => user.id === id || user.tag.toLowerCase() === id.toLowerCase()) ?? this.client.users.fetch(id).catch(() => null);
     }
 }
 

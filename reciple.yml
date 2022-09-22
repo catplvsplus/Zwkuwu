@@ -39,8 +39,10 @@ commands:
     registerCommands: true
     # set required permissions for interaction commands
     setRequiredPermissions: true
+    # accept replied or deffered command interaction
+    acceptRepliedInteractions: false
     # register commands to specific guild(s) empty to make it global
-    guilds: ['876039624814899220', '830456204735807529']
+    guilds: ['876039624814899220']
     # overwrite command permissions
     permissions:
       # enable overwriten command permissions
@@ -60,24 +62,15 @@ fileLogging:
   # enable if reciple will use the logger
   clientLogs: true
   # stringify logged JSONs
-  stringifyLoggedJSON: true
+  stringifyLoggedJSON: false
   # log file path
   logFilePath: logs/latest.log
 
 # Client options
 # Learn more about client options at https://discord.js.org/#/docs/discord.js/main/typedef/ClientOptions
 client:
-  allowedMentions:
-    repliedUser: false
-    parse:
-      - roles
-      - users
-  partials:
-    - 'Channel'
-  failIfNotExists: false
   intents:
     - Guilds
-    - GuildBans
     - GuildMembers
     - GuildMessages
     - MessageContent
@@ -100,7 +93,7 @@ messages:
     ephemeral: true
 
 # Ignored Files
-ignoredFiles: []
+ignoredFiles: ['BaseModule.js']
 
 
 ####################################################
@@ -121,4 +114,4 @@ modulesFolder: ['modules', 'modules/fun', 'modules/moderation', 'modules/staff',
 disableVersionCheck: false
 
 # Current version
-version: ^5.1.1
+version: ^5.5.2
