@@ -17,9 +17,9 @@ export class UtilModule extends BaseModule implements RecipleScriptWithInteracti
     public errorEmbedColor: ColorResolvable = 'Red';
     public client!: RecipleClient;
 
-    public onStart(client: RecipleClient): boolean{
+    public onStart(client: RecipleClient): boolean {
         this.client = client;
-        
+
         const configPath: string = path.join(cwd, 'config/util/config.yml');
         const config: UtilModuleConfig = yml.parse(createConfig<UtilModuleConfig>(configPath, {
             embedColor: 'Blue',

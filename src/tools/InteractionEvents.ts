@@ -1,7 +1,7 @@
 import { RecipleClient, RecipleScript } from 'reciple';
+import { Awaitable, Interaction } from 'discord.js';
 import { Logger } from 'fallout-utility';
 import BaseModule from '../BaseModule';
-import { AutocompleteInteraction, Awaitable, ButtonInteraction, ContextMenuCommandInteraction, Interaction, InteractionType, ModalSubmitInteraction, SelectMenuInteraction } from 'discord.js';
 
 export enum InteractionEventType {
     ContextMenu,
