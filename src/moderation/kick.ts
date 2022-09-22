@@ -1,8 +1,8 @@
 import { ActionRowBuilder, ApplicationCommandType, ContextMenuCommandBuilder, EmbedBuilder, GuildMember, ModalBuilder, TextInputBuilder, TextInputStyle, User } from 'discord.js';
-import { Logger } from 'fallout-utility';
 import { MessageCommandBuilder, RecipleClient, SlashCommandBuilder } from 'reciple';
-import BaseModule from '../BaseModule';
 import { InteractionEventType } from '../tools/InteractionEvents';
+import { Logger } from 'fallout-utility';
+import BaseModule from '../BaseModule';
 import util from '../tools/util';
 
 export class KickModule extends BaseModule {

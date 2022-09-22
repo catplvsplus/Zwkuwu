@@ -1,8 +1,8 @@
+import { MessageCommandBuilder, RecipleClient, SlashCommandBuilder } from 'reciple';
+import { InteractionEventType } from '../tools/InteractionEvents';
 import { EmbedBuilder, Guild, User } from 'discord.js';
 import { Logger } from 'fallout-utility';
-import { MessageCommandBuilder, RecipleClient, SlashCommandBuilder } from 'reciple';
 import BaseModule from '../BaseModule';
-import { InteractionEventType } from '../tools/InteractionEvents';
 import util from '../tools/util';
 
 export class UnbanModule extends BaseModule {

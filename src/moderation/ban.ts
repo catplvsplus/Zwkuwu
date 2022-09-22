@@ -1,10 +1,10 @@
+import { ActionRowBuilder, ApplicationCommandType, ContextMenuCommandBuilder, EmbedBuilder, GuildMember, ModalBuilder, TextInputBuilder, TextInputStyle, User } from 'discord.js';
 import { MessageCommandBuilder, RecipleClient, SlashCommandBuilder } from 'reciple';
-import { ActionRowBuilder, ApplicationCommandType, ContextMenuCommandBuilder, EmbedBuilder, GuildMember, ModalBuilder, PermissionsBitField, TextInputBuilder, TextInputStyle, User } from 'discord.js';
+import { InteractionEventType } from '../tools/InteractionEvents';
+import { Logger } from 'fallout-utility';
 import BaseModule from '../BaseModule';
 import util from '../tools/util';
 import ms from 'ms';
-import { InteractionEventType } from '../tools/InteractionEvents';
-import { Logger } from 'fallout-utility';
 
 export class BanModule extends BaseModule {
     public logger!: Logger;
