@@ -14,7 +14,7 @@ export class MuteModule extends BaseModule {
             new SlashCommandBuilder()
                 .setName('mute')
                 .setDescription('Mute someone')
-                .setRequiredMemberPermissions('ManageMessages')
+                .setRequiredMemberPermissions('ModerateMembers')
                 .addUserOption(member => member
                     .setName('member')
                     .setDescription('Mute this annoying piece of shit')
@@ -58,7 +58,7 @@ export class MuteModule extends BaseModule {
             new MessageCommandBuilder()
                 .setName('mute')
                 .setDescription('Mute someone')
-                .setRequiredMemberPermissions('ManageMessages')
+                .setRequiredMemberPermissions('ModerateMembers')
                 .addOption(member => member
                     .setName('member')
                     .setDescription('Mute this annoying piece of shit')
@@ -103,7 +103,7 @@ export class MuteModule extends BaseModule {
             new SlashCommandBuilder()
                 .setName('unmute')
                 .setDescription('Forgive muted member')
-                .setRequiredMemberPermissions('ManageMessages')
+                .setRequiredMemberPermissions('ModerateMembers')
                 .addUserOption(member => member
                     .setName('member')
                     .setDescription('Unmute this annoying piece of shit')
@@ -141,7 +141,7 @@ export class MuteModule extends BaseModule {
             new MessageCommandBuilder()
                 .setName('unmute')
                 .setDescription('Forgive muted member')
-                .setRequiredMemberPermissions('ManageMessages')
+                .setRequiredMemberPermissions('ModerateMembers')
                 .addOption(member => member
                     .setName('member')
                     .setDescription('Mute this annoying piece of shit')
