@@ -11,7 +11,6 @@ export class BanModule extends BaseModule {
 
     public onStart(client: RecipleClient<boolean>): boolean {
         this.logger = client.logger.cloneLogger({ loggerName: `BanModule` });
-
         this.commands = [
             new SlashCommandBuilder()
                 .setName('ban')
@@ -147,14 +146,14 @@ export class BanModule extends BaseModule {
 
     public async banMember(member: GuildMember, moderator: User, reason?: string|null, deleteMessagesTime?: number): Promise<EmbedBuilder> {
         if (member.id == moderator.id) return util.errorEmbed(`You cannot ban yourself`);
-        if (!member.manageable || !member.moderatable || !member.bannable) return util.errorEmbed(`No permissions to ban ${member}`, true);
+        if (!member.bannable) return util.errorEmbed(`No permissions to ban ${member}`, true);
         
         const banned = await member.ban({
             deleteMessageSeconds: deleteMessagesTime,
             reason: reason ? `${moderator.tag} — ${reason}` : undefined
         }).catch(err => this.logger.err(err));
 
-        if (!banned) return util.errorEmbed(`Failed to ban **${member}**`, true);
+        if (!banned) return util.errorEmbed(`Failed to ban ${member}`, true);
 
         return new EmbedBuilder()
             .setAuthor({ name: `Banned ${member.displayName}`, iconURL: member.displayAvatarURL() })

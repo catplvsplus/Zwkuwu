@@ -19,7 +19,8 @@ export class SnipeModule extends BaseModule {
                     const interaction = data.interaction;
                     if (!interaction.channel) return;
 
-                    await interaction.reply({
+                    await interaction.deferReply();
+                    await interaction.editReply({
                         embeds: [
                             await this.snipe(interaction.channel, interaction.user)
                         ]

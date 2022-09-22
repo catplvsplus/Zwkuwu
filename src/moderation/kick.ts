@@ -138,11 +138,11 @@ export class KickModule extends BaseModule {
 
     public async kickMember(member: GuildMember, moderator: User, reason?: string|null): Promise<EmbedBuilder> {
         if (member.id == moderator.id) return util.errorEmbed(`You cannot kick yourself`);
-        if (!member.manageable || !member.moderatable || !member.kickable) return util.errorEmbed(`No permissions to kick ${member}`, true);
+        if (!member.kickable) return util.errorEmbed(`No permissions to kick ${member}`, true);
 
         const kicked = await member.kick(reason ? `${moderator.tag} — ${reason}` : undefined).catch(err => this.logger.err(err));
 
-        if (!kicked) return util.errorEmbed(`Failed to kick **${member}**`, true);
+        if (!kicked) return util.errorEmbed(`Failed to kick ${member}`, true);
 
         return new EmbedBuilder()
             .setAuthor({ name: `Kicked ${member.displayName}`, iconURL: member.displayAvatarURL() })
