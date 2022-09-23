@@ -28,3 +28,11 @@ model Confessions {
   content   String
   createdAt DateTime @default(now())
 }
+
+model MinecraftIPCache {
+  id        Int      @id @unique @default(autoincrement())
+  host      String
+  port      Int?
+  proxy     Boolean
+  createdAt DateTime @default(now())
+}

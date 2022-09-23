@@ -1,10 +1,10 @@
 import { ActionRowBuilder, ModalBuilder, TextInputBuilder, TextInputStyle } from 'discord.js';
 import { MessageCommandBuilder, RecipleClient, SlashCommandBuilder } from 'reciple';
-import BaseModule from '../BaseModule';
 import { InteractionEventType } from '../tools/InteractionEvents';
+import BaseModule from '../BaseModule';
 import util from '../tools/util';
 
-export class Send extends BaseModule {
+export class SendModule extends BaseModule {
     public async onStart(client: RecipleClient<boolean>): Promise<boolean> {
         this.commands = [
             new SlashCommandBuilder()
@@ -84,4 +84,4 @@ export class Send extends BaseModule {
     }
 }
 
-export default new Send();
+export default new SendModule();

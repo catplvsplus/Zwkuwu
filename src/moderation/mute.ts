@@ -151,7 +151,7 @@ export class MuteModule extends BaseModule {
                 .addOption(reason => reason
                     .setName('reason')
                     .setDescription('Why?')
-                    .setRequired(false)    
+                    .setRequired(false)
                 )
                 .setExecute(async data => {
                     const message = data.message;

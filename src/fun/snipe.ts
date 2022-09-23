@@ -1,10 +1,10 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, Collection, EmbedBuilder, Message, MessageActionRowComponentBuilder, TextBasedChannel, User } from 'discord.js';
-import { Logger } from 'fallout-utility';
 import { MessageCommandBuilder, RecipleClient, SlashCommandBuilder } from 'reciple';
-import BaseModule from '../BaseModule';
-import { InteractionEventType } from '../tools/InteractionEvents';
-import util from '../tools/util';
 import { RawSnipedMessage, SnipedMessage } from './Snipe/SnipedMessage';
+import { InteractionEventType } from '../tools/InteractionEvents';
+import { Logger } from 'fallout-utility';
+import BaseModule from '../BaseModule';
+import util from '../tools/util';
 
 export class SnipeModule extends BaseModule {
     public cache: Collection<string, SnipedMessage> = new Collection();
@@ -60,7 +60,7 @@ export class SnipeModule extends BaseModule {
                     if (!interaction.isButton() || !interaction.inCachedGuild() || !interaction.channel) return;
 
                     const message = interaction.message;
-                    
+
                     await interaction.deferReply();
                     await message.edit({ components: [] });
 
