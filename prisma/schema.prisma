@@ -25,6 +25,8 @@ model Confessions {
   id        String   @id @unique
   authorId  String
   channelId String
+  messageId String
+  title     String?
   content   String
   createdAt DateTime @default(now())
 }
