@@ -38,3 +38,11 @@ model MinecraftIPCache {
   proxy     Boolean
   createdAt DateTime @default(now())
 }
+
+model SavedMemberData {
+  id        String   @id @unique
+  guildId   String
+  nickname  String?
+  roles     String
+  createdAt DateTime @default(now())
+}
