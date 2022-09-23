@@ -167,8 +167,6 @@ export class AntiProxyModule extends BaseModule {
             players.push(player);
         }
 
-        this.logger.debug(`Found ${players.length} players`);
-
         return players;
     }
 
