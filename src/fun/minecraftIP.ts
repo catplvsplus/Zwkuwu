@@ -36,7 +36,7 @@ export class MinecraftIP extends BaseModule {
                     const message = await interaction.fetchReply();
                     if (!message) return;
 
-                    const reply = await this.pingServers(message);
+                    const reply = await this.pingServers(message, true);
                     this.addCollector(reply, interaction.user.id);
                 }),
             new MessageCommandBuilder()
