@@ -39,6 +39,9 @@ export class AntiCrashModule extends BaseModule {
             const user = client.users.cache.get(channelId) ?? await client.users.fetch(channelId).catch(() => null);
             if (user) this.sendTo.push(user);
         }
+
+        client.commands.messageCommands.forEach(m => !m.halt ? m.setHalt(data => util.haltCommand(data)) : null);
+        client.commands.slashCommands.forEach(s => !s.halt ? s.setHalt(data => util.haltCommand(data)) : null);
     }
 
     public async reportException(error: unknown): Promise<void> {
@@ -61,3 +64,5 @@ export class AntiCrashModule extends BaseModule {
         })));
     }
 }
+
+export default new AntiCrashModule();
