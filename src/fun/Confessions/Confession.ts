@@ -1,8 +1,8 @@
+import { EmbedBuilder, GuildTextBasedChannel, If, Message, User } from 'discord.js';
 import { Confessions, PrismaClient } from '@prisma/client';
-import { GuildTextBasedChannel, If, Message, TextBasedChannel, User } from 'discord.js';
+import { ConfessionModule } from '../confession';
 import { RecipleClient } from 'reciple';
 import util from '../../tools/util';
-import { ConfessionsModule } from '../confessions';
 
 export interface RawConfession extends Confessions {}
 
@@ -16,10 +16,11 @@ export class Confession<Fetched extends boolean = boolean> implements RawConfess
     private _messageId: string;
     private _title: string|null;
     private _content: string;
+    private _edited: boolean;
     private _createdAt: Date;
     private _id: string;
 
-    public confessionManager: ConfessionsModule;
+    public confessionManager: ConfessionModule;
     public client: RecipleClient<true>;
     public prisma: PrismaClient;
 
@@ -32,10 +33,11 @@ export class Confession<Fetched extends boolean = boolean> implements RawConfess
     get messageId() { return this._messageId; }
     get title() { return this._title; }
     get content() { return this._content; }
+    get edited() { return this._edited; }
     get createdAt() { return this._createdAt; }
     get id() { return this._id; }
 
-    constructor(confessionManager: ConfessionsModule, rawConfession: RawConfession) {
+    constructor(confessionManager: ConfessionModule, rawConfession: RawConfession) {
         this.confessionManager = confessionManager;
         this.client = util.client;
         this.prisma = util.prisma;
@@ -45,6 +47,7 @@ export class Confession<Fetched extends boolean = boolean> implements RawConfess
         this._messageId = rawConfession.messageId;
         this._title = rawConfession.title;
         this._content = rawConfession.content;
+        this._edited = rawConfession.edited;
         this._createdAt = rawConfession.createdAt;
         this._id = rawConfession.id;
     }
@@ -66,6 +69,7 @@ export class Confession<Fetched extends boolean = boolean> implements RawConfess
         this._messageId = data.messageId;
         this._title = data.title;
         this._content = data.content;
+        this._edited = data.edited;
         this._createdAt = data.createdAt;
 
         const author = await this.client.users.fetch(this.authorId).catch(() => undefined);
@@ -100,5 +104,41 @@ export class Confession<Fetched extends boolean = boolean> implements RawConfess
 
         this._deleted = true;
         this.confessionManager.cache.sweep(c => c.deleted);
+    }
+
+    public async edit(data: Partial<Omit<RawConfession, 'id' | 'messageId' | 'channelId' | 'edited'>>): Promise<this> {
+        await this.prisma.confessions.update({
+            data,
+            where: { id: this.id }
+        });
+
+        this._edited = true;
+
+        if (data.createdAt) this._createdAt = data.createdAt;
+        if (data.authorId) {
+            this._authorId = data.authorId;
+
+            const author = await this.client.users.fetch(this.authorId).catch(() => undefined);
+
+            if (author === undefined) throw new Error('Cannot fetch confession message author');
+
+            this._author = author;
+        }
+
+        if (data.title && data.title !== this.title || data.content && data.content !== this.content) {
+            if (data.title) this._title = data.title;
+            if (data.content) this._content = data.content;
+
+            await this.message?.edit({
+                embeds: [
+                    new EmbedBuilder(this.message.embeds[0].toJSON())
+                        .setAuthor({ name: data.title || 'Anonymous' })
+                        .setDescription(data.content || null)
+                        .setFooter({ text: `Edited` })
+                ]
+            })
+        }
+
+        return this;
     }
 }
