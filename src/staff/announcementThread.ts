@@ -1,10 +1,9 @@
+import { ThreadAutoArchiveDuration } from 'discord.js';
 import { cwd, RecipleClient } from 'reciple';
+import createConfig from '../_createConfig';
 import BaseModule from '../BaseModule';
 import yml from 'yaml';
 import path from 'path';
-import createConfig from '../_createConfig';
-import { channel } from 'diagnostics_channel';
-import { ThreadAutoArchiveDuration } from 'discord.js';
 
 export interface AnnouncementThreadModuleConfig {
     announcementChannels: string[];
