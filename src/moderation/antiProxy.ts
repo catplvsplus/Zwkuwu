@@ -36,24 +36,56 @@ export interface AntiProxyModuleConfig {
 
 export class AntiProxyModule extends BaseModule {
     public logger!: Logger;
-    public checkedIPs: Collection<string, CachedIP & { message: Message; }> = new Collection();
+    public checkedIPs: Collection<string, Player & { message: Message; proxy: boolean; }> = new Collection();
     public config: AntiProxyModuleConfig = AntiProxyModule.getConfig();
 
     public async onStart(client: RecipleClient<boolean>): Promise<boolean> {
         this.logger = client.logger.cloneLogger({ loggerName: 'AntiProxyModule' });
 
+        if (!this.config.token && process.env.PROXY_TOKEN) {
+            this.logger.error('No token provided. Please set the PROXY_TOKEN environment variable.');
+            return false;
+        }
+
         return true;
     }
 
-    public async banPlayers(players: Player[], channel: GuildTextBasedChannel) {
+    public onLoad(client: RecipleClient<boolean>): void {
+        client.on('messageCreate', async message => {
+            if (!this.config.consoleBotIds.includes(message.author?.id!) || !this.config.consoleChannelIds.includes(message.channel.id)) return;
+            if (!message.inGuild()) return;
+
+            const players = this.parseMessage(message.content);
+            const proxyBitches = await this.filterSuspiciousPlayers(players, message);
+
+            await this.banPlayers(proxyBitches, message);
+        });
+        client.on('messageUpdate', async message => {
+            if (!this.config.consoleBotIds.includes(message.author?.id!) || !this.config.consoleChannelIds.includes(message.channel.id)) return;
+            if (!message.inGuild()) return;
+
+            const players = this.parseMessage(message.content);
+            const proxyBitches = await this.filterSuspiciousPlayers(players, message);
+
+            await this.banPlayers(proxyBitches, message);
+        });
+    }
+
+    public async banPlayers(players: Player[], message: Message) {
         for (const player of players) {
             this.logger?.warn(`Banned ${player.name} (${player.ip})`);
-            await channel.send(this.config.banIpCommand.replace('$1', player.ip).replace('$2', this.config.banReason)).catch(err => this.logger.err(err));
+            await message.channel.send(this.config.banIpCommand.replace('$1', player.ip).replace('$2', this.config.banReason)).catch(err => this.logger.err(err));
 
-            if (player.name) await channel.send(this.config.banCommand.replace('$1', player.name).replace('$2', this.config.banReason)).catch(err => this.logger.err(err));
+            if (player.name) await message.channel.send(this.config.banCommand.replace('$1', player.name).replace('$2', this.config.banReason)).catch(err => this.logger.err(err));
 
-            for (const message of this.config.afterBanMessages) {
-                await channel.send(AntiProxyModule.messagePlaceholder(message, player)).catch(err => this.logger.err(err));
+            this.checkedIPs.set(player.ip, {
+                ...player,
+                message,
+                proxy: true
+            });
+
+            for (const msg of this.config.afterBanMessages) {
+                await message.channel.send(AntiProxyModule.messagePlaceholder(msg, player)).catch(err => this.logger.err(err));
             }
         }
     }
@@ -94,7 +126,7 @@ export class AntiProxyModule extends BaseModule {
 
     public async fetchIP(ip: string, port?: number): Promise<PartialRawIP|null> {
         const fetch = await axios({
-            url: `https://proxycheck.io/v2/${ip}?key=${process.env.PROXY_TOKEN}&vpn=1`,
+            url: `https://proxycheck.io/v2/${ip}?key=${this.config.token || process.env.PROXY_TOKEN}&vpn=1`,
             method: 'GET',
             responseType: 'json'
         }).then(res => res.data.status === 'ok' ? res.data[ip] as PartialRawIP : null).catch(() => null);
