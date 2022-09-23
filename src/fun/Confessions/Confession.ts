@@ -16,7 +16,6 @@ export class Confession<Fetched extends boolean = boolean> implements RawConfess
     private _messageId: string;
     private _title: string|null;
     private _content: string;
-    private _edited: boolean;
     private _createdAt: Date;
     private _id: string;
 
@@ -33,7 +32,6 @@ export class Confession<Fetched extends boolean = boolean> implements RawConfess
     get messageId() { return this._messageId; }
     get title() { return this._title; }
     get content() { return this._content; }
-    get edited() { return this._edited; }
     get createdAt() { return this._createdAt; }
     get id() { return this._id; }
 
@@ -47,7 +45,6 @@ export class Confession<Fetched extends boolean = boolean> implements RawConfess
         this._messageId = rawConfession.messageId;
         this._title = rawConfession.title;
         this._content = rawConfession.content;
-        this._edited = rawConfession.edited;
         this._createdAt = rawConfession.createdAt;
         this._id = rawConfession.id;
     }
@@ -69,7 +66,6 @@ export class Confession<Fetched extends boolean = boolean> implements RawConfess
         this._messageId = data.messageId;
         this._title = data.title;
         this._content = data.content;
-        this._edited = data.edited;
         this._createdAt = data.createdAt;
 
         const author = await this.client.users.fetch(this.authorId).catch(() => undefined);
@@ -102,6 +98,8 @@ export class Confession<Fetched extends boolean = boolean> implements RawConfess
             }
         });
 
+        await this.message?.delete();
+
         this._deleted = true;
         this.confessionManager.cache.sweep(c => c.deleted);
     }
@@ -111,8 +109,6 @@ export class Confession<Fetched extends boolean = boolean> implements RawConfess
             data,
             where: { id: this.id }
         });
-
-        this._edited = true;
 
         if (data.createdAt) this._createdAt = data.createdAt;
         if (data.authorId) {

@@ -28,7 +28,6 @@ model Confessions {
   messageId String   @unique
   title     String?
   content   String
-  edited    Boolean  @default(false)
   createdAt DateTime @default(now())
 }
 

@@ -49,10 +49,10 @@ export class ConfessionModule extends BaseModule {
             },
             {
                 type: InteractionEventType.Button,
-                customId: id => id.startsWith('create-confession'),
+                customId: 'create-confession',
                 handle: async interaction => {
                     if (!interaction.inCachedGuild() || !interaction.isButton()) return;
-                    await interaction.showModal(this.confessionModal(interaction.memberPermissions?.has(this.config.titleAccessRequiredPermissions), interaction.customId.split('-').pop()));
+                    await interaction.showModal(this.confessionModal(interaction.memberPermissions?.has(this.config.titleAccessRequiredPermissions)));
                 }
             },
             {
@@ -69,45 +69,21 @@ export class ConfessionModule extends BaseModule {
                         return;
                     }
 
-                    if (confession.authorId !== interaction.user.id || interaction.memberPermissions.has(this.config.titleAccessRequiredPermissions)) {
+                    if (confession.author.id !== interaction.user.id || !interaction.memberPermissions.has(this.config.titleAccessRequiredPermissions)) {
                         await interaction.editReply({ embeds: [util.errorEmbed('You don\'t have permissions to delete this confession')] });
                         return;
                     }
 
                     await confession.delete();
-                }
-            },
-            {
-                type: InteractionEventType.ContextMenu,
-                commandName: 'Edit Confession',
-                handle: async interaction => {
-                    if (!interaction.inCachedGuild() || !interaction.isMessageContextMenuCommand()) return;
-
-                    await interaction.deferReply({ ephemeral: true });
-                    const confession = await this.resolveConfession(interaction.targetMessage.id);
-
-                    if (!confession) {
-                        await interaction.editReply({ embeds: [util.errorEmbed('Message is not a confession')] });
-                        return;
-                    }
-
-                    await interaction.showModal(this.confessionModal(interaction.memberPermissions?.has(this.config.titleAccessRequiredPermissions), confession.message.id));
+                    await interaction.editReply({ embeds: [util.smallEmbed('Confession deleted')] });
                 }
             },
             {
                 type: InteractionEventType.ModalSubmit,
-                customId: id => id.startsWith('create-confession'),
+                customId: 'create-confession',
                 handle: async interaction => {
                     if (!interaction.inCachedGuild() || !interaction.isModalSubmit()) return;
                     await this.confessionModalInteraction(interaction);
-                }
-            },
-            {
-                type: InteractionEventType.ModalSubmit,
-                customId: id => id.startsWith('edit-confession-'),
-                handle: async interaction => {
-                    if (!interaction.inCachedGuild() || !interaction.isModalSubmit()) return;
-                    await this.confessionModalInteraction(interaction, interaction.customId.split('-').pop()!)
                 }
             }
         ];
@@ -117,7 +93,7 @@ export class ConfessionModule extends BaseModule {
                 .setName('Delete Confession')
                 .setType(ApplicationCommandType.Message),
             new ContextMenuCommandBuilder()
-                .setName('Edit Confession')
+                .setName('Create Confession')
                 .setType(ApplicationCommandType.Message)
         );
 
@@ -195,46 +171,25 @@ export class ConfessionModule extends BaseModule {
         return confession;
     }
 
-    public async confessionModalInteraction(interaction: ModalSubmitInteraction, editId?: string, channel?: GuildTextBasedChannel): Promise<void> {
+    public async confessionModalInteraction(interaction: ModalSubmitInteraction, channel?: GuildTextBasedChannel): Promise<void> {
         const title = interaction.fields.getTextInputValue('title') || null;
         const content = interaction.fields.getTextInputValue('content');
 
         await interaction.deferReply({ ephemeral: true });
-
-        if (editId) {
-
-            const confession = await this.resolveConfession(editId);
-
-            if (!confession) {
-                await interaction.editReply({ embeds: [util.errorEmbed(`Cannot find confession id`)] });
-                return;
-            }
-
-            if (confession.author.id !== interaction.user.id || interaction.memberPermissions?.has(this.config.titleAccessRequiredPermissions)) {
-                await interaction.editReply({ embeds: [util.errorEmbed(`You don't have permission to edit this confession`)] });
-                return;
-            }
-
-            await confession.edit({
-                title,
-                content
-            });
-
-            return;
-        }
-
         await this.confess({
             author: interaction.user,
             channel: channel ?? this.confessionChannel,
             title: title,
             content
         });
+
+        await interaction.editReply({ embeds: [util.smallEmbed('Confession added')] });
     }
 
-    public confessionModal(allowTitle: boolean = false, id?: string, values?: Pick<ConfessionOptions, 'title' | 'content'>): ModalBuilder {
+    public confessionModal(allowTitle: boolean = false): ModalBuilder {
         return new ModalBuilder()
-            .setCustomId((values ? `edit` : `create`) + `-confession${id ? '-' + id : ''}`)
-            .setTitle((values ? 'Edit' : 'Create') + ' Confession')
+            .setCustomId(`create-confession`)
+            .setTitle('Create Confession')
             .setComponents(
                 ...(allowTitle
                     ? [
@@ -245,8 +200,8 @@ export class ConfessionModule extends BaseModule {
                                 .setLabel(`Title`)
                                 .setPlaceholder(`Anonymouse`)
                                 .setMaxLength(100)
+                                .setRequired(false)
                                 .setStyle(TextInputStyle.Short)
-                                .setValue(values?.title ?? '')
                         )
                         ]
                     : []
@@ -259,7 +214,6 @@ export class ConfessionModule extends BaseModule {
                             .setPlaceholder(`I'm a pretty boss ass bitch`)
                             .setMaxLength(3000)
                             .setStyle(TextInputStyle.Paragraph)
-                            .setValue(values ? values.content || ' ' : ' ')
                     )
             )
     }
