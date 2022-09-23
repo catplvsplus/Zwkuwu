@@ -42,7 +42,7 @@ export class AntiProxyModule extends BaseModule {
     public async onStart(client: RecipleClient<boolean>): Promise<boolean> {
         this.logger = client.logger.cloneLogger({ loggerName: 'AntiProxyModule' });
 
-        if (!this.config.token && process.env.PROXY_TOKEN) {
+        if (!this.config.token && !process.env.PROXY_TOKEN) {
             this.logger.error('No token provided. Please set the PROXY_TOKEN environment variable.');
             return false;
         }
@@ -166,6 +166,8 @@ export class AntiProxyModule extends BaseModule {
             this.logger.debug(`Player ${player.name}[${player.ip}] joined the game`);
             players.push(player);
         }
+
+        this.logger.debug(`Found ${players.length} players`);
 
         return players;
     }
