@@ -97,7 +97,7 @@ export class WelcomeModule extends BaseModule {
             data: {
                 id: member.id,
                 guildId: member.guild.id,
-                roles: JSON.stringify(member.roles.cache.toJSON()),
+                roles: JSON.stringify(member.roles.cache.map(r => r.id)),
                 nickname: member.nickname
             }
         });
