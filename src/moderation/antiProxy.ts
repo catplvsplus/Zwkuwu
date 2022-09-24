@@ -98,9 +98,10 @@ export class AntiProxyModule extends BaseModule {
 
             const isProxy = await this.isProxy(player.ip, player.port);
 
-            if (isProxy) filteredPlayers.push(player);
-
-            this.logger.warn(`${player.name}[${player.ip}] is marked as suspicious connection`);
+            if (isProxy) {
+                filteredPlayers.push(player);
+                this.logger.warn(`${player.name}[${player.ip}] is marked as suspicious connection`);
+            }
         }
 
         return filteredPlayers;
