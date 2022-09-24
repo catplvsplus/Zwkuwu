@@ -9,7 +9,7 @@ import yml from 'yaml';
 import createConfig from '../_createConfig';
 import path from 'path';
 import axios from 'axios';
-import { readFileSync } from 'fs';
+import { mkdirSync, readFileSync } from 'fs';
 
 export interface PlayerSkinModuleConfig {
     port: string;
@@ -42,7 +42,7 @@ export class PlayerSkinModule extends BaseModule {
                 ? res.send(this.fallbackSkin)
                 : res.status(404).send({ error: 'No skin data found' });
 
-            return this.sendSkin(res, player.hasSkin() ? { buffer: await player.getHead(), file: player.file } : undefined);
+            return this.sendSkin(res, player.hasSkin() ? { buffer: await player.getHead(scale), file: player.file } : undefined);
         });
 
         this.server.get(path.join('/', this.config.routes.skin, ':player') as `${string}:player`, async (req, res) => {
@@ -112,6 +112,8 @@ export class PlayerSkinModule extends BaseModule {
     }
 
     public static getConfig(): PlayerSkinModuleConfig {
+        mkdirSync(path.join(cwd, 'config/playerSkinData/skins'), { recursive: true });
+
         return yml.parse(createConfig(path.join(cwd, 'config/playerSkinData/config.yml'), <PlayerSkinModuleConfig>({
             port: '',
             fallbackSkin: 'https://s.namemc.com/i/59e3a240bd150317.png',
