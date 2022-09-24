@@ -33,7 +33,7 @@ export class PlayerSkinModule extends BaseModule {
         await this.readFallbackSkin();
 
         this.server.listen(this.config.port || process.env.PORT, () => this.logger.warn('Server is listening on port ' + (this.config.port || process.env.PORT)));
-        this.server.get(path.join('/', this.config.routes.head, ':player/:scale') as `${string}:player/:scale`, async (req, res) => {
+        this.server.get(path.join('/', this.config.routes.head, ':player/:scale?') as `${string}:player/:scale?`, async (req, res) => {
             const player: SkinData|undefined = await this.resolveSkinData(req.params.player);
             const scale = !isNaN(Number(req.params.scale)) ? Number(req.params.scale) : 1;
             if (scale > 300) return res.status(403).send({ error: 'Maximum scale exceeded' });
@@ -105,7 +105,7 @@ export class PlayerSkinModule extends BaseModule {
         const fileHttp = await axios({ url: this.config.fallbackSkin, method: 'GET', responseType: 'arraybuffer' }).catch(() => null);
         if (!fileHttp) return null;
 
-        const buffer = Buffer.from(fileHttp.data, 'binary');
+        const buffer = Buffer.from(fileHttp.data);
         this.fallbackSkin = buffer;
 
         return this.fallbackSkin;
