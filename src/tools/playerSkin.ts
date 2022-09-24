@@ -43,7 +43,7 @@ export class PlayerSkinModule extends BaseModule {
             if (scale > 300) return res.status(403).send({ error: 'Maximum scale exceeded' });
             if (!player) return this.sendSkin(res, { scale });
 
-            return this.sendSkin(res, { scale }, player.hasSkin() ? { buffer: await player.getHead(scale), file: player.file } : undefined);
+            return player.hasSkin() ? this.sendSkin(res, undefined, { buffer: await player.getHead(scale), file: player.file }) : this.sendSkin(res, { scale });
         });
 
         this.server.get(path.join('/', this.config.routes.skin, ':player') as `${string}:player`, async (req, res) => {
