@@ -1,6 +1,6 @@
-import { Collection } from 'discord.js';
+import { Collection, GuildTextBasedChannel } from 'discord.js';
 import { Logger } from 'fallout-utility';
-import { cwd, RecipleClient } from 'reciple';
+import { cwd, RecipleClient, SlashCommandBuilder } from 'reciple';
 import BaseModule from '../BaseModule';
 import { RawSkinData, SkinData } from './PlayerSkin/SkinData';
 import express, { Express, Response } from 'express';
@@ -14,6 +14,8 @@ import { mkdirSync, readFileSync } from 'fs';
 export interface PlayerSkinModuleConfig {
     port: string;
     fallbackSkin: string;
+    gameChatsChannel: string;
+    messageApplicationId: string;
     routes: {
         head: string;
         skin: string;
@@ -23,6 +25,7 @@ export interface PlayerSkinModuleConfig {
 export class PlayerSkinModule extends BaseModule {
     public config: PlayerSkinModuleConfig = PlayerSkinModule.getConfig();
     public cache: Collection<string, SkinData> = new Collection();
+    public gameChatsChannel!: GuildTextBasedChannel;
     public fallbackSkin?: Buffer;
     public logger!: Logger;
     public server: Express = express();
@@ -51,6 +54,105 @@ export class PlayerSkinModule extends BaseModule {
         });
 
         return true;
+    }
+
+    public async onLoad(client: RecipleClient<boolean>): Promise<void> {
+        const gameChatsChannel = client.channels.cache.get(this.config.gameChatsChannel) ?? await client.channels.fetch(this.config.gameChatsChannel).catch(() => null);
+        if (!gameChatsChannel || gameChatsChannel.isDMBased() || !gameChatsChannel.isTextBased()) throw new Error('Invalid game chats channel');
+
+        this.gameChatsChannel = gameChatsChannel;
+
+        this.commands = [
+            new SlashCommandBuilder()
+                .setName('skin')
+                .setDescription('Modify minecraft player skin settings')
+                .addSubcommand(remove => remove
+                    .setName('remove')
+                    .setDescription('Remove player skkin')
+                    .addStringOption(player => player
+                        .setName('player')
+                        .setDescription('Player name')
+                        .setRequired(true)
+                    )
+                )
+                .addSubcommand(set => set
+                    .setName('set')
+                    .setDescription('Set player skin')
+                    .addStringOption(player => player
+                        .setName('player')
+                        .setDescription('Player name')
+                        .setRequired(true)
+                    )
+                    .addAttachmentOption(skin => skin
+                        .setName('skin')
+                        .setDescription('Skin file')
+                        .setRequired(true)    
+                    )
+                )
+                .setExecute(async data => {
+                    const interacttion = data.interaction;
+                    const command = interacttion.options.getSubcommand(true);
+                    const playerName = interacttion.options.getString('player', true);
+                    const key = crypto.randomUUID().split('-').shift();
+
+                    if (!interacttion.inCachedGuild()) return;
+
+                    await interacttion.reply({
+                        embeds: [
+                            util.smallEmbed(`Send \`${key}\` in minecraft to continue`)
+                        ],
+                        ephemeral: true
+                    });
+
+                    let player = await this.resolveSkinData(playerName);
+                    const confirmed = await this.gameChatsChannel.awaitMessages({
+                        max: 1,
+                        filter: message => message.applicationId === this.config.messageApplicationId && message.author.username.toLowerCase() === playerName.toLowerCase() && message.content === key,
+                        time: 20000
+                    });
+
+                    if (!confirmed.size) {
+                        await interacttion.editReply({ embeds: [util.smallEmbed('Cannot verify your request')] });
+                        return;
+                    }
+
+                    await interacttion.editReply({ embeds: [util.smallEmbed('Loading...')] });
+
+                    switch (command) {
+                        case 'remove':
+                            if (!player) {
+                                await interacttion.editReply({ embeds: [util.smallEmbed('No player data found')] });
+                                break;
+                            }
+
+                            await player.delete();
+                            await interacttion.editReply({ embeds: [util.smallEmbed('Deleted player data')] });
+                            break;
+                        case 'set':
+                            const attachment = interacttion.options.getAttachment('skin', true);
+
+                            if (!player) {
+                                player = await this.createSkinData({
+                                    player: playerName,
+                                    file: null,
+                                    createdAt: new Date(),
+                                    lastUpdatedAt: new Date()
+                                });
+                            }
+
+                            if (!player) {
+                                await interacttion.editReply({ embeds: [util.smallEmbed('No player data found')] });
+                                break;
+                            }
+
+                            await player.setSkin(attachment);
+                            await interacttion.editReply({ embeds: [util.smallEmbed('Skin uploaded')] });
+                            break;
+                    }
+
+                    await Promise.all(confirmed.map(m => m.delete().catch(() => {})));
+                })
+        ];
     }
 
     public async sendSkin(res: Response, head?: { scale: number; }, skin?: { buffer: Buffer; file: string; }): Promise<void> {
