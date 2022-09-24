@@ -59,7 +59,7 @@ export class PlayerSkinModule extends BaseModule {
                 res.contentType('image/png');
                 res.set('Content-Disposition', `inline; filename="steve.png"`);
                 res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
-                res.send(head ? SkinData.getHead(this.fallbackSkin) : this.fallbackSkin);
+                res.send(head ? await SkinData.getHead(this.fallbackSkin) : this.fallbackSkin);
                 return;
             }
 
@@ -70,7 +70,7 @@ export class PlayerSkinModule extends BaseModule {
         res.contentType('image/png');
         res.set('Content-Disposition', `inline; filename="${skin.file}.png"`);
         res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
-        res.send(head ? SkinData.getHead(skin.buffer) : skin.buffer);
+        res.send(head ? await SkinData.getHead(skin.buffer) : skin.buffer);
     }
 
     public async resolveSkinData(player: string): Promise<SkinData|undefined> {
