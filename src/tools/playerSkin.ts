@@ -37,9 +37,9 @@ export class PlayerSkinModule extends BaseModule {
             const player: SkinData|undefined = await this.resolveSkinData(req.params.player);
             const scale = !isNaN(Number(req.params.scale)) ? Number(req.params.scale) : 1;
             if (scale > 300) return res.status(403).send({ error: 'Maximum scale exceeded' });
-            if (!player) return this.sendSkin(res, true);
+            if (!player) return this.sendSkin(res, { scale });
 
-            return this.sendSkin(res, true, player.hasSkin() ? { buffer: await player.getHead(scale), file: player.file } : undefined);
+            return this.sendSkin(res, { scale }, player.hasSkin() ? { buffer: await player.getHead(scale), file: player.file } : undefined);
         });
 
         this.server.get(path.join('/', this.config.routes.skin, ':player') as `${string}:player`, async (req, res) => {
@@ -47,19 +47,19 @@ export class PlayerSkinModule extends BaseModule {
 
             if (!player) return this.sendSkin(res);
 
-            return this.sendSkin(res, false, player.hasSkin() ? { buffer: readFileSync(player.filePath), file: player.file } : undefined);
+            return this.sendSkin(res, undefined, player.hasSkin() ? { buffer: readFileSync(player.filePath), file: player.file } : undefined);
         });
 
         return true;
     }
 
-    public async sendSkin(res: Response, head?: boolean, skin?: { buffer: Buffer; file: string; }): Promise<void> {
+    public async sendSkin(res: Response, head?: { scale: number; }, skin?: { buffer: Buffer; file: string; }): Promise<void> {
         if (!skin) {
             if (this.fallbackSkin) {
                 res.contentType('image/png');
                 res.set('Content-Disposition', `inline; filename="steve.png"`);
                 res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
-                res.send(head ? await SkinData.getHead(this.fallbackSkin) : this.fallbackSkin);
+                res.send(head ? await SkinData.getHead(this.fallbackSkin, head.scale) : this.fallbackSkin);
                 return;
             }
 
@@ -70,7 +70,7 @@ export class PlayerSkinModule extends BaseModule {
         res.contentType('image/png');
         res.set('Content-Disposition', `inline; filename="${skin.file}.png"`);
         res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
-        res.send(head ? await SkinData.getHead(skin.buffer) : skin.buffer);
+        res.send(head ? await SkinData.getHead(skin.buffer, head.scale) : skin.buffer);
     }
 
     public async resolveSkinData(player: string): Promise<SkinData|undefined> {
