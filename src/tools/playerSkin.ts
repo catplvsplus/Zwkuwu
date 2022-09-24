@@ -100,7 +100,7 @@ export class PlayerSkinModule extends BaseModule {
 
                     await interacttion.reply({
                         embeds: [
-                            util.smallEmbed(`Send \`${key}\` in minecraft to continue`)
+                            util.smallEmbed(`Send \`${key}\` in minecraft to continue`, true)
                         ],
                         ephemeral: true
                     });
