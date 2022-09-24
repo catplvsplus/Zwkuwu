@@ -46,3 +46,10 @@ model SavedMemberData {
   roles     String
   createdAt DateTime @default(now())
 }
+
+model PlayerSkinData {
+  player String @id @unique
+  file String
+  lastUpdatedAt DateTime @default(now())
+  createdAt DateTime @default(now())
+}
