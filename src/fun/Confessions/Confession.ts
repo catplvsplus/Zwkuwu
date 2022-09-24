@@ -19,9 +19,9 @@ export class Confession<Fetched extends boolean = boolean> implements RawConfess
     private _createdAt: Date;
     private _id: string;
 
-    public confessionManager: ConfessionModule;
-    public client: RecipleClient<true>;
-    public prisma: PrismaClient;
+    readonly confessionManager: ConfessionModule;
+    readonly client: RecipleClient<true>;
+    readonly prisma: PrismaClient;
 
     get author(): If<Fetched, User> { return this._author as If<Fetched, User>; }
     get channel(): If<Fetched, GuildTextBasedChannel> { return this._channel as If<Fetched, GuildTextBasedChannel>; }
