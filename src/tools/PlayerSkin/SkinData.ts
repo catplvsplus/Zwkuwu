@@ -2,7 +2,7 @@ import { PlayerSkinData, PrismaClient } from '@prisma/client';
 import { PlayerSkinModule } from '../playerSkin';
 import { cwd, RecipleClient } from 'reciple';
 import util from '../util';
-import { createWriteStream, existsSync, rmSync, writeFileSync } from 'fs';
+import { createWriteStream, existsSync, rmSync } from 'fs';
 import path from 'path';
 import { Attachment, If } from 'discord.js';
 import axios from 'axios';
