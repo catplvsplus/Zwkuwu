@@ -172,7 +172,7 @@ export class ConfessionModule extends BaseModule {
     }
 
     public async confessionModalInteraction(interaction: ModalSubmitInteraction, channel?: GuildTextBasedChannel): Promise<void> {
-        const title = interaction.fields.getTextInputValue('title') || null;
+        const title = interaction.memberPermissions?.has(this.config.titleAccessRequiredPermissions) ? (interaction.fields.getTextInputValue('title') || null) : null;
         const content = interaction.fields.getTextInputValue('content');
 
         await interaction.deferReply({ ephemeral: true });
