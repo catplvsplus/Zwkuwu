@@ -1,9 +1,9 @@
 import { AttachmentBuilder, Collection, GuildTextBasedChannel } from 'discord.js';
-import { Logger } from 'fallout-utility';
+import { Logger, replaceAll } from 'fallout-utility';
 import { cwd, RecipleClient, SlashCommandBuilder } from 'reciple';
 import BaseModule from '../BaseModule';
 import { RawSkinData, SkinData } from './PlayerSkin/SkinData';
-import express, { Express, Response } from 'express';
+import express, { Express, Request, Response } from 'express';
 import util from './util';
 import yml from 'yaml';
 import createConfig from '../_createConfig';
@@ -27,31 +27,28 @@ export class PlayerSkinModule extends BaseModule {
     public config: PlayerSkinModuleConfig = PlayerSkinModule.getConfig();
     public cache: Collection<string, SkinData> = new Collection();
     public gameChatsChannel!: GuildTextBasedChannel;
-    public fallbackSkin?: Buffer;
     public logger!: Logger;
     public server: Express = express();
 
     public async onStart(client: RecipleClient<boolean>): Promise<boolean> {
         this.logger = client.logger.cloneLogger({ loggerName: 'PlayerSkinModule' });
 
-        await this.readFallbackSkin();
-
         this.server.listen(this.config.port || process.env.PORT, () => this.logger.warn('Server is listening on port ' + (this.config.port || process.env.PORT)));
         this.server.get(path.join('/', this.config.routes.head, ':player/:scale?') as `${string}:player/:scale?`, async (req, res) => {
             const player: SkinData|undefined = await this.resolveSkinData(req.params.player);
             const scale = !isNaN(Number(req.params.scale)) ? Number(req.params.scale) : 1;
             if (scale > 300) return res.status(403).send({ error: 'Maximum scale exceeded' });
-            if (!player) return this.sendSkin(res, { scale });
+            if (!player) return this.sendSkin(req, res, { scale });
 
-            return player.hasSkin() ? this.sendSkin(res, undefined, { buffer: await player.getHead(scale), file: player.file }) : this.sendSkin(res, { scale });
+            return player.hasSkin() ? this.sendSkin(req, res, undefined, { buffer: await player.getHead(scale), file: player.file }) : this.sendSkin(req, res, { scale });
         });
 
         this.server.get(path.join('/', this.config.routes.skin, ':player') as `${string}:player`, async (req, res) => {
             const player: SkinData|undefined = await this.resolveSkinData(req.params.player);
 
-            if (!player) return this.sendSkin(res);
+            if (!player) return this.sendSkin(req, res);
 
-            return this.sendSkin(res, undefined, player.hasSkin() ? { buffer: await player.getSkinBuffer(), file: player.file } : undefined);
+            return this.sendSkin(req, res, undefined, player.hasSkin() ? { buffer: await player.getSkinBuffer(), file: player.file } : undefined);
         });
 
         return true;
@@ -116,40 +113,57 @@ export class PlayerSkinModule extends BaseModule {
                     const interaction = data.interaction;
                     const command = interaction.options.getSubcommand(true);
                     const playerName = interaction.options.getString('player', true);
-                    
+
                     await interaction.deferReply();
                     let player = await this.resolveSkinData(playerName);
 
-                    if (command !== 'set' && !player) {
-                        await interaction.editReply({ embeds: [util.errorEmbed('No player data found')] });
-                        return;
-                    }
-
                     switch (command) {
                         case 'avatar':
-                            const avatar = new AttachmentBuilder(await player!.getHead(5), { name: player?.file || undefined });
+                            const avatarData = await player?.getHead(5) || await (async () => {
+                                const skinData = await this.readFallbackSkin(playerName);
+                                if (!skinData) return null;
 
+                                return SkinData.getHead(skinData, 5);
+                            })();
+
+                            if (!avatarData) {
+                                await interaction.editReply({ embeds: [util.errorEmbed('Cannot fetch skin data')] });
+                                return;
+                            }
+
+                            const avatar = new AttachmentBuilder(avatarData, { name: player?.file || 'avatar.png' });
                             await interaction.editReply({
                                 embeds: [
-                                    util.smallEmbed(`${player?.player} ┃ Avatar`)
-                                    .setImage('attachment://' + player?.file)
+                                    util.smallEmbed(`${player?.player || playerName} ┃ Avatar`)
+                                    .setImage('attachment://' + (player?.file || 'avatar.png'))
                                 ],
                                 files: [avatar]
                             });
 
                             return;
                         case 'skin':
-                            const skin = new AttachmentBuilder(await player!.getSkinBuffer(), { name: player?.file || undefined });
+                            const skinData = await player?.getSkinBuffer() || await this.readFallbackSkin(playerName);
 
+                            if (!skinData) {
+                                await interaction.editReply({ embeds: [util.errorEmbed('Cannot fetch skin data')] });
+                                return;
+                            }
+
+                            const skin = new AttachmentBuilder(skinData, { name: player?.file || 'skin.png' });
                             await interaction.editReply({
                                 embeds: [
-                                    util.smallEmbed(`${player?.player} ┃ Skin`)
-                                    .setImage('attachment://' + player?.file)
+                                    util.smallEmbed(`${player?.player || playerName} ┃ Skin`)
+                                    .setImage('attachment://' + (player?.file || 'skin.png'))
                                 ],
                                 files: [skin]
                             });
 
                             return;
+                    }
+
+                    if (command !== 'set' && !player) {
+                        await interaction.editReply({ embeds: [util.errorEmbed('No player data found')] });
+                        return;
                     }
 
                     const key = crypto.randomUUID().split('-').shift();
@@ -210,13 +224,15 @@ export class PlayerSkinModule extends BaseModule {
         ];
     }
 
-    public async sendSkin(res: Response, head?: { scale: number; }, skin?: { buffer: Buffer; file: string; }): Promise<void> {
+    public async sendSkin(req: Request, res: Response, head?: { scale: number; }, skin?: { buffer: Buffer; file: string; }): Promise<void> {
         if (!skin) {
-            if (this.fallbackSkin) {
+            const fallbackSkin = req.params.player ? await this.readFallbackSkin(req.params.player).catch(() => null) : null;
+
+            if (fallbackSkin) {
                 res.contentType('image/png');
                 res.set('Content-Disposition', `inline; filename="steve.png"`);
                 res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
-                res.send(head ? await SkinData.getHead(this.fallbackSkin, head.scale) : this.fallbackSkin);
+                res.send(head ? await SkinData.getHead(fallbackSkin, head.scale) : fallbackSkin);
                 return;
             }
 
@@ -253,16 +269,11 @@ export class PlayerSkinModule extends BaseModule {
         return new SkinData(this, await util.prisma.playerSkinData.create({ data }));
     }
 
-    public async readFallbackSkin(useCache: boolean = true): Promise<Buffer|null> {
-        if (this.fallbackSkin && useCache) return this.fallbackSkin;
-
-        const fileHttp = await axios({ url: this.config.fallbackSkin, method: 'GET', responseType: 'arraybuffer' }).catch(() => null);
+    public async readFallbackSkin(player: string): Promise<Buffer|null> {
+        const fileHttp = await axios({ url: replaceAll(this.config.fallbackSkin, '$1', player), method: 'GET', responseType: 'arraybuffer' }).catch(() => null);
         if (!fileHttp) return null;
 
-        const buffer = Buffer.from(fileHttp.data);
-        this.fallbackSkin = buffer;
-
-        return this.fallbackSkin;
+        return Buffer.from(fileHttp.data);
     }
 
     public static getConfig(): PlayerSkinModuleConfig {
@@ -270,7 +281,7 @@ export class PlayerSkinModule extends BaseModule {
 
         return yml.parse(createConfig(path.join(cwd, 'config/playerSkinData/config.yml'), <PlayerSkinModuleConfig>({
             port: '',
-            fallbackSkin: 'https://s.namemc.com/i/59e3a240bd150317.png',
+            fallbackSkin: 'https://crafthead.net/skin/$1',
             gameChatsChannel: '000000000000000000',
             messageApplicationId: '000000000000000000',
             routes: {
