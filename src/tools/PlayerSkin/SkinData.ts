@@ -2,7 +2,7 @@ import { PlayerSkinData, PrismaClient } from '@prisma/client';
 import { PlayerSkinModule } from '../playerSkin';
 import { cwd, RecipleClient } from 'reciple';
 import util from '../util';
-import { createWriteStream, existsSync, rmSync } from 'fs';
+import { createWriteStream, existsSync, readFileSync, rmSync } from 'fs';
 import path from 'path';
 import { Attachment, If } from 'discord.js';
 import axios from 'axios';
@@ -62,6 +62,12 @@ export class SkinData<HasSkin extends boolean = boolean> implements RawSkinData 
 
     public hasSkin(): this is SkinData<true> {
         return this.file !== null;
+    }
+
+    public async getSkinBuffer(): Promise<Buffer> {
+        if (!this.hasSkin()) throw new Error('No skin file specified');
+
+        return readFileSync(this.filePath);
     }
 
     public async setSkin(fileData: Attachment): Promise<void> {

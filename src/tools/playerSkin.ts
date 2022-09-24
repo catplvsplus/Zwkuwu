@@ -1,4 +1,4 @@
-import { Collection, GuildTextBasedChannel } from 'discord.js';
+import { AttachmentBuilder, Collection, GuildTextBasedChannel } from 'discord.js';
 import { Logger } from 'fallout-utility';
 import { cwd, RecipleClient, SlashCommandBuilder } from 'reciple';
 import BaseModule from '../BaseModule';
@@ -9,7 +9,7 @@ import yml from 'yaml';
 import createConfig from '../_createConfig';
 import path from 'path';
 import axios from 'axios';
-import { mkdirSync, readFileSync } from 'fs';
+import { mkdirSync } from 'fs';
 import crypto from 'crypto';
 
 export interface PlayerSkinModuleConfig {
@@ -51,7 +51,7 @@ export class PlayerSkinModule extends BaseModule {
 
             if (!player) return this.sendSkin(res);
 
-            return this.sendSkin(res, undefined, player.hasSkin() ? { buffer: readFileSync(player.filePath), file: player.file } : undefined);
+            return this.sendSkin(res, undefined, player.hasSkin() ? { buffer: await player.getSkinBuffer(), file: player.file } : undefined);
         });
 
         return true;
@@ -90,22 +90,75 @@ export class PlayerSkinModule extends BaseModule {
                         .setRequired(true)    
                     )
                 )
+                .addSubcommandGroup(view => view
+                    .setName('view')
+                    .setDescription('View skin')
+                    .addSubcommand(avatar => avatar
+                        .setName('avatar')
+                        .setDescription('View skin avatar')
+                        .addStringOption(player => player
+                            .setName('player')
+                            .setDescription('Player name')
+                            .setRequired(true)
+                        )
+                    )
+                    .addSubcommand(skin => skin
+                        .setName('skin')
+                        .setDescription('View skin image')
+                        .addStringOption(player => player
+                            .setName('player')
+                            .setDescription('Player name')
+                            .setRequired(true)
+                        )
+                    )
+                )
                 .setExecute(async data => {
-                    const interacttion = data.interaction;
-                    const command = interacttion.options.getSubcommand(true);
-                    const playerName = interacttion.options.getString('player', true);
+                    const interaction = data.interaction;
+                    const command = interaction.options.getSubcommand(true);
+                    const playerName = interaction.options.getString('player', true);
+                    
+                    await interaction.deferReply();
+                    let player = await this.resolveSkinData(playerName);
+
+                    if (command !== 'set' && !player) {
+                        await interaction.editReply({ embeds: [util.errorEmbed('No player data found')] });
+                        return;
+                    }
+
+                    switch (command) {
+                        case 'avatar':
+                            const avatar = new AttachmentBuilder(await player!.getHead(5), { name: player?.filePath || undefined });
+
+                            await interaction.editReply({
+                                embeds: [
+                                    util.smallEmbed(`${player?.player} ┃ Avatar`)
+                                    .setImage('attachment://'+ player!.file)
+                                ],
+                                files: [avatar]
+                            });
+
+                            return;
+                        case 'skin':
+                            const skin = new AttachmentBuilder(await player!.getSkinBuffer(), { name: player?.filePath || undefined });
+
+                            await interaction.editReply({
+                                embeds: [
+                                    util.smallEmbed(`${player?.player} ┃ Skin`)
+                                    .setImage('attachment://'+ player!.file)
+                                ],
+                                files: [skin]
+                            });
+
+                            return;
+                    }
+
                     const key = crypto.randomUUID().split('-').shift();
-
-                    if (!interacttion.inCachedGuild()) return;
-
-                    await interacttion.reply({
+                    await interaction.editReply({
                         embeds: [
                             util.smallEmbed(`Send \`${key}\` in minecraft to continue`, true)
-                        ],
-                        ephemeral: true
+                        ]
                     });
 
-                    let player = await this.resolveSkinData(playerName);
                     const confirmed = await this.gameChatsChannel.awaitMessages({
                         max: 1,
                         filter: message => (message.applicationId === this.config.messageApplicationId && message.author.username.toLowerCase() === playerName.toLowerCase() || message.author.id === this.config.messageApplicationId) && message.content === key,
@@ -113,27 +166,22 @@ export class PlayerSkinModule extends BaseModule {
                     });
 
                     if (!confirmed.size) {
-                        await interacttion.editReply({ embeds: [util.smallEmbed('Cannot verify your request')] });
+                        await interaction.editReply({ embeds: [util.errorEmbed('Cannot verify your request')] });
                         return;
                     }
 
-                    await interacttion.editReply({ embeds: [util.smallEmbed('Loading...')] });
+                    await interaction.editReply({ embeds: [util.smallEmbed('Loading...')] });
                     const keyMessage = confirmed.first()!;
 
                     await keyMessage.reply('Key Verified');
 
                     switch (command) {
                         case 'remove':
-                            if (!player) {
-                                await interacttion.editReply({ embeds: [util.smallEmbed('No player data found')] });
-                                break;
-                            }
-
-                            await player.delete();
-                            await interacttion.editReply({ embeds: [util.smallEmbed('Deleted player data')] });
+                            await player?.delete();
+                            await interaction.editReply({ embeds: [util.errorEmbed('Deleted player data')] });
                             break;
                         case 'set':
-                            const attachment = interacttion.options.getAttachment('skin', true);
+                            const attachment = interaction.options.getAttachment('skin', true);
 
                             if (!player) {
                                 player = await this.createSkinData({
@@ -145,12 +193,17 @@ export class PlayerSkinModule extends BaseModule {
                             }
 
                             if (!player) {
-                                await interacttion.editReply({ embeds: [util.smallEmbed('No player data found')] });
+                                await interaction.editReply({ embeds: [util.errorEmbed('No player data found')] });
                                 break;
                             }
 
-                            await player.setSkin(attachment);
-                            await interacttion.editReply({ embeds: [util.smallEmbed('Skin uploaded')] });
+                            if ((attachment.height !== 64 && attachment.height !== 32) || attachment.width !== 64) {
+                                await interaction.editReply({ embeds: [util.errorEmbed('Invalid Minecraft skin size')] });
+                                break;
+                            }
+
+                            const err = await player.setSkin(attachment).catch(() => true);
+                            await interaction.editReply({ embeds: [err ? util.errorEmbed('An error occured') : util.smallEmbed('Skin uploaded')] });
                             break;
                     }
                 })
