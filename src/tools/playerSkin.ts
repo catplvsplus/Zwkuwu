@@ -10,6 +10,7 @@ import createConfig from '../_createConfig';
 import path from 'path';
 import axios from 'axios';
 import { mkdirSync, readFileSync } from 'fs';
+import crypto from 'crypto';
 
 export interface PlayerSkinModuleConfig {
     port: string;
@@ -107,7 +108,7 @@ export class PlayerSkinModule extends BaseModule {
                     let player = await this.resolveSkinData(playerName);
                     const confirmed = await this.gameChatsChannel.awaitMessages({
                         max: 1,
-                        filter: message => message.applicationId === this.config.messageApplicationId && message.author.username.toLowerCase() === playerName.toLowerCase() && message.content === key,
+                        filter: message => (message.applicationId === this.config.messageApplicationId && message.author.username.toLowerCase() === playerName.toLowerCase() || message.author.id === this.config.messageApplicationId) && message.content === key,
                         time: 20000
                     });
 
@@ -117,6 +118,9 @@ export class PlayerSkinModule extends BaseModule {
                     }
 
                     await interacttion.editReply({ embeds: [util.smallEmbed('Loading...')] });
+                    const keyMessage = confirmed.first()!;
+
+                    await keyMessage.reply('Key Verified');
 
                     switch (command) {
                         case 'remove':
@@ -149,8 +153,6 @@ export class PlayerSkinModule extends BaseModule {
                             await interacttion.editReply({ embeds: [util.smallEmbed('Skin uploaded')] });
                             break;
                     }
-
-                    await Promise.all(confirmed.map(m => m.delete().catch(() => {})));
                 })
         ];
     }
@@ -216,6 +218,8 @@ export class PlayerSkinModule extends BaseModule {
         return yml.parse(createConfig(path.join(cwd, 'config/playerSkinData/config.yml'), <PlayerSkinModuleConfig>({
             port: '',
             fallbackSkin: 'https://s.namemc.com/i/59e3a240bd150317.png',
+            gameChatsChannel: '000000000000000000',
+            messageApplicationId: '000000000000000000',
             routes: {
                 head: '/head',
                 skin: '/skin'
