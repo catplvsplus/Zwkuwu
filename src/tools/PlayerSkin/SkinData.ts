@@ -7,6 +7,7 @@ import path from 'path';
 import { Attachment, If } from 'discord.js';
 import axios from 'axios';
 import { pipeline } from 'stream/promises';
+import { createCanvas, loadImage } from 'canvas';
 
 export interface RawSkinData extends PlayerSkinData {}
 
@@ -22,7 +23,7 @@ export class SkinData<HasSkin extends boolean = boolean> implements RawSkinData 
     readonly client: RecipleClient<true>;
 
     get player() { return this._player; }
-    get file() { return this._file; }
+    get file(): If<HasSkin, string> { return this._file as If<HasSkin, string>; }
     get lastUpdatedAt() { return this._lastUpdatedAt; }
     get createdAt() { return this._createdAt; }
     get deleted() { return this._deleted; }
@@ -109,5 +110,23 @@ export class SkinData<HasSkin extends boolean = boolean> implements RawSkinData 
         if (this.hasSkin() && existsSync(this.filePath)) rmSync(this.filePath);
 
         this._deleted = true;
+    }
+
+    public async getHead(scale: number = 1): Promise<Buffer> {
+        if (!this.hasSkin()) throw new Error('No skin file specified');
+
+        const image = createCanvas(64, 64);
+
+        image.width = scale * image.width;
+        image.height = scale * image.height;
+
+        const ctx = image.getContext('2d');
+        const skin = await loadImage(this.filePath);
+
+        ctx.patternQuality = "fast";
+        ctx.drawImage(skin, 8, 8, 8, 8, 0, 0, image.width, image.height);
+        ctx.drawImage(skin, 40, 8, 8, 8, 0, 0, image.width, image.height);
+
+        return image.toBuffer();
     }
 }
