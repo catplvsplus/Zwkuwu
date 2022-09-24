@@ -58,7 +58,7 @@ export class PlayerSkinModule extends BaseModule {
 
     public async sendSkin(res: Response, skin?: { buffer: Buffer; file: string; }): Promise<void> {
         if (!skin) {
-            if (this.fallbackSkin) {
+            if (!this.fallbackSkin) {
                 res.contentType('image/png');
                 res.set('Content-Disposition', `inline; filename="steve.png"`);
                 res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
