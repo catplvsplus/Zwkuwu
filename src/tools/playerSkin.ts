@@ -1,5 +1,5 @@
 import { AttachmentBuilder, Collection, GuildTextBasedChannel } from 'discord.js';
-import { Logger, replaceAll } from 'fallout-utility';
+import { escapeRegExp, Logger, replaceAll } from 'fallout-utility';
 import { cwd, RecipleClient, SlashCommandBuilder } from 'reciple';
 import BaseModule from '../BaseModule';
 import { RawSkinData, SkinData } from './PlayerSkin/SkinData';
@@ -270,7 +270,7 @@ export class PlayerSkinModule extends BaseModule {
     }
 
     public async readFallbackSkin(player: string): Promise<Buffer|null> {
-        const fileHttp = await axios({ url: replaceAll(this.config.fallbackSkin, '$1', player), method: 'GET', responseType: 'arraybuffer' }).catch(() => null);
+        const fileHttp = await axios({ url: replaceAll(this.config.fallbackSkin, escapeRegExp('$1'), player), method: 'GET', responseType: 'arraybuffer' }).catch(() => null);
         if (!fileHttp) return null;
 
         return Buffer.from(fileHttp.data);
