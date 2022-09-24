@@ -127,7 +127,7 @@ export class PlayerSkinModule extends BaseModule {
 
                     switch (command) {
                         case 'avatar':
-                            const avatar = new AttachmentBuilder(await player!.getHead(5), { name: player?.filePath || undefined });
+                            const avatar = new AttachmentBuilder('file').setFile(await player!.getHead(5), player?.file!);
 
                             await interaction.editReply({
                                 embeds: [
@@ -139,7 +139,7 @@ export class PlayerSkinModule extends BaseModule {
 
                             return;
                         case 'skin':
-                            const skin = new AttachmentBuilder(await player!.getSkinBuffer(), { name: player?.filePath || undefined });
+                            const skin = new AttachmentBuilder('file').setFile(await player!.getSkinBuffer(), player?.file!);
 
                             await interaction.editReply({
                                 embeds: [
