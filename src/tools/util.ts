@@ -6,6 +6,7 @@ import path from 'path';
 import yml from 'yaml';
 import ms from 'ms';
 import { PrismaClient } from '@prisma/client';
+import anticrash from '../anticrash';
 
 export interface UtilModuleConfig {
     embedColor: ColorResolvable;
@@ -66,6 +67,7 @@ export class UtilModule extends BaseModule {
                     repliable.reply(replyOptions);
                 }
 
+                await anticrash.reportException(haltData.error).catch(() => {});
                 return true;
             case CommandHaltReason.InvalidArguments:
                 repliable.reply({ ...replyBase, embeds: [this.errorEmbed(`Invalid command argument${haltData.invalidArguments.length > 1 ? 's' : ''} ${haltData.invalidArguments.map(m => `\`${m.name}\``).join(' ')}`, true)] });
