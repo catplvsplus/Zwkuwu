@@ -119,7 +119,7 @@ export class PlayerSkinModule extends BaseModule {
 
                     switch (command) {
                         case 'avatar':
-                            const avatarData = await player?.getHead(5) || await (async () => {
+                            const avatarData = await player?.getHead(5).catch(() => null) || await (async () => {
                                 const skinData = await this.readFallbackSkin(playerName);
                                 if (!skinData) return null;
 
@@ -142,7 +142,7 @@ export class PlayerSkinModule extends BaseModule {
 
                             return;
                         case 'skin':
-                            const skinData = await player?.getSkinBuffer() || await this.readFallbackSkin(playerName);
+                            const skinData = await player?.getSkinBuffer().catch(() => null) || await this.readFallbackSkin(playerName);
 
                             if (!skinData) {
                                 await interaction.editReply({ embeds: [util.errorEmbed('Cannot fetch skin data')] });
