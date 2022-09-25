@@ -6,7 +6,7 @@ export class DeleteMessagesModule extends BaseModule {
     public async onStart(client: RecipleClient<boolean>): Promise<boolean> {
         client.additionalApplicationCommands.push(
             new ContextMenuCommandBuilder()
-                .setName('Remove messages under')
+                .setName('Prune messages below')
                 .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages)
                 .setType(ApplicationCommandType.Message)
         );
