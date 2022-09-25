@@ -1,4 +1,4 @@
-import { ApplicationCommandType, ContextMenuCommandBuilder, EmbedBuilder, PermissionFlagsBits } from 'discord.js';
+import { ApplicationCommandType, ContextMenuCommandBuilder, PermissionFlagsBits } from 'discord.js';
 import { RecipleClient } from 'reciple';
 import BaseModule from '../BaseModule';
 import { InteractionEventType } from '../tools/InteractionEvents';
