@@ -117,7 +117,7 @@ export class SnipedMessage<Fetched extends boolean = boolean> implements RawSnip
 
         return new EmbedBuilder()
             .setAuthor({ name: this.author.tag, iconURL: this.author.displayAvatarURL() })
-            .setDescription(`${this.content + (this.edited ? ' (edited)' : '')}`)
+            .setDescription(`${this.content + (this.edited ? ' (edited)' : '')}` || null)
             .setColor(util.embedColor)
             .setFields(
                 this.attachments
