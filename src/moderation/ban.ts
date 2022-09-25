@@ -1,4 +1,4 @@
-import { ActionRowBuilder, ApplicationCommandType, ContextMenuCommandBuilder, EmbedBuilder, GuildMember, ModalBuilder, TextInputBuilder, TextInputStyle, User } from 'discord.js';
+import { ActionRowBuilder, ApplicationCommandType, ContextMenuCommandBuilder, EmbedBuilder, GuildMember, ModalBuilder, PermissionFlagsBits, TextInputBuilder, TextInputStyle, User } from 'discord.js';
 import { MessageCommandBuilder, RecipleClient, SlashCommandBuilder } from 'reciple';
 import { InteractionEventType } from '../tools/InteractionEvents';
 import { Logger } from 'fallout-utility';
@@ -138,6 +138,7 @@ export class BanModule extends BaseModule {
         client.additionalApplicationCommands.push(
             new ContextMenuCommandBuilder()
                 .setName('Ban')
+                .setDefaultMemberPermissions(PermissionFlagsBits.BanMembers)
                 .setType(ApplicationCommandType.User)
         );
 
