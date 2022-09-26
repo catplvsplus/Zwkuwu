@@ -79,7 +79,7 @@ export class Roles extends BaseModule {
 
             await interaction.reply({
                 embeds: [
-                    util.errorEmbed(`Roles updated! Added **${changes.added}** and **${changes.removed}** removed`, true)
+                    util.smallEmbed(`Roles updated! Added **${changes.added}** and **${changes.removed}** removed`, true)
                 ],
                 ephemeral: true 
             }).catch(() => {});
