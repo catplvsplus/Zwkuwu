@@ -48,8 +48,8 @@ model SavedMemberData {
 }
 
 model PlayerSkinData {
-  player String @id @unique
-  file String?
+  player        String   @id @unique
+  file          String?
   lastUpdatedAt DateTime @default(now())
-  createdAt DateTime @default(now())
+  createdAt     DateTime @default(now())
 }
