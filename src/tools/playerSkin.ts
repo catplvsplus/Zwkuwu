@@ -230,7 +230,7 @@ export class PlayerSkinModule extends BaseModule {
 
             if (fallbackSkin) {
                 res.contentType('image/png');
-                res.set('Content-Disposition', `inline; filename="steve.png"`);
+                res.set('Content-Disposition', `inline; filename="${req.params.player}"`);
                 res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
                 res.send(head ? await SkinData.getHead(fallbackSkin, head.scale) : fallbackSkin);
                 return;
