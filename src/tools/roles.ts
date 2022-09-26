@@ -130,8 +130,8 @@ export class Roles extends BaseModule {
                 {
                     label: menuOpt.name,
                     value: menuOpt.id,
-                    emoji: menuOpt.emoji,
-                    description: menuOpt.description
+                    emoji: menuOpt.emoji || undefined,
+                    description: menuOpt.description || undefined
                 }
             ]);
         }
