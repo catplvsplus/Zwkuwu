@@ -27,6 +27,8 @@ export class AntiCrashModule extends BaseModule {
         process.on('unhandledRejection', async err => this.reportException(err));
         client.on('shardError', async err => this.reportException(err));
         client.on('error', async err => this.reportException(err));
+        client.on('debug', debug => this.logger.debug(debug));
+        client.on('warn', warn => this.logger.debug(warn));
 
         for (const channelId of this.config.sendTo) {
             const channel = client.channels.cache.get(channelId) ?? await client.channels.fetch(channelId).catch(() => null);
