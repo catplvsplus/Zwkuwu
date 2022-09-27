@@ -3,7 +3,7 @@
   "scripts": {
     "clean": "yarn exec rimraf modules",
     "build": "yarn run clean && yarn exec tsc",
-    "start": "yarn exec reciple -y",
+    "start": "yarn exec reciple -y -D",
     "test": "yarn run build && yarn exec reciple -D -y -c ./reciple.test.yml",
     "prisma:format": "yarn exec prisma format",
     "prisma:generate": "yarn run prisma:format && yarn exec prisma generate",
