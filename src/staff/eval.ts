@@ -38,7 +38,7 @@ export class EvalModule extends BaseModule {
                     const code = data.command.args.join(' ');
                     const reply = await message.reply({ embeds: [util.smallEmbed('Evaluating...')] });
 
-                    await reply.edit({ embeds: [this.evalEmbed(code)] });
+                    await reply.edit({ embeds: [this.evalEmbed(code.replace(/(?:\\(.))/, '$1'))] });
                 }),
         ];
 
