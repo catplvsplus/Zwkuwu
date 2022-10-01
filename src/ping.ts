@@ -1,8 +1,8 @@
 import { EmbedBuilder } from 'discord.js';
-import ms from 'ms';
 import { MessageCommandBuilder, RecipleClient, SlashCommandBuilder } from 'reciple';
 import BaseModule from './BaseModule';
 import util from './tools/util';
+import ms from 'ms';
 
 export class PingModule extends BaseModule {
     public async onStart(client: RecipleClient<boolean>): Promise<boolean> {
@@ -28,5 +28,5 @@ export class PingModule extends BaseModule {
         return util.smallEmbed(`Pong ┃ ${ms(client.ws.ping, { long: true })}`);
     }
 }
-
+{ long: true }
 export default new PingModule();
