@@ -1,5 +1,5 @@
+import { PrismaClient } from '@prisma/client';
 import { ActionRowBuilder, ApplicationCommandType, ContextMenuCommandBuilder, EmbedBuilder, ModalBuilder, PermissionFlagsBits, PermissionsBitField, TextInputBuilder, TextInputStyle } from 'discord.js';
-import { trimChars } from 'fallout-utility';
 import { MessageCommandBuilder, RecipleClient, SlashCommandBuilder } from 'reciple';
 import { inspect } from 'util';
 import BaseModule from '../BaseModule';
@@ -7,7 +7,13 @@ import { InteractionEventType } from '../tools/InteractionEvents';
 import util from '../tools/util';
 
 export class EvalModule extends BaseModule {
+    public client!: RecipleClient;
+    public prisma!: PrismaClient;
+
     public async onStart(client: RecipleClient<boolean>): Promise<boolean> {
+        this.client = client;
+        this.prisma = util.prisma;
+
         this.commands = [
             new SlashCommandBuilder()
                 .setName('eval')

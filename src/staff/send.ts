@@ -3,15 +3,10 @@ import { MessageCommandBuilder, RecipleClient, SlashCommandBuilder } from 'recip
 import { InteractionEventType } from '../tools/InteractionEvents';
 import BaseModule from '../BaseModule';
 import util from '../tools/util';
-import { PrismaClient } from '@prisma/client';
 
 export class SendModule extends BaseModule {
-    public client!: RecipleClient;
-    public prisma!: PrismaClient;
 
     public async onStart(client: RecipleClient<boolean>): Promise<boolean> {
-        this.client = client;
-        this.prisma = util.prisma;
 
         this.commands = [
             new SlashCommandBuilder()
