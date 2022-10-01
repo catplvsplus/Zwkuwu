@@ -1,7 +1,9 @@
-import { EmbedBuilder } from 'discord.js';
+import { ActionRowBuilder, ApplicationCommandType, ContextMenuCommandBuilder, EmbedBuilder, ModalBuilder, PermissionFlagsBits, PermissionsBitField, TextInputBuilder, TextInputStyle } from 'discord.js';
+import { trimChars } from 'fallout-utility';
 import { MessageCommandBuilder, RecipleClient, SlashCommandBuilder } from 'reciple';
 import { inspect } from 'util';
 import BaseModule from '../BaseModule';
+import { InteractionEventType } from '../tools/InteractionEvents';
 import util from '../tools/util';
 
 export class EvalModule extends BaseModule {
@@ -13,6 +15,7 @@ export class EvalModule extends BaseModule {
                 .setRequiredMemberPermissions('Administrator')
                 .setExecute(async data => {
                     const interaction = data.interaction;
+                    interaction.showModal(this.evalModal());
                 }),
             new MessageCommandBuilder()
                 .setName('eval')
@@ -25,10 +28,54 @@ export class EvalModule extends BaseModule {
                 )
                 .setExecute(async data => {
                     const message = data.message;
+                    const code = data.command.args.join(' ');
+                    const reply = await message.reply({ embeds: [util.smallEmbed('Evaluating...')] });
+
+                    await reply.edit({ embeds: [this.evalEmbed(code)] });
                 }),
         ];
 
+        client.additionalApplicationCommands.push(
+            new ContextMenuCommandBuilder()
+                .setName('Evaluate Code')
+                .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+                .setType(ApplicationCommandType.Message)
+        );
+
+        this.interactionEventHandlers = [
+            {
+                type: InteractionEventType.ModalSubmit,
+                customId: 'eval-modal',
+                handle: async interaction => {
+                    if (!interaction.isModalSubmit()) return;
+                    if (!interaction.inCachedGuild() || !interaction.memberPermissions.has('Administrator')) return;
+
+                    await interaction.deferReply();
+
+                    const code = interaction.fields.getTextInputValue('code');
+                    await interaction.editReply({ embeds: [this.evalEmbed(code)] });
+                }
+            }
+        ];
+
         return true;
+    }
+
+    public evalModal(): ModalBuilder {
+        return new ModalBuilder()
+            .setCustomId('eval-modal')
+            .setTitle('Evaluation Code')
+            .setComponents(
+                new ActionRowBuilder<TextInputBuilder>()
+                    .setComponents(
+                        new TextInputBuilder()
+                            .setCustomId('code')
+                            .setLabel('Code')
+                            .setPlaceholder('console.log("hi")')
+                            .setRequired(true)
+                            .setStyle(TextInputStyle.Paragraph)
+                    )
+            );
     }
 
     public evalEmbed(code: string): EmbedBuilder {
