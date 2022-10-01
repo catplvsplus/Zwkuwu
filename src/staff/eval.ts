@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { ActionRowBuilder, ApplicationCommandType, ContextMenuCommandBuilder, EmbedBuilder, ModalBuilder, PermissionFlagsBits, PermissionsBitField, TextInputBuilder, TextInputStyle } from 'discord.js';
+import { escapeRegExp, replaceAll } from 'fallout-utility';
 import { MessageCommandBuilder, RecipleClient, SlashCommandBuilder } from 'reciple';
 import { inspect } from 'util';
 import BaseModule from '../BaseModule';
@@ -97,6 +98,10 @@ export class EvalModule extends BaseModule {
         } catch (err) {
             return inspect(err);
         }
+    }
+
+    public maskString(data: string, ...strings: string[]): string {
+        return replaceAll(data, strings.map(str => escapeRegExp(str)), strings.map(str => str.length > 1 ? '*'.repeat(str.length) : ''));
     }
 }
 
