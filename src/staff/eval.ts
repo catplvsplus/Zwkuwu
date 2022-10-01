@@ -93,3 +93,5 @@ export class EvalModule extends BaseModule {
         }
     }
 }
+
+export default new EvalModule();
