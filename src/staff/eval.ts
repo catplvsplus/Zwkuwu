@@ -85,7 +85,7 @@ export class EvalModule extends BaseModule {
     }
 
     public evalEmbed(code: string): EmbedBuilder {
-        return util.smallEmbed('Eval').setDescription('```\n'+ this.eval(code) +'\n```');
+        return util.smallEmbed('Eval').setDescription('```\n'+ this.eval(code).slice(0, 4000) +'\n```');
     }
 
     public eval(code: string): string {
