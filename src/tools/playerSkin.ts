@@ -113,6 +113,7 @@ export class PlayerSkinModule extends BaseModule {
                     const interaction = data.interaction;
                     const command = interaction.options.getSubcommand(true);
                     const playerName = interaction.options.getString('player', true);
+                    const isAdmin = interaction.memberPermissions?.has('Administrator');
 
                     await interaction.deferReply();
                     let player = await this.resolveSkinData(playerName);
@@ -166,28 +167,30 @@ export class PlayerSkinModule extends BaseModule {
                         return;
                     }
 
-                    const key = crypto.randomUUID().split('-').shift();
-                    await interaction.editReply({
-                        embeds: [
-                            util.smallEmbed(`Send \`${key}\` in minecraft to continue`, true)
-                        ]
-                    });
+                    if (!isAdmin) {
+                        const key = crypto.randomUUID().split('-').shift();
+                        await interaction.editReply({
+                            embeds: [
+                                util.smallEmbed(`Send \`${key}\` in minecraft to continue`, true)
+                            ]
+                        });
 
-                    const confirmed = await this.gameChatsChannel.awaitMessages({
-                        max: 1,
-                        filter: message => (message.applicationId === this.config.messageApplicationId && message.author.username.toLowerCase() === playerName.toLowerCase() || message.author.id === this.config.messageApplicationId) && message.content === key,
-                        time: 20000
-                    });
+                        const confirmed = await this.gameChatsChannel.awaitMessages({
+                            max: 1,
+                            filter: message => (message.applicationId === this.config.messageApplicationId && message.author.username.toLowerCase() === playerName.toLowerCase() || message.author.id === this.config.messageApplicationId) && message.content === key,
+                            time: 20000
+                        });
 
-                    if (!confirmed.size) {
-                        await interaction.editReply({ embeds: [util.errorEmbed('Cannot verify your request')] });
-                        return;
+                        if (!confirmed.size) {
+                            await interaction.editReply({ embeds: [util.errorEmbed('Cannot verify your request')] });
+                            return;
+                        }
+
+                        await interaction.editReply({ embeds: [util.smallEmbed('Loading...')] });
+                        const keyMessage = confirmed.first()!;
+
+                        await keyMessage.reply('Key Verified');
                     }
-
-                    await interaction.editReply({ embeds: [util.smallEmbed('Loading...')] });
-                    const keyMessage = confirmed.first()!;
-
-                    await keyMessage.reply('Key Verified');
 
                     switch (command) {
                         case 'remove':
