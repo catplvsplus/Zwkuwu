@@ -129,7 +129,7 @@ export class SnipeModule extends BaseModule {
             channelId: message.channel.id,
             content: message.content,
             attachments: message.attachments.size,
-            repliedToUserId: message.reference ? (await message.fetchReference()).author.id : null,
+            repliedToUserId: (message.reference ? (await message.fetchReference()).author?.id : null) || null,
             edited: !!message.editedAt,
             createdAt: message.createdAt,
         };
