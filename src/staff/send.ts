@@ -34,6 +34,7 @@ export class SendModule extends BaseModule {
                         return;
                     }
 
+                    await message.delete();
                     await message.channel.send(content);
                 })
         ];
