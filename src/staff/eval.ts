@@ -8,7 +8,7 @@ import { InteractionEventType } from '../tools/InteractionEvents';
 import util from '../tools/util';
 
 export class EvalModule extends BaseModule {
-    public client!: RecipleClient;
+    public client!: RecipleClient<true>;
     public prisma!: PrismaClient;
 
     public async onStart(client: RecipleClient<boolean>): Promise<boolean> {
@@ -86,18 +86,22 @@ export class EvalModule extends BaseModule {
     }
 
     public evalEmbed(code: string): EmbedBuilder {
-        return util.smallEmbed('Eval').setDescription('```\n'+ this.eval(code).slice(0, 4000) +'\n```');
+        const masks = [this.client.token];
+
+        return util.smallEmbed('Eval').setDescription('```\n'+ this.eval(code, ...masks).slice(0, 4000) +'\n```');
     }
 
-    public eval(code: string): string {
-        try {
-            let result = eval(code);
-            if (typeof result !== 'string') result = inspect(result);
+    public eval(code: string, ...masks: string[]): string {
+        let result;
 
-            return result;
+        try {
+            result = eval(code);
+            if (typeof result !== 'string') result = inspect(result);
         } catch (err) {
-            return inspect(err);
+            result = inspect(err);
         }
+
+        return this.maskString(result, ...masks);
     }
 
     public maskString(data: string, ...strings: string[]): string {
