@@ -29,6 +29,8 @@ export class SendModule extends BaseModule {
                     const message = data.message;
                     const content = data.command.args.join(' ');
 
+                    console.log(message.content, message.cleanContent);
+
                     if (content.length > 2000) {
                         await message.reply({ embeds: [util.errorEmbed('Message too long')] });
                         return;
