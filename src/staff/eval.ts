@@ -92,6 +92,8 @@ export class EvalModule extends BaseModule {
     }
 
     public eval(code: string, ...masks: string[]): string {
+        this.client.logger.warn(`Evaluating code: ${code}`);
+
         let result;
 
         try {
