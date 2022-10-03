@@ -24,3 +24,5 @@ export class ZombieConnectionHandlerModule extends BaseModule {
         return this.lastPing;
     }
 }
+
+export default new ZombieConnectionHandlerModule();
