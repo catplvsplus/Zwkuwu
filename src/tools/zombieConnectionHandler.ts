@@ -2,8 +2,8 @@ import { RecipleClient } from 'reciple';
 import BaseModule from '../BaseModule';
 
 export class ZombieConnectionHandlerModule extends BaseModule {
-    public lastPing: number = 0;
-    public checkInterval: number = 50000;
+    public lastPing: number = -1;
+    public checkInterval: number = 1000 * 60;
     public timer?: NodeJS.Timer;
 
     public async onStart(client: RecipleClient<boolean>): Promise<boolean> {
