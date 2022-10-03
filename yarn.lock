@@ -1233,14 +1233,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fallout-utility@npm:^1.5.0":
-  version: 1.5.0
-  resolution: "fallout-utility@npm:1.5.0"
+"fallout-utility@npm:^1.5.1":
+  version: 1.5.1
+  resolution: "fallout-utility@npm:1.5.1"
   dependencies:
     chalk: ^4.1.2
     prompt-sync: ^4.2.0
     strip-ansi: ^6.0.1
-  checksum: 9f8830898ef38e6a454bbfba4e150bf7d3d7e436a997c758c43fd454fcac26b9436eb1ea8f8527714964248dffab0aa41ed73d068aa8be52af0c17e33af81558
+  checksum: c91d8476725e9592d10cde8c562a14df9f8ea3a40efbd322ac4e9004681d571ae683d13e30f33f22a0d6a85da143b80c80e1d64a767d742b553566ff3b46596a
   languageName: node
   linkType: hard
 
@@ -1691,11 +1691,11 @@ __metadata:
     canvas: ^2.10.1
     discord.js: ^14.5.0
     express: ^4.18.1
-    fallout-utility: ^1.5.0
+    fallout-utility: ^1.5.1
     minecraft-protocol: ^1.36.1
     ms: ^2.1.3
     prisma: ^4.3.1
-    reciple: ^5.5.4
+    reciple: ^5.5.5
     rimraf: ^3.0.2
     tiktok-scraper-ts: ^1.3.9
     typescript: ^4.7.4
@@ -2579,14 +2579,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"reciple@npm:^5.5.4":
-  version: 5.5.4
-  resolution: "reciple@npm:5.5.4"
+"reciple@npm:^5.5.5":
+  version: 5.5.5
+  resolution: "reciple@npm:5.5.5"
   dependencies:
     chalk: 4.1.2
     commander: ^9.4.1
     dotenv: ^16.0.3
-    fallout-utility: ^1.5.0
+    fallout-utility: ^1.5.1
     semver: ^7.3.7
     wildcard-match: ^5.1.2
     yaml: ^2.1.1
@@ -2594,7 +2594,7 @@ __metadata:
     discord.js: ^14.1.0
   bin:
     reciple: dist/cjs/bin.js
-  checksum: ab7fc59c1aee916a89ab5ba2b19b0ad0e52f1d745b65bb6cde9693c2433d1514cbef292117b1f7db4a714d6e65ee4840efba00dc6e81b67710f5e202ef07ad49
+  checksum: d7d1074453ab4f505c262efa1a73c0316980e1d2f1aa8a04c6a2a6afd82ad690bb6e85b0bea24b8f1db030906364bf5a7629b2ed23c898e127756ebdf6801edb
   languageName: node
   linkType: hard
 
