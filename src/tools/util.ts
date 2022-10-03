@@ -5,8 +5,9 @@ import BaseModule from '../BaseModule';
 import path from 'path';
 import yml from 'yaml';
 import ms from 'ms';
-import { PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
 import anticrash from '../anticrash';
+import { Logger } from 'fallout-utility';
 
 export interface UtilModuleConfig {
     embedColor: ColorResolvable;
@@ -18,9 +19,11 @@ export class UtilModule extends BaseModule {
     public errorEmbedColor: ColorResolvable = 'Red';
     public prisma: PrismaClient = new PrismaClient();
     public client!: RecipleClient;
+    public logger!: Logger;
 
     public onStart(client: RecipleClient): boolean {
         this.client = client;
+        this.logger = client.logger.cloneLogger({ loggerName: 'UtilModule' });
 
         const configPath: string = path.join(cwd, 'config/util/config.yml');
         const config: UtilModuleConfig = yml.parse(createConfig<UtilModuleConfig>(configPath, {
@@ -30,6 +33,19 @@ export class UtilModule extends BaseModule {
 
         this.embedColor = config.embedColor;
         this.errorEmbedColor = config.errorEmbedColor;
+
+        this.client.on('recipleCommandExecute', data => {
+            const isSlashCommand = SlashCommandBuilder.isSlashCommandBuilder(data.builder);
+            const author = SlashCommandBuilder.isSlashCommandExecuteData(data)
+                ? data.interaction.user
+                : data.message.author;
+            
+            this.logger.debug(`${author.tag} (${author.id}): Executed a ${isSlashCommand ? 'slash' : 'message'} command "${data.builder.name}"`);
+        });
+
+        this.client.on('recipleCommandHalt', data => {
+            this.logger.debug(`A command halt triggered for "${data.executeData.builder.name}": ${Object.keys(CommandHaltReason)[data.reason]}`);
+        });
 
         return true;
     }
