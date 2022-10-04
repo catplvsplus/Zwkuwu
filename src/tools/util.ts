@@ -39,7 +39,7 @@ export class UtilModule extends BaseModule {
             const author = SlashCommandBuilder.isSlashCommandExecuteData(data)
                 ? data.interaction.user
                 : data.message.author;
-            
+
             this.logger.debug(`${author.tag} (${author.id}): Executed a ${isSlashCommand ? 'slash' : 'message'} command "${data.builder.name}"`);
         });
 
@@ -121,6 +121,17 @@ export class UtilModule extends BaseModule {
         const id = this.getMentionId(user);
 
         return this.client.users.cache.find(user => user.id === id || user.tag.toLowerCase() === id.toLowerCase()) ?? this.client.users.fetch(id).catch(() => null);
+    }
+
+    public sliceIntoChunks<T>(arr: T[], chunkSize: number) {
+        const res: T[][] = [];
+
+        for (let i = 0; i < arr.length; i += chunkSize) {
+            const chunk = arr.slice(i, i + chunkSize);
+            res.push(chunk);
+        }
+
+        return res;
     }
 }
 
