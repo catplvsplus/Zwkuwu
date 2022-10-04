@@ -5,21 +5,21 @@ __metadata:
   version: 6
   cacheKey: 8
 
-"@azure/msal-common@npm:^7.4.1":
-  version: 7.4.1
-  resolution: "@azure/msal-common@npm:7.4.1"
-  checksum: a4e21bf010ceaee6b580bd8e00b81386830f1b6d3e9bbd5498f0ede83765b82092958370ccbce087d4229c4e6c7b27f464d81fe8a469c0c705e8714e0eeff169
+"@azure/msal-common@npm:^7.5.0":
+  version: 7.5.0
+  resolution: "@azure/msal-common@npm:7.5.0"
+  checksum: c95c049019bf23ee499f555013fd4b0e1f4a2389bb4d7ccf4300b73b1ca9565325bee03cad10b67e2b89ef1d42d1513f9d0dd6c3de10a062205f1902280354ca
   languageName: node
   linkType: hard
 
 "@azure/msal-node@npm:^1.1.0":
-  version: 1.14.0
-  resolution: "@azure/msal-node@npm:1.14.0"
+  version: 1.14.1
+  resolution: "@azure/msal-node@npm:1.14.1"
   dependencies:
-    "@azure/msal-common": ^7.4.1
+    "@azure/msal-common": ^7.5.0
     jsonwebtoken: ^8.5.1
     uuid: ^8.3.0
-  checksum: 9ea3f5ceff99dab3f25919c7d35fab8c300493bc37d6c67033eaed7befa583eb04fd5cda7d7a40457c78721081a50b80966da73e8694142ca69a28660eaa03f6
+  checksum: 6f5cf46c03d4a3a173285e053b353855355d03fdbf8ecaf9b2c2ced137dc3ba0dd8cee041d01956d52aaaa5662be2c330f3db4e9dc23199d9b0f5ab720e3755c
   languageName: node
   linkType: hard
 
@@ -149,12 +149,12 @@ __metadata:
   linkType: hard
 
 "@sapphire/shapeshift@npm:^3.5.1":
-  version: 3.5.1
-  resolution: "@sapphire/shapeshift@npm:3.5.1"
+  version: 3.7.0
+  resolution: "@sapphire/shapeshift@npm:3.7.0"
   dependencies:
     fast-deep-equal: ^3.1.3
     lodash.uniqwith: ^4.5.0
-  checksum: caecfef844c9e43e921a5051da888fae7da8980bfd9f9bb4f7fee85931d40929ffb9b6dfae464c0dccee61e56f7698f998e4d9a54d25f35fad39a51ba1a4f391
+  checksum: 4fed0865abcf3653406cfa1f4a2a7d1c51103cee1c13ec4fd8fbc84bd32d20b2949e2266531c2d81b9b1e3af32787cd1f5d66a3d6146d6afb553ca2c6377beb1
   languageName: node
   linkType: hard
 
@@ -261,9 +261,9 @@ __metadata:
   linkType: hard
 
 "@types/node@npm:*, @types/node@npm:^18.7.5":
-  version: 18.7.5
-  resolution: "@types/node@npm:18.7.5"
-  checksum: f74426f2c9e81ab00e35ddca8db84efb6eb6c77e6d120bbe84d462073c371fa46e4744bd87773d9f7cf9074cf575df573bb89c3335f38f4ecbef2f03b407f35f
+  version: 18.8.1
+  resolution: "@types/node@npm:18.8.1"
+  checksum: 6168dbdc42cbedff20fd16ed7c775038d6de52fe1458a9a3be07e39805c75d107f185908a8cdfe0b271f8f391a0c99fde27859975cf6b5a8fee385b3f5cfb42a
   languageName: node
   linkType: hard
 
@@ -619,6 +619,25 @@ __metadata:
     base64-js: ^1.3.1
     ieee754: ^1.1.13
   checksum: e2cf8429e1c4c7b8cbd30834ac09bd61da46ce35f5c22a78e6c2f04497d6d25541b16881e30a019c6fd3154150650ccee27a308eff3e26229d788bbdeb08ab84
+  languageName: node
+  linkType: hard
+
+"buffer@npm:^6.0.3":
+  version: 6.0.3
+  resolution: "buffer@npm:6.0.3"
+  dependencies:
+    base64-js: ^1.3.1
+    ieee754: ^1.2.1
+  checksum: 5ad23293d9a731e4318e420025800b42bf0d264004c0286c8cc010af7a270c7a0f6522e84f54b9ad65cbd6db20b8badbfd8d2ebf4f80fa03dab093b89e68c3f9
+  languageName: node
+  linkType: hard
+
+"busboy@npm:^1.6.0":
+  version: 1.6.0
+  resolution: "busboy@npm:1.6.0"
+  dependencies:
+    streamsearch: ^1.1.0
+  checksum: 32801e2c0164e12106bf236291a00795c3c4e4b709ae02132883fe8478ba2ae23743b11c5735a0aae8afe65ac4b6ca4568b91f0d9fed1fdbc32ede824a73746e
   languageName: node
   linkType: hard
 
@@ -992,9 +1011,9 @@ __metadata:
   linkType: hard
 
 "discord-api-types@npm:^0.37.10, discord-api-types@npm:^0.37.3":
-  version: 0.37.10
-  resolution: "discord-api-types@npm:0.37.10"
-  checksum: a09460953a02adf3c40a486e3946c6ca0dd6c76d279444a4595abecfe8b5b88ad49d48b5eeb85e2cb95256a0824ee075cb7550d371c13e64e37ec703206c092b
+  version: 0.37.11
+  resolution: "discord-api-types@npm:0.37.11"
+  checksum: 61af711c29dc089f150c0dd41f257e59583d6ef72789bdb63183d328efe73d2df86ef4b6867390ad31441fe3588985a99a2a1ed8fc920b7ba1deda1dceaf5f84
   languageName: node
   linkType: hard
 
@@ -1175,6 +1194,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"events@npm:^3.3.0":
+  version: 3.3.0
+  resolution: "events@npm:3.3.0"
+  checksum: f6f487ad2198aa41d878fa31452f1a3c00958f46e9019286ff4787c84aac329332ab45c9cdc8c445928fc6d7ded294b9e005a7fce9426488518017831b272780
+  languageName: node
+  linkType: hard
+
 "express@npm:^4.18.1":
   version: 4.18.1
   resolution: "express@npm:4.18.1"
@@ -1231,14 +1257,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fallout-utility@npm:^1.5.2":
+"fallout-utility@npm:^1.5.1":
   version: 1.5.2
   resolution: "fallout-utility@npm:1.5.2"
   dependencies:
     chalk: ^4.1.2
     prompt-sync: ^4.2.0
     strip-ansi: ^6.0.1
-  checksum: c91d8476725e9592d10cde8c562a14df9f8ea3a40efbd322ac4e9004681d571ae683d13e30f33f22a0d6a85da143b80c80e1d64a767d742b553566ff3b46596a
+  checksum: c8da7c1ef3865eaf8ffb7e9cc4c83aed18772e32a7fca5481d5198b906e3777bdacf514e737bcd44a8a13efdb5f5f464323c3d0048284cee1b0479aafd018933
   languageName: node
   linkType: hard
 
@@ -1689,7 +1715,7 @@ __metadata:
     canvas: ^2.10.1
     discord.js: ^14.5.0
     express: ^4.18.1
-    fallout-utility: ^1.5.2
+    fallout-utility: ^1.5.1
     minecraft-protocol: ^1.36.1
     ms: ^2.1.3
     prisma: ^4.4.0
@@ -1703,9 +1729,9 @@ __metadata:
   linkType: soft
 
 "jose@npm:^4.1.4":
-  version: 4.9.3
-  resolution: "jose@npm:4.9.3"
-  checksum: 95865830768dcf82774d19e92dc854c5bc9dc5d9c9626a65a2974272e3aca5d2f56678611943f85802431d2d6d6f8bff9548b7cdb7578e6fe61529bd9c82e1d3
+  version: 4.10.0
+  resolution: "jose@npm:4.10.0"
+  checksum: c575bf2519b758592b3037cac0da34ff2641e56a050b156fe6ab18c03cd6c22e5338d28d1fe3dd997c9b3c0cc7deda72faca4a93ff41274a587850c6519852d0
   languageName: node
   linkType: hard
 
@@ -1986,9 +2012,9 @@ __metadata:
   linkType: hard
 
 "minecraft-data@npm:^3.8.0":
-  version: 3.12.0
-  resolution: "minecraft-data@npm:3.12.0"
-  checksum: 5d2449efda4999f02321100881f8669a0054f9c353f9b0d83d928ab477098d16936cd55438fe8f220a9949c7dc2b689f56f7edfbf385cc5b522da75cb7912807
+  version: 3.15.0
+  resolution: "minecraft-data@npm:3.15.0"
+  checksum: 91f8b938b2aa7d92a7c2563eef061b895c6f8034c042db767ec3ebe5095a5d89879bee9f7e657b8214961f7c29c39d5f3fd1aef42c4e840f58b3425f36426754
   languageName: node
   linkType: hard
 
@@ -2411,6 +2437,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"process@npm:^0.11.10":
+  version: 0.11.10
+  resolution: "process@npm:0.11.10"
+  checksum: bfcce49814f7d172a6e6a14d5fa3ac92cc3d0c3b9feb1279774708a719e19acd673995226351a082a9ae99978254e320ccda4240ddc474ba31a76c79491ca7c3
+  languageName: node
+  linkType: hard
+
 "progress@npm:2.0.3":
   version: 2.0.3
   resolution: "progress@npm:2.0.3"
@@ -2560,11 +2593,14 @@ __metadata:
   linkType: hard
 
 "readable-stream@npm:^4.1.0":
-  version: 4.1.0
-  resolution: "readable-stream@npm:4.1.0"
+  version: 4.2.0
+  resolution: "readable-stream@npm:4.2.0"
   dependencies:
     abort-controller: ^3.0.0
-  checksum: ff2bb513af6fb43618c8360211b5b9052e25a59e6626d3669c7ba060d021dfffa43c43832e11b18acd6aac15b057c6deae1c41004c1731688c95c455ad02f982
+    buffer: ^6.0.3
+    events: ^3.3.0
+    process: ^0.11.10
+  checksum: aa8447f781e6df90af78f6b0b9b9a77da2816dcf6c8220e7021c4de36e04f8129fed7ead81eac0baad2f42098209f9e7d7cd43169e1c156efcd2613828a37439
   languageName: node
   linkType: hard
 
@@ -2584,7 +2620,7 @@ __metadata:
     chalk: 4.1.2
     commander: ^9.4.1
     dotenv: ^16.0.3
-    fallout-utility: ^1.5.2
+    fallout-utility: ^1.5.1
     semver: ^7.3.7
     wildcard-match: ^5.1.2
     yaml: ^2.1.1
@@ -2768,12 +2804,12 @@ __metadata:
   linkType: hard
 
 "socks@npm:^2.6.2":
-  version: 2.7.0
-  resolution: "socks@npm:2.7.0"
+  version: 2.7.1
+  resolution: "socks@npm:2.7.1"
   dependencies:
     ip: ^2.0.0
     smart-buffer: ^4.2.0
-  checksum: 0b5d94e2b3c11e7937b40fc5dac1e80d8b92a330e68c51f1d271ce6980c70adca42a3f8cd47c4a5769956bada074823b53374f2dc5f2ea5c2121b222dec6eadf
+  checksum: 259d9e3e8e1c9809a7f5c32238c3d4d2a36b39b83851d0f573bfde5f21c4b1288417ce1af06af1452569cd1eb0841169afd4998f0e04ba04656f6b7f0e46d748
   languageName: node
   linkType: hard
 
@@ -2790,6 +2826,13 @@ __metadata:
   version: 2.0.1
   resolution: "statuses@npm:2.0.1"
   checksum: 18c7623fdb8f646fb213ca4051be4df7efb3484d4ab662937ca6fbef7ced9b9e12842709872eb3020cc3504b93bde88935c9f6417489627a7786f24f8031cbcb
+  languageName: node
+  linkType: hard
+
+"streamsearch@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "streamsearch@npm:1.1.0"
+  checksum: 1cce16cea8405d7a233d32ca5e00a00169cc0e19fbc02aa839959985f267335d435c07f96e5e0edd0eadc6d39c98d5435fb5bbbdefc62c41834eadc5622ad942
   languageName: node
   linkType: hard
 
@@ -2973,22 +3016,22 @@ __metadata:
   linkType: hard
 
 "typescript@npm:^4.7.4":
-  version: 4.7.4
-  resolution: "typescript@npm:4.7.4"
+  version: 4.8.4
+  resolution: "typescript@npm:4.8.4"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: 5750181b1cd7e6482c4195825547e70f944114fb47e58e4aa7553e62f11b3f3173766aef9c281783edfd881f7b8299cf35e3ca8caebe73d8464528c907a164df
+  checksum: 3e4f061658e0c8f36c820802fa809e0fd812b85687a9a2f5430bc3d0368e37d1c9605c3ce9b39df9a05af2ece67b1d844f9f6ea8ff42819f13bcb80f85629af0
   languageName: node
   linkType: hard
 
 "typescript@patch:typescript@^4.7.4#~builtin<compat/typescript>":
-  version: 4.7.4
-  resolution: "typescript@patch:typescript@npm%3A4.7.4#~builtin<compat/typescript>::version=4.7.4&hash=f456af"
+  version: 4.8.4
+  resolution: "typescript@patch:typescript@npm%3A4.8.4#~builtin<compat/typescript>::version=4.8.4&hash=f456af"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: 9096d8f6c16cb80ef3bf96fcbbd055bf1c4a43bd14f3b7be45a9fbe7ada46ec977f604d5feed3263b4f2aa7d4c7477ce5f9cd87de0d6feedec69a983f3a4f93e
+  checksum: 563a0ef47abae6df27a9a3ab38f75fc681f633ccf1a3502b1108e252e187787893de689220f4544aaf95a371a4eb3141e4a337deb9895de5ac3c1ca76430e5f0
   languageName: node
   linkType: hard
 
@@ -3003,9 +3046,11 @@ __metadata:
   linkType: hard
 
 "undici@npm:^5.10.0":
-  version: 5.10.0
-  resolution: "undici@npm:5.10.0"
-  checksum: 7ba2b71dccc74cd2bdf645b83e9aaef374ae04855943d0a2f42a3d0b9e5556f37cc9b5156fb5288277a2fa95fd46a56f3ae0d5cf73db3f008d75ec41104b136c
+  version: 5.11.0
+  resolution: "undici@npm:5.11.0"
+  dependencies:
+    busboy: ^1.6.0
+  checksum: 20669ef4023d24a75e81ed8142829f525f16af14d61f833b5f19cfc6bed7c706adde343a190d764dcceb227eba3211222d2b194010462a2ca221a7da0487f563
   languageName: node
   linkType: hard
 
@@ -3207,14 +3252,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"yaml@npm:^2.1.1":
-  version: 2.1.1
-  resolution: "yaml@npm:2.1.1"
-  checksum: f48bb209918aa57cfaf78ef6448d1a1f8187f45c746f933268b7023dc59e5456004611879126c9bb5ea55b0a2b1c2b392dfde436931ece0c703a3d754562bb96
-  languageName: node
-  linkType: hard
-
-"yaml@npm:^2.1.2":
+"yaml@npm:^2.1.1, yaml@npm:^2.1.2":
   version: 2.1.2
   resolution: "yaml@npm:2.1.2"
   checksum: 89f3d96215405990aa17cdacd78c17537d415e20be3eb7ff1a058a9b1d7136d4a61a84e6b47daa82558a977ae08751a6c1a80b88f99ee7cbdd51ddd78cd0d8f6
