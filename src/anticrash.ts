@@ -30,6 +30,8 @@ export class AntiCrashModule extends BaseModule {
         client.on('debug', debug => this.logger.debug(debug));
         client.on('warn', warn => this.logger.debug(warn));
 
+        this.logger.warn('Listening to uncaught error events!');
+
         for (const channelId of this.config.sendTo) {
             const channel = client.channels.cache.get(channelId) ?? await client.channels.fetch(channelId).catch(() => null);
 
@@ -44,8 +46,23 @@ export class AntiCrashModule extends BaseModule {
             if (user) this.sendTo.push(user);
         }
 
-        client.commands.messageCommands.forEach(m => !m.halt ? m.setHalt(data => util.haltCommand(data)) : null);
-        client.commands.slashCommands.forEach(s => !s.halt ? s.setHalt(data => util.haltCommand(data)) : null);
+        client.once('recipleCommandExecute', () => {
+            client.commands.messageCommands.forEach(m => {
+                m.setValidateOptions(true);
+                
+                if (m.halt) return;
+    
+                m.setHalt(data => util.haltCommand(data))
+                this.logger.debug(`Added halt function to message command ${m.name}`)
+            });
+    
+            client.commands.slashCommands.forEach(s => {
+                if (s.halt) return;
+    
+                s.setHalt(data => util.haltCommand(data))
+                this.logger.debug(`Added halt function to slash command ${s.name}`)
+            });
+        });
     }
 
     public async reportException(error: unknown): Promise<void> {
