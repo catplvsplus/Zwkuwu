@@ -113,7 +113,7 @@ export class UtilModule extends BaseModule {
 
     public getMentionId(user: UserResolvable|UserMention): string {
         return typeof user === 'string'
-            ? user.match(/<@!?(\d{17,19})>/)?.[0] ?? user
+            ? user.match(/<@!?(\d{17,19})>/)?.[1] ?? user
             : user.id;
     }
 
