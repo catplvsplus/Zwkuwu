@@ -1,5 +1,5 @@
 import { AnyCommandHaltData, CommandHaltReason, cwd, RecipleClient, SlashCommandBuilder, SlashCommandHaltData } from 'reciple';
-import { ColorResolvable, EmbedBuilder, User,UserMention, UserResolvable } from 'discord.js';
+import { ColorResolvable, EmbedBuilder, EmojiResolvable, User,UserMention, UserResolvable } from 'discord.js';
 import createConfig from '../_createConfig';
 import BaseModule from '../BaseModule';
 import path from 'path';
@@ -7,11 +7,12 @@ import yml from 'yaml';
 import ms from 'ms';
 import { Prisma, PrismaClient } from '@prisma/client';
 import anticrash from '../anticrash';
-import { Logger } from 'fallout-utility';
+import { getRandomKey, Logger } from 'fallout-utility';
 
 export interface UtilModuleConfig {
     embedColor: ColorResolvable;
     errorEmbedColor: ColorResolvable;
+    mentionReactions: EmojiResolvable[];
 }
 
 export class UtilModule extends BaseModule {
@@ -28,7 +29,8 @@ export class UtilModule extends BaseModule {
         const configPath: string = path.join(cwd, 'config/util/config.yml');
         const config: UtilModuleConfig = yml.parse(createConfig<UtilModuleConfig>(configPath, {
             embedColor: 'Blue',
-            errorEmbedColor: 'Red'
+            errorEmbedColor: 'Red',
+            mentionReactions: []
         }));
 
         this.embedColor = config.embedColor;
@@ -45,6 +47,14 @@ export class UtilModule extends BaseModule {
 
         this.client.on('recipleCommandHalt', data => {
             this.logger.debug(`A command halt triggered for "${data.executeData.builder.name}": ${Object.keys(CommandHaltReason)[data.reason]}`);
+        });
+
+        this.client.on('messageCreate', async message => {
+            if (!message.mentions.parsedUsers.has(client.user?.id || '')) return;
+            if (message.author.bot || !message.content || !config.mentionReactions?.length) return;
+
+            const emoji = getRandomKey<EmojiResolvable>(config.mentionReactions);
+            await message.react(emoji).catch(this.logger.err);
         });
 
         return true;
