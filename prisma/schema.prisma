@@ -53,3 +53,14 @@ model PlayerSkinData {
   lastUpdatedAt DateTime @default(now())
   createdAt     DateTime @default(now())
 }
+
+model SelfPromotions {
+  id                String    @id @unique
+  authorId          String
+  content           String
+  createdAt         DateTime
+  approvedAt        DateTime?
+  approvedById      String?
+  approvedMessageId String?
+  approvedChannelId String?
+}
