@@ -3,7 +3,9 @@ import BaseModule from '../BaseModule';
 
 export class ZombieConnectionHandlerModule extends BaseModule {
     public lastPing: number = -1;
-    public checkInterval: number = 1000 * 60;
+    public checkInterval: number = 10000;
+    public maxTries: number = 3;
+    public tries: number = 0;
     public timer?: NodeJS.Timer;
 
     public async onStart(client: RecipleClient<boolean>): Promise<boolean> {
@@ -16,8 +18,14 @@ export class ZombieConnectionHandlerModule extends BaseModule {
 
     public checkLastPing(client: RecipleClient<boolean>): number {
         if (client.ws.ping === this.lastPing) {
-            client.logger.error(`Exiting process! Client ws ping is a zombie connection.`);
-            process.exit(1);
+            this.tries++;
+
+            if (this.tries >= this.maxTries) {
+                client.logger.error(`Exiting process! Client ws ping is a zombie connection.`);
+                process.exit(1);
+            }
+        } else {
+            this.tries = 0;
         }
 
         this.lastPing = client.ws.ping;
