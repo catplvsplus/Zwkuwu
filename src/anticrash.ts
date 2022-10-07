@@ -46,12 +46,12 @@ export class AntiCrashModule extends BaseModule {
             if (user) this.sendTo.push(user);
         }
 
-        client.once('recipleCommandExecute', () => {
+        client.once('recipleRegisterApplicationCommands', () => {
             client.commands.messageCommands.forEach(m => {
                 m.setValidateOptions(true);
-                
+
                 if (m.halt) return;
-    
+
                 m.setHalt(data => util.haltCommand(data))
                 this.logger.debug(`Added halt function to message command ${m.name}`)
             });
