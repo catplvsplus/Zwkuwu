@@ -25,7 +25,6 @@ export class AntiCrashModule extends BaseModule {
     public async onLoad(client: RecipleClient<boolean>): Promise<void> {
         process.on('uncaughtException', async err => this.reportException(err));
         process.on('unhandledRejection', async err => this.reportException(err));
-        client.on('shardError', async err => this.reportException(err));
         client.on('error', async err => this.reportException(err));
         client.on('debug', debug => this.logger.debug(debug));
         client.on('warn', warn => this.logger.debug(warn));
