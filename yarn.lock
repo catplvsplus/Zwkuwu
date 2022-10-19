@@ -2615,8 +2615,8 @@ __metadata:
   linkType: hard
 
 "reciple@npm:dev":
-  version: 6.0.0-dev.2
-  resolution: "reciple@npm:6.0.0-dev.2"
+  version: 6.0.0-dev.3
+  resolution: "reciple@npm:6.0.0-dev.3"
   dependencies:
     chalk: 4.1.2
     commander: ^9.4.1
@@ -2629,7 +2629,7 @@ __metadata:
     discord.js: ^14.5.0
   bin:
     reciple: ./dist/cjs/bin.js
-  checksum: 1bbd2bfc4fc040a50598c4332577b5a7ba7249bc57c6fde73562ab6d9686acf8480e34a9f649605f07a6a82c902371316490fccfe6bd1cc792e1eae6aed11a35
+  checksum: 95c89c204fdbfae903eff440840e49b2b986488484f3f2ae1f58be397d7788212fc6e69e1692366a2999cbef9013de165ac7554a990f93ad8eb088e86b90e3ec
   languageName: node
   linkType: hard
 
