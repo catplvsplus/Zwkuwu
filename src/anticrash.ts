@@ -3,7 +3,7 @@ import BaseModule from './BaseModule';
 import yml from 'yaml';
 import createConfig from './_createConfig';
 import path from 'path';
-import { EmbedBuilder, escapeCodeBlock, Message, TextBasedChannel, User } from 'discord.js';
+import { EmbedBuilder, escapeCodeBlock, TextBasedChannel, User } from 'discord.js';
 import util from './tools/util';
 import { Logger } from 'fallout-utility';
 
