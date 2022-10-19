@@ -42,7 +42,7 @@ export class EvalModule extends BaseModule {
                 }),
         ];
 
-        client.additionalApplicationCommands.push(
+        client.commands.additionalApplicationCommands.push(
             new ContextMenuCommandBuilder()
                 .setName('Evaluate Code')
                 .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)

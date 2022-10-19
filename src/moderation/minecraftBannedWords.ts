@@ -1,11 +1,11 @@
 import { cwd, RecipleClient } from 'reciple';
 import BaseModule from '../BaseModule';
 import yml from 'yaml';
-import createConfig from '../_createConfig';
 import path from 'path';
-import { GuildTextBasedChannel, MessageType } from 'discord.js';
+import { GuildTextBasedChannel } from 'discord.js';
 import wildcardMatch from 'wildcard-match';
 import { escapeRegExp, replaceAll } from 'fallout-utility';
+import util from '../tools/util';
 
 export interface MinecraftBannedWordsModuleConfig {
     bannedWords: {
@@ -52,7 +52,7 @@ export class MinecraftBannedWordsModule extends BaseModule {
     }
 
     public static getConfig(): MinecraftBannedWordsModuleConfig {
-        return yml.parse(createConfig(path.join(cwd, 'config/minecraftBannedWords/config.yml'), <MinecraftBannedWordsModuleConfig>({
+        return yml.parse(util.createConfig(path.join(cwd, 'config/minecraftBannedWords/config.yml'), <MinecraftBannedWordsModuleConfig>({
             bannedWords: [
                 {
                     word: 'you\'re ugly',

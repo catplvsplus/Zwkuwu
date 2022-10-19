@@ -1,11 +1,10 @@
-import { ActionRowBuilder, ApplicationCommandType, ButtonBuilder, ButtonStyle, Collection, ContextMenuCommandBuilder, EmbedBuilder, GuildTextBasedChannel, ModalBuilder, ModalSubmitInteraction, PermissionResolvable, RepliableInteraction, TextInputBuilder, TextInputStyle, User } from 'discord.js';
-import { cwd, MessageCommandBuilder, RecipleClient, SlashCommandBuilder } from 'reciple';
+import { ActionRowBuilder, ApplicationCommandType, ButtonBuilder, ButtonStyle, Collection, ContextMenuCommandBuilder, EmbedBuilder, GuildTextBasedChannel, ModalBuilder, ModalSubmitInteraction, PermissionResolvable, TextInputBuilder, TextInputStyle, User } from 'discord.js';
+import { cwd, RecipleClient, SlashCommandBuilder } from 'reciple';
 import BaseModule from '../BaseModule';
 import { InteractionEventType } from '../tools/InteractionEvents';
 import util from '../tools/util';
 import { Confession, RawConfession } from './Confessions/Confession';
 import yml from 'yaml';
-import createConfig from '../_createConfig';
 import path from 'path';
 
 export interface ConfessionOptions {
@@ -88,7 +87,7 @@ export class ConfessionModule extends BaseModule {
             }
         ];
 
-        client.additionalApplicationCommands.push(
+        client.commands.additionalApplicationCommands.push(
             new ContextMenuCommandBuilder()
                 .setName('Delete Confession')
                 .setType(ApplicationCommandType.Message),
@@ -219,7 +218,7 @@ export class ConfessionModule extends BaseModule {
     }
 
     public static getConfig(): ConfessionModuleConfig {
-        return yml.parse(createConfig(path.join(cwd, 'config/confession/config.yml'), <ConfessionModuleConfig>({
+        return yml.parse(util.createConfig(path.join(cwd, 'config/confession/config.yml'), <ConfessionModuleConfig>({
             confessionChannel: '000000000000000000',
             titleAccessRequiredPermissions: ['ManageChannels']
         })));

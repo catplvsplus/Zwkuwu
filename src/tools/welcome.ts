@@ -1,9 +1,8 @@
 import { cwd, RecipleClient } from 'reciple';
 import BaseModule from '../BaseModule';
 import yml from 'yaml';
-import createConfig from '../_createConfig';
 import path from 'path';
-import { EmbedBuilder, GuildMember, GuildMemberResolvable, GuildTextBasedChannel, PartialGuildMember } from 'discord.js';
+import { EmbedBuilder, GuildMember, GuildTextBasedChannel, PartialGuildMember } from 'discord.js';
 import util from './util';
 import { SavedMemberData } from '@prisma/client';
 
@@ -104,7 +103,7 @@ export class WelcomeModule extends BaseModule {
     }
 
     public static getConfig(): WelcomeModuleConfig {
-        return yml.parse(createConfig(path.join(cwd, 'config/welcome/config.yml'), <WelcomeModuleConfig>({
+        return yml.parse(util.createConfig(path.join(cwd, 'config/welcome/config.yml'), <WelcomeModuleConfig>({
             giveRoles: ['000000000000000000', '000000000000000000', '000000000000000000'],
             guilds: [],
             welcomeChannels: ['000000000000000000', '000000000000000000', '000000000000000000'],

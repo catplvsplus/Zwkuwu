@@ -1,12 +1,11 @@
 import { MinecraftIPCache } from '@prisma/client';
 import axios from 'axios';
-import { Collection, GuildTextBasedChannel, Message } from 'discord.js';
+import { Collection, Message } from 'discord.js';
 import { Logger, replaceAll } from 'fallout-utility';
 import { cwd, RecipleClient } from 'reciple';
 import BaseModule from '../BaseModule';
 import util from '../tools/util';
 import yml from 'yaml';
-import createConfig from '../_createConfig';
 import path from 'path';
 
 export type FetchIPStatus = 'ok'|'error'|'warning'|'denied';
@@ -176,7 +175,7 @@ export class AntiProxyModule extends BaseModule {
     }
 
     public static getConfig(): AntiProxyModuleConfig {
-        return yml.parse(createConfig(path.join(cwd, 'config/antiproxy/config.yml'), <AntiProxyModuleConfig>({
+        return yml.parse(util.createConfig(path.join(cwd, 'config/antiproxy/config.yml'), <AntiProxyModuleConfig>({
             token: '',
             consoleBotIds: [],
             consoleChannelIds: [],

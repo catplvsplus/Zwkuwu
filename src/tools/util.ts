@@ -1,13 +1,13 @@
 import { AnyCommandHaltData, CommandHaltReason, cwd, RecipleClient, SlashCommandBuilder, SlashCommandHaltData } from 'reciple';
 import { ColorResolvable, EmbedBuilder, EmojiResolvable, User,UserMention, UserResolvable } from 'discord.js';
-import createConfig from '../_createConfig';
 import BaseModule from '../BaseModule';
 import path from 'path';
 import yml from 'yaml';
 import ms from 'ms';
-import { Prisma, PrismaClient } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import anticrash from '../anticrash';
 import { getRandomKey, Logger } from 'fallout-utility';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
 
 export interface UtilModuleConfig {
     embedColor: ColorResolvable;
@@ -27,7 +27,7 @@ export class UtilModule extends BaseModule {
         this.logger = client.logger.cloneLogger({ loggerName: 'UtilModule' });
 
         const configPath: string = path.join(cwd, 'config/util/config.yml');
-        const config: UtilModuleConfig = yml.parse(createConfig<UtilModuleConfig>(configPath, {
+        const config: UtilModuleConfig = yml.parse(this.createConfig<UtilModuleConfig>(configPath, {
             embedColor: 'Blue',
             errorEmbedColor: 'Red',
             mentionReactions: []
@@ -142,6 +142,19 @@ export class UtilModule extends BaseModule {
         }
 
         return res;
+    }
+
+    public createConfig<T extends any>(configPath: string, defaultData: T): string {
+        if (existsSync(configPath)) return readFileSync(configPath, 'utf8');
+
+        const filename = path.extname(configPath);
+        const data = typeof defaultData === 'object' && (filename == '.yml' || filename == '.yaml') ? yml.stringify(defaultData) : defaultData;
+
+        mkdirSync(path.dirname(configPath), { recursive: true });
+        writeFileSync(configPath, typeof data === 'object' ? JSON.stringify(data, null, 2) : `${data}`);
+        if (existsSync(configPath)) return readFileSync(configPath, 'utf8');
+
+        throw new Error(`Failed to create config file at ${configPath}`);
     }
 }
 

@@ -1258,14 +1258,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fallout-utility@npm:^1.5.1, fallout-utility@npm:^1.5.2":
-  version: 1.5.2
-  resolution: "fallout-utility@npm:1.5.2"
+"fallout-utility@npm:^1.5.4":
+  version: 1.5.4
+  resolution: "fallout-utility@npm:1.5.4"
   dependencies:
     chalk: ^4.1.2
     prompt-sync: ^4.2.0
     strip-ansi: ^6.0.1
-  checksum: c8da7c1ef3865eaf8ffb7e9cc4c83aed18772e32a7fca5481d5198b906e3777bdacf514e737bcd44a8a13efdb5f5f464323c3d0048284cee1b0479aafd018933
+  checksum: 1950b66422951d69a8e277449716edb0bb042c80ae0a007bb72a39f568e7e5be5b7901c66ab4d23a9a077889e46107306bb419ab762747401f5487374f132948
   languageName: node
   linkType: hard
 
@@ -1716,11 +1716,11 @@ __metadata:
     canvas: ^2.10.1
     discord.js: ^14.5.0
     express: ^4.18.1
-    fallout-utility: ^1.5.1
+    fallout-utility: ^1.5.4
     minecraft-protocol: ^1.36.1
     ms: ^2.1.3
     prisma: ^4.4.0
-    reciple: ^5.6.0
+    reciple: dev
     rimraf: ^3.0.2
     tiktok-scraper-ts: ^1.3.9
     typescript: ^4.7.4
@@ -2614,22 +2614,22 @@ __metadata:
   languageName: node
   linkType: hard
 
-"reciple@npm:^5.6.0":
-  version: 5.6.0
-  resolution: "reciple@npm:5.6.0"
+"reciple@npm:dev":
+  version: 6.0.0-dev.2
+  resolution: "reciple@npm:6.0.0-dev.2"
   dependencies:
     chalk: 4.1.2
     commander: ^9.4.1
     dotenv: ^16.0.3
-    fallout-utility: ^1.5.2
-    semver: ^7.3.8
+    fallout-utility: ^1.5.4
+    semver: ^7.3.7
     wildcard-match: ^5.1.2
-    yaml: ^2.1.3
+    yaml: ^2.1.1
   peerDependencies:
-    discord.js: ^14.1.0
+    discord.js: ^14.5.0
   bin:
-    reciple: dist/cjs/bin.js
-  checksum: f663a1a43ca432843b6657c30df612ded4d9841075804e516615004c399be91a4b0ecebd9f8a6a7187f26edcfa558b103f4b0a3c743b7da35ae797380e5d6cb1
+    reciple: ./dist/cjs/bin.js
+  checksum: 1bbd2bfc4fc040a50598c4332577b5a7ba7249bc57c6fde73562ab6d9686acf8480e34a9f649605f07a6a82c902371316490fccfe6bd1cc792e1eae6aed11a35
   languageName: node
   linkType: hard
 
@@ -2703,7 +2703,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"semver@npm:^7.3.8":
+"semver@npm:^7.3.7":
   version: 7.3.8
   resolution: "semver@npm:7.3.8"
   dependencies:
@@ -3264,7 +3264,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"yaml@npm:^2.1.3":
+"yaml@npm:^2.1.1, yaml@npm:^2.1.3":
   version: 2.1.3
   resolution: "yaml@npm:2.1.3"
   checksum: 91316062324a93f9cb547469092392e7d004ff8f70c40fecb420f042a4870b2181557350da56c92f07bd44b8f7a252b0be26e6ade1f548e1f4351bdd01c9d3c7

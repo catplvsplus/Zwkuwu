@@ -98,7 +98,7 @@ export class TranslateModule extends BaseModule {
             },
         ];
 
-        client.additionalApplicationCommands.push(
+        client.commands.additionalApplicationCommands.push(
             new ContextMenuCommandBuilder()
                 .setName('Translate')
                 .setType(ApplicationCommandType.Message)

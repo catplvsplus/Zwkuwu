@@ -2,7 +2,7 @@ import { AnyCommandBuilder, AnyCommandData, RecipleClient, RecipleScript } from 
 import { CommandInteractionEvent, ComponentInteractionEvent } from './tools/InteractionEvents';
 
 export default abstract class BaseModule implements RecipleScript {
-    public versions: string|string[] = ['^5.1.1'];
+    public versions: string|string[] = ['^6.0.0'];
     public commands: (AnyCommandBuilder|AnyCommandData)[] = [];
     public interactionEventHandlers: (ComponentInteractionEvent|CommandInteractionEvent)[] = [];
 

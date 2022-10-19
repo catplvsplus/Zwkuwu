@@ -36,7 +36,7 @@ export class InteractionEventsModule extends BaseModule {
         client.on('interactionCreate', async interaction => {
             const handlers: (ComponentInteractionEvent|CommandInteractionEvent)[] = [];
 
-            client.modules.forEach(m => handlers.push(...(m.script as BaseModule).interactionEventHandlers));
+            client.modules.modules.forEach(m => handlers.push(...(m.script as BaseModule).interactionEventHandlers));
 
             for (const handler of handlers) {
                 if (handler.type !== InteractionEventsModule.getInteractionEventType(interaction)) continue;

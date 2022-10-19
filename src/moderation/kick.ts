@@ -127,7 +127,7 @@ export class KickModule extends BaseModule {
             }
         ];
 
-        client.additionalApplicationCommands.push(
+        client.commands.additionalApplicationCommands.push(
             new ContextMenuCommandBuilder()
                 .setName('Kick')
                 .setDefaultMemberPermissions(PermissionFlagsBits.KickMembers)

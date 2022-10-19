@@ -4,7 +4,6 @@ import path from 'path';
 import { RecipleClient } from 'reciple';
 import yml from 'yaml';
 import BaseModule from '../BaseModule';
-import createConfig from '../_createConfig';
 import util from './util';
 
 export interface RolesConfig {
@@ -192,7 +191,7 @@ export class Roles extends BaseModule {
             ]
         };
 
-        return yml.parse(createConfig(configPath, defaultConfig));
+        return yml.parse(util.createConfig(configPath, defaultConfig));
     }
 }
 

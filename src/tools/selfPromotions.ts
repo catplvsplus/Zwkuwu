@@ -4,7 +4,6 @@ import BaseModule from '../BaseModule';
 import { RawSelfPromotion, SelfPromotion } from './SelfPromotions/SelfPromotion';
 import util from './util';
 import yml from 'yaml';
-import createConfig from '../_createConfig';
 import path from 'path';
 import { setTimeout } from 'timers/promises';
 import { InteractionEventType } from './InteractionEvents';
@@ -281,7 +280,7 @@ export class SelfPromotionsModule extends BaseModule {
     }
 
     public static getConfig(): SelfPromotionsConfig {
-        return yml.parse(createConfig(path.join(cwd, 'config/selfpromotions/config.yml'), <SelfPromotionsConfig>({
+        return yml.parse(util.createConfig(path.join(cwd, 'config/selfpromotions/config.yml'), <SelfPromotionsConfig>({
             pendingApprovalChannel: '000000000000000000',
             promotionsChannel: '000000000000000000',
             requiredApproverPermisions: ['ManageMessages'],

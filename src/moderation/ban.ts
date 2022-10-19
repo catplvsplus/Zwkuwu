@@ -135,7 +135,7 @@ export class BanModule extends BaseModule {
             }
         ];
 
-        client.additionalApplicationCommands.push(
+        client.commands.additionalApplicationCommands.push(
             new ContextMenuCommandBuilder()
                 .setName('Ban')
                 .setDefaultMemberPermissions(PermissionFlagsBits.BanMembers)

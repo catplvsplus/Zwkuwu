@@ -1,12 +1,10 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ColorResolvable, EmbedBuilder, Message } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ColorResolvable, Message } from 'discord.js';
 import { cwd, MessageCommandBuilder, RecipleClient, SlashCommandBuilder } from 'reciple';
 import BaseModule from '../BaseModule';
 import yml from 'yaml';
 import { NewPingResult, ping } from 'minecraft-protocol';
-import createConfig from '../_createConfig';
 import path from 'path';
 import util from '../tools/util';
-import console from 'console';
 
 export interface MinecraftIPConfig {
     servers: { host: string; port?: number; description?: string; }[];
@@ -165,7 +163,7 @@ export class MinecraftIP extends BaseModule {
     }
 
     public static getConfig(): MinecraftIPConfig {
-        return yml.parse(createConfig(path.join(cwd, 'config/minecraftIP/config.yml'), <MinecraftIPConfig>({
+        return yml.parse(util.createConfig(path.join(cwd, 'config/minecraftIP/config.yml'), <MinecraftIPConfig>({
             servers: [{
                 host: 'play.ourmcworld.gq',
                 port: 25565,
