@@ -53,10 +53,10 @@ export class AntiCrashModule extends BaseModule {
                 m.setHalt(data => util.haltCommand(data))
                 this.logger.debug(`Added halt function to message command ${m.name}`)
             });
-    
+
             client.commands.slashCommands.forEach(s => {
                 if (s.halt) return;
-    
+
                 s.setHalt(data => util.haltCommand(data))
                 this.logger.debug(`Added halt function to slash command ${s.name}`)
             });

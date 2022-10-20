@@ -1,11 +1,11 @@
-import { ButtonPagination, ButtonPaginationComponentsBuilder, ButtonPaginationOptions, ComponentButtonBuilder, PaginationControllerType } from '@ghextercortes/djs-pagination';
-import { ButtonBuilder, ButtonStyle, EmbedBuilder, escapeCodeBlock, escapeInlineCode, PermissionResolvable, PermissionsBitField } from 'discord.js';
-import { AnyCommandBuilder, CommandBuilderType, MessageCommandBuilder, MessageCommandOptionBuilder, RecipleClient } from 'reciple';
+import { ButtonPagination, ButtonPaginationOptions, PaginationControllerType } from '@ghextercortes/djs-pagination';
+import { ButtonBuilder, ButtonStyle, escapeCodeBlock, escapeInlineCode, PermissionResolvable, PermissionsBitField } from 'discord.js';
+import { AnyCommandBuilder, CommandType, MessageCommandBuilder, RecipleClient } from 'reciple';
 import BaseModule from '../BaseModule';
 import util from './util';
 
 export interface RawCommandUsage {
-    type: CommandBuilderType;
+    type: CommandType;
     name: string;
     description: string;
     options: RawCommandOptionUsage[];
@@ -18,7 +18,7 @@ export interface RawCommandOptionUsage {
 }
 
 export class CommandUsage implements RawCommandUsage {
-    public type: CommandBuilderType;
+    public type: CommandType;
     public name: string;
     public description: string;
     public options: CommandOptionUsage[];
@@ -152,7 +152,7 @@ export class CommandHelpModule extends BaseModule {
                 .addFields(
                     ...chunk.map(command => ({
                         name: command.name,
-                        value: `\`\`\`${escapeCodeBlock((command.type == CommandBuilderType.MessageCommand ? (util.client.config.commands.messageCommand.prefix || '!') : '/') + command.toString())}\`\`\``
+                        value: `\`\`\`${escapeCodeBlock((command.type == CommandType.MessageCommand ? (util.client.config.commands.messageCommand.prefix || '!') : '/') + command.toString())}\`\`\``
                     }))
                 )
             );
