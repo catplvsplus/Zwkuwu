@@ -28,5 +28,5 @@ export class PingModule extends BaseModule {
         return util.smallEmbed(`Pong ┃ ${ms(client.ws.ping, { long: true })}`);
     }
 }
-{ long: true }
+
 export default new PingModule();
