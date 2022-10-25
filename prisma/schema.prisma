@@ -11,10 +11,9 @@ datasource db {
 }
 
 model UserSettings {
-  id                String  @id @unique
-  allowSniping      Boolean @default(true)
-  allowNewLevelPing Boolean @default(true)
-  cleanDataOnLeave  Boolean @default(false)
+  id               String  @id @unique
+  allowSniping     Boolean @default(true)
+  cleanDataOnLeave Boolean @default(false)
 }
 
 model Snipes {
