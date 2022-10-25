@@ -10,6 +10,13 @@ datasource db {
   url      = "file:database.db"
 }
 
+model UserSettings {
+  id                String  @id @unique
+  allowSniping      Boolean @default(true)
+  allowNewLevelPing Boolean @default(true)
+  cleanDataOnLeave  Boolean @default(false)
+}
+
 model Snipes {
   id              String   @id @unique
   authorId        String

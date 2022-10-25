@@ -15,9 +15,9 @@ export interface SelfPromotionsConfig {
     requiredApproverPermisions: PermissionResolvable[];
 }
 
-export class SelfPromotionsModule extends BaseModule {
+export class SelfPromotionManagerModule extends BaseModule {
     public cache: Collection<string, SelfPromotion> = new Collection();
-    public config: SelfPromotionsConfig = SelfPromotionsModule.getConfig();
+    public config: SelfPromotionsConfig = SelfPromotionManagerModule.getConfig();
     public pendingApprovalChannel?: TextBasedChannel;
     public promotionsChannel?: TextBasedChannel;
 
@@ -218,6 +218,14 @@ export class SelfPromotionsModule extends BaseModule {
                 await msg.delete();
             });
         });
+
+        client.on('messageDelete', async message => {
+            if (this.config.promotionsChannel !== message.channel.id) return;
+
+            const selfPromotion = await this.resolveSelfPromotion(message.id);
+
+            await selfPromotion?.delete();
+        });
     }
 
     public async addPendingPromotion(message: Message): Promise<SelfPromotion<true>> {
@@ -248,17 +256,15 @@ export class SelfPromotionsModule extends BaseModule {
     }
 
     public async resolveSelfPromotion(id: string): Promise<SelfPromotion<true>|undefined> {
-        return this.cache.get(id) ?? this.fetchSelfPromotion(id);
+        return this.cache.get(id) ?? this.fetchSelfPromotion(id).catch(() => undefined);
     }
 
-    public async fetchSelfPromotion(filter: string|Partial<RawSelfPromotion>, cache: boolean = true): Promise<SelfPromotion<true>|undefined> {
-        const data = await util.prisma.selfPromotions.findFirst({
+    public async fetchSelfPromotion(filter: string|Partial<RawSelfPromotion>, cache: boolean = true): Promise<SelfPromotion<true>> {
+        const data = await util.prisma.selfPromotions.findFirstOrThrow({
             where: typeof filter === 'string'
                 ? { id: filter }
                 : filter
         });
-
-        if (!data) return undefined;
 
         const selfPromotion = await (new SelfPromotion(this, data)).fetch();
         if (cache) this.cache.set(selfPromotion.id, selfPromotion);
@@ -267,16 +273,22 @@ export class SelfPromotionsModule extends BaseModule {
     }
 
     public async createSelfPromotion(message: Message): Promise<SelfPromotion<true>> {
-        const data = await util.prisma.selfPromotions.create({
-            data: {
-                id: message.id,
-                content: message.content,
-                authorId: message.author.id,
-                createdAt: message.createdAt
-            }
+        const raw = {
+            id: message.id,
+            content: message.content,
+            authorId: message.author.id,
+            createdAt: message.createdAt
+        };
+        const data = await util.prisma.selfPromotions.upsert({
+            update: raw,
+            create: raw,
+            where: { id: raw.id }
         });
 
-        return (await this.fetchSelfPromotion(data.id))!;
+        const selfPromotion = await (new SelfPromotion(this, data)).fetch();
+        this.cache.set(selfPromotion.id, selfPromotion);
+
+        return selfPromotion;
     }
 
     public static getConfig(): SelfPromotionsConfig {
@@ -289,4 +301,4 @@ export class SelfPromotionsModule extends BaseModule {
     }
 }
 
-export default new SelfPromotionsModule();
+export default new SelfPromotionManagerModule();

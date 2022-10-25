@@ -5,8 +5,9 @@ import { InteractionEventType } from '../tools/InteractionEvents';
 import { Logger } from 'fallout-utility';
 import BaseModule from '../BaseModule';
 import util from '../tools/util';
+import userSettingsManager from '../tools/userSettingsManager';
 
-export class SnipeModule extends BaseModule {
+export class SnipeManagerModule extends BaseModule {
     public cache: Collection<string, SnipedMessage> = new Collection();
     public logger!: Logger;
 
@@ -82,7 +83,9 @@ export class SnipeModule extends BaseModule {
             if (!message.content && !message.editedAt && !message.attachments.size) return;
             if (!message.inGuild() || message.author.bot || message.author.system) return;
 
-            await this.snipeMessage(message).catch(err => this.logger.err(err));
+            const userSettings = await userSettingsManager.getOrCreateUserSettings(message.author.id);
+
+            if (userSettings.allowSniping) await this.snipeMessage(message).catch(err => this.logger.err(err));
         });
 
         client.on('cacheSweep', () => {
@@ -90,9 +93,12 @@ export class SnipeModule extends BaseModule {
         });
     }
 
-    public async snipe(channel: TextBasedChannel, sniper?: User): Promise<EmbedBuilder> {
+    public async snipe(channel: TextBasedChannel, sniper: User): Promise<EmbedBuilder> {
         const snipedMessage = await this.fetchSnipedMessage({ channelId: channel.id });
+        const userSettings = await userSettingsManager.getOrCreateUserSettings(sniper.id);
+
         if (!snipedMessage) return util.smallEmbed(`No snipes found in this channel`);
+        if (!userSettings.allowSniping) return util.smallEmbed(`Enable message sniping in user settings to use this command`);
 
         const embed = snipedMessage.toEmbed();
         if (sniper) embed.setFooter({ text: `Sniped by ${sniper.tag}`, iconURL: sniper.displayAvatarURL() });
@@ -102,11 +108,11 @@ export class SnipeModule extends BaseModule {
     }
 
     public async resolveSnipedMessage(id: string): Promise<SnipedMessage<true>|undefined> {
-        return this.cache.get(id) ?? this.fetchSnipedMessage(id);
+        return this.cache.get(id) ?? this.fetchSnipedMessage(id).catch(() => undefined);
     }
 
-    public async fetchSnipedMessage(filter: string|Partial<RawSnipedMessage>, cache: boolean = true): Promise<SnipedMessage<true>|undefined> {
-        const find = await util.prisma.snipes.findFirst({
+    public async fetchSnipedMessage(filter: string|Partial<RawSnipedMessage>, cache: boolean = true): Promise<SnipedMessage<true>> {
+        const find = await util.prisma.snipes.findFirstOrThrow({
             where: typeof filter === 'string'
                 ? { id: filter }
                 : filter,
@@ -115,10 +121,9 @@ export class SnipeModule extends BaseModule {
             },
         });
 
-        if (!find) return undefined;
         const snipedMessage = await (new SnipedMessage(this, find)).fetch();
-
         if (cache) this.cache.set(snipedMessage.id, snipedMessage);
+
         return snipedMessage;
     }
 
@@ -139,4 +144,4 @@ export class SnipeModule extends BaseModule {
     }
 }
 
-export default new SnipeModule();
+export default new SnipeManagerModule();

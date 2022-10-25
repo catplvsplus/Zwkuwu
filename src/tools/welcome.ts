@@ -5,6 +5,8 @@ import path from 'path';
 import { EmbedBuilder, GuildMember, GuildTextBasedChannel, PartialGuildMember } from 'discord.js';
 import util from './util';
 import { SavedMemberData } from '@prisma/client';
+import userSettingsManager from './userSettingsManager';
+import snipeManager from '../fun/snipeManager';
 
 export interface WelcomeModuleConfig {
     giveRoles: string[];
@@ -91,8 +93,22 @@ export class WelcomeModule extends BaseModule {
         });
     }
 
-    public async saveMemberData(member: GuildMember|PartialGuildMember): Promise<SavedMemberData> {
-        return util.prisma.savedMemberData.create({
+    public async saveMemberData(member: GuildMember|PartialGuildMember): Promise<void> {
+        const userSettings = await userSettingsManager.getOrCreateUserSettings(member.id);
+
+        if (userSettings.cleanDataOnLeave) {
+            await util.prisma.snipes.deleteMany({
+                where: {
+                    authorId: member.id
+                }
+            });
+
+            snipeManager.cache.sweep(s => s.authorId === member.id);
+
+            return;
+        }
+
+        await util.prisma.savedMemberData.create({
             data: {
                 id: member.id,
                 guildId: member.guild.id,

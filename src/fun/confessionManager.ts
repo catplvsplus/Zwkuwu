@@ -14,14 +14,14 @@ export interface ConfessionOptions {
     channel: GuildTextBasedChannel;
 }
 
-export interface ConfessionModuleConfig {
+export interface ConfessionManagerModuleConfig {
     confessionChannel: string;
     titleAccessRequiredPermissions: PermissionResolvable[];
 }
 
-export class ConfessionModule extends BaseModule {
+export class ConfessionManagerModule extends BaseModule {
     public cache: Collection<string, Confession> = new Collection();
-    public config: ConfessionModuleConfig = ConfessionModule.getConfig();
+    public config: ConfessionManagerModuleConfig = ConfessionManagerModule.getConfig();
     public confessionChannel!: GuildTextBasedChannel;
 
     public async onStart(client: RecipleClient<boolean>): Promise<boolean> {
@@ -137,11 +137,11 @@ export class ConfessionModule extends BaseModule {
     }
 
     public async resolveConfession(id: string): Promise<Confession<true>|undefined> {
-        return this.cache.get(id) ?? this.fetchConfession(id);
+        return this.cache.get(id) ?? this.fetchConfession(id).catch(() => undefined);
     }
 
-    public async fetchConfession(filter: string|Partial<RawConfession>, cache: boolean = true): Promise<Confession<true>|undefined> {
-        const find = await util.prisma.confessions.findFirst({
+    public async fetchConfession(filter: string|Partial<RawConfession>, cache: boolean = true): Promise<Confession<true>> {
+        const find = await util.prisma.confessions.findFirstOrThrow({
             where: typeof filter === 'string'
                 ? { id: filter }
                 : filter,
@@ -150,10 +150,9 @@ export class ConfessionModule extends BaseModule {
             },
         });
 
-        if (!find) return undefined;
         const confession = await (new Confession(this, find)).fetch();
-
         if (cache) this.cache.set(confession.id, confession);
+
         return confession;
     }
 
@@ -217,12 +216,12 @@ export class ConfessionModule extends BaseModule {
             )
     }
 
-    public static getConfig(): ConfessionModuleConfig {
-        return yml.parse(util.createConfig(path.join(cwd, 'config/confession/config.yml'), <ConfessionModuleConfig>({
+    public static getConfig(): ConfessionManagerModuleConfig {
+        return yml.parse(util.createConfig(path.join(cwd, 'config/confession/config.yml'), <ConfessionManagerModuleConfig>({
             confessionChannel: '000000000000000000',
             titleAccessRequiredPermissions: ['ManageChannels']
         })));
     }
 }
 
-export default new ConfessionModule();
+export default new ConfessionManagerModule();
