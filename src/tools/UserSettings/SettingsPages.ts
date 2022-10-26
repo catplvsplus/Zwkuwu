@@ -28,12 +28,12 @@ export class SettingsPages {
                             .setPlaceholder('Allow/Disable')
                             .setOptions(
                                 {
-                                    label: `Allow`,
+                                    label: `Allow Message Sniping`,
                                     value: `enabled`,
                                     default: this.userSettings.allowSniping
                                 },
                                 {
-                                    label: `Disabled`,
+                                    label: `Disable Message Sniping`,
                                     value: `disabled`,
                                     default: !this.userSettings.allowSniping
                                 }
@@ -59,12 +59,12 @@ export class SettingsPages {
                             .setPlaceholder('Allow/Disable')
                             .setOptions(
                                 {
-                                    label: `Enable`,
+                                    label: `Clean Data on Server Leave`,
                                     value: `enabled`,
                                     default: this.userSettings.cleanDataOnLeave
                                 },
                                 {
-                                    label: `Disable`,
+                                    label: `Keep Data in Server`,
                                     value: `disabled`,
                                     default: !this.userSettings.cleanDataOnLeave
                                 }
