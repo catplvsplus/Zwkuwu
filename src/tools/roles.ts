@@ -52,7 +52,7 @@ export class Roles extends BaseModule {
             if (!interaction.isSelectMenu() || !interaction.inCachedGuild()) return;
 
             const messageConf = this.config.messages.find(m => m.id === interaction.message.id);
-            if (!messageConf) throw new Error('ee');
+            if (!messageConf) return;
 
             const selectedRoles = await Promise.all(interaction.values.map(async v => this.getRole(v, interaction.guild)));
             const validRoles = messageConf?.roles;

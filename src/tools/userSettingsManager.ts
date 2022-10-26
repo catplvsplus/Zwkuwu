@@ -1,12 +1,27 @@
 import { Collection, UserResolvable } from 'discord.js';
-import { RecipleClient } from 'reciple';
+import { RecipleClient, SlashCommandBuilder } from 'reciple';
 import BaseModule from '../BaseModule';
 import { RawUserSettings, UserSettings } from './UserSettings/UserSettings';
 import util from './util';
 
 export class UserSettingsManagerModule extends BaseModule {
     public cache: Collection<string, UserSettings<true>> = new Collection();
+
     public onStart(client: RecipleClient<boolean>): boolean | Promise<boolean> {
+        this.commands = [
+            new SlashCommandBuilder()
+                .setName('settings')
+                .setDescription(`Change your settings for Jenny`)
+                .setExecute(async data => {
+                    const interaction = data.interaction;
+
+                    await interaction.deferReply({ ephemeral: true });
+
+                    const settings = await this.getOrCreateUserSettings(interaction.user.id);
+                    const pagination = await settings.pages.createPagination().paginate(interaction, 'EditMessage');
+                })
+        ];
+
         client.on('guildMemberRemove', async member => {
             const settings = await this.resolveUserSettings(member.id).catch(() => null);
             if (settings?.cleanDataOnLeave) {

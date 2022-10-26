@@ -3,6 +3,7 @@ import { If, User } from 'discord.js';
 import { RecipleClient } from 'reciple';
 import { UserSettingsManagerModule } from '../userSettingsManager';
 import util from '../util';
+import { SettingsPages } from './SettingsPages';
 
 export interface RawUserSettings extends PrismaUserSettings {}
 
@@ -16,6 +17,7 @@ export class UserSettings<Fetched extends boolean = boolean> implements RawUserS
     readonly userSettingsManager: UserSettingsManagerModule;
     readonly client: RecipleClient;
     readonly prisma: PrismaClient;
+    readonly pages: SettingsPages;
 
     get user() { return this._user as If<Fetched, User>; }
     get id() { return this._id; }
@@ -27,6 +29,7 @@ export class UserSettings<Fetched extends boolean = boolean> implements RawUserS
         this.userSettingsManager = userSettingsManager;
         this.client = util.client;
         this.prisma = util.prisma;
+        this.pages = new SettingsPages(this);
 
         this._id = rawUserSettings.id;
         this._allowSniping = rawUserSettings.allowSniping ?? true;
