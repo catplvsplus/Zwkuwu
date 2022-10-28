@@ -24,6 +24,7 @@ export class WelcomeModule extends BaseModule {
     public async onStart(client: RecipleClient<boolean>): Promise<boolean> {
         client.on('guildMemberAdd', async member => {
             if (this.config.guilds.length && !this.config.guilds.includes(member.guild.id)) return;
+            if (this.config.ignoreBots && member.user.bot) return;
 
             const embed = new EmbedBuilder()
                 .setAuthor({ name: `Welcome ${member.user.tag}`, iconURL: member.displayAvatarURL() })
@@ -51,6 +52,7 @@ export class WelcomeModule extends BaseModule {
 
         client.on('guildMemberRemove', async member => {
             if (this.config.guilds.length && !this.config.guilds.includes(member.guild.id)) return;
+            if (this.config.ignoreBots && member.user.bot) return;
 
             const embed = new EmbedBuilder().setAuthor({ name: `${member.user.tag} left the server`, iconURL: member.displayAvatarURL() });
 
