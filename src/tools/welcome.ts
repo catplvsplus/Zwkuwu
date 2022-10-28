@@ -13,6 +13,7 @@ export interface WelcomeModuleConfig {
     guilds: string[];
     welcomeChannels: string[];
     leaveChannels: string[];
+    ignoreBots: boolean;
 }
 
 export class WelcomeModule extends BaseModule {
@@ -57,6 +58,20 @@ export class WelcomeModule extends BaseModule {
                 await channel.send({ embeds: [embed] });
             }
 
+            const userSettings = await userSettingsManager.getOrCreateUserSettings(member.id);
+
+            if (userSettings.cleanDataOnLeave) {
+                await util.prisma.snipes.deleteMany({
+                    where: {
+                        authorId: member.id
+                    }
+                });
+
+                snipeManager.cache.sweep(s => s.authorId === member.id);
+
+                return;
+            }
+
             await this.saveMemberData(member);
         });
 
@@ -72,6 +87,12 @@ export class WelcomeModule extends BaseModule {
         for (const channelId of this.config.leaveChannels) {
             const channel = client.channels.cache.get(channelId) ?? await client.channels.fetch(channelId).catch(() => null);
             if (channel && !channel.isDMBased() && channel.isTextBased()) this.leaveChannel.push(channel);
+        }
+
+        for (const guild of client.guilds.cache.toJSON()) {
+            for (const member of guild.members.cache.filter(m => m.roles.cache.some(r => this.config.giveRoles.includes(r.id))).toJSON()) {
+                member.roles.add(member.guild.roles.cache.filter(r => this.config.giveRoles.includes(r.id)));
+            }
         }
     }
 
@@ -94,20 +115,6 @@ export class WelcomeModule extends BaseModule {
     }
 
     public async saveMemberData(member: GuildMember|PartialGuildMember): Promise<void> {
-        const userSettings = await userSettingsManager.getOrCreateUserSettings(member.id);
-
-        if (userSettings.cleanDataOnLeave) {
-            await util.prisma.snipes.deleteMany({
-                where: {
-                    authorId: member.id
-                }
-            });
-
-            snipeManager.cache.sweep(s => s.authorId === member.id);
-
-            return;
-        }
-
         await util.prisma.savedMemberData.create({
             data: {
                 id: member.id,
@@ -124,6 +131,7 @@ export class WelcomeModule extends BaseModule {
             guilds: [],
             welcomeChannels: ['000000000000000000', '000000000000000000', '000000000000000000'],
             leaveChannels: ['000000000000000000', '000000000000000000', '000000000000000000'],
+            ignoreBots: true
         })));
     }
 }
