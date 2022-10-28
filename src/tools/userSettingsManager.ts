@@ -11,14 +11,15 @@ export class UserSettingsManagerModule extends BaseModule {
         this.commands = [
             new SlashCommandBuilder()
                 .setName('settings')
-                .setDescription(`Change your settings for Jenny`)
+                .setDescription(`Change your bot settings`)
                 .setExecute(async data => {
                     const interaction = data.interaction;
 
                     await interaction.deferReply({ ephemeral: true });
 
                     const settings = await this.getOrCreateUserSettings(interaction.user.id);
-                    const pagination = await settings.pages.createPagination().paginate(interaction, 'EditMessage');
+                    
+                    await settings.pages.createPagination().paginate(interaction, 'EditMessage');
                 })
         ];
 
