@@ -28,7 +28,7 @@ export class EvalModule extends BaseModule {
                 .setName('eval')
                 .setDescription('Eval code')
                 .setRequiredMemberPermissions('Administrator')
-                .addOption(code => code
+                .addOptions(code => code
                     .setName('code')
                     .setDescription('Code to evaluate')
                     .setRequired(true)

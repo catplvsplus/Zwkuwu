@@ -59,19 +59,18 @@ export class MuteModule extends BaseModule {
                 .setName('mute')
                 .setDescription('Mute someone')
                 .setRequiredMemberPermissions('ModerateMembers')
-                .addOption(member => member
+                .addOptions(member => member
                     .setName('member')
                     .setDescription('Mute this annoying piece of shit')
                     .setRequired(true)
-                    .setValidator(value => !!util.resolveMentionOrId(value))    
-                )
-                .addOption(duration => duration
+                    .setValidator(value => !!util.resolveMentionOrId(value)),
+                duration => duration
                     .setName('duration')
                     .setDescription('How long? 1m? 1h? or 1d?')
                     .setRequired(true)
                     .setValidator(async value => !!(await Promise.resolve(ms(value)).catch(() => false)))
                 )
-                .addOption(reason => reason
+                .addOptions(reason => reason
                     .setName('reason')
                     .setDescription('Say fuck off')
                     .setRequired(false)
@@ -142,13 +141,12 @@ export class MuteModule extends BaseModule {
                 .setName('unmute')
                 .setDescription('Forgive muted member')
                 .setRequiredMemberPermissions('ModerateMembers')
-                .addOption(member => member
+                .addOptions(member => member
                     .setName('member')
                     .setDescription('Mute this annoying piece of shit')
                     .setRequired(true)
-                    .setValidator(value => !!util.resolveMentionOrId(value))    
-                )
-                .addOption(reason => reason
+                    .setValidator(value => !!util.resolveMentionOrId(value)),
+                reason => reason
                     .setName('reason')
                     .setDescription('Why?')
                     .setRequired(false)

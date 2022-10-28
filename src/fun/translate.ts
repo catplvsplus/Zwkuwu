@@ -44,7 +44,7 @@ export class TranslateModule extends BaseModule {
             new MessageCommandBuilder()
                 .setName('translate')
                 .setDescription('Translate a message for you lazy bitch')
-                .addOption(message => message
+                .addOptions(message => message
                     .setName('message')
                     .setDescription('Message to translate what else')
                     .setRequired(true)

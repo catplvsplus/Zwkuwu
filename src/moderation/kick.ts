@@ -53,13 +53,12 @@ export class KickModule extends BaseModule {
                 .setName('kick')
                 .setDescription('Kick an annoying peice of shit')
                 .setRequiredMemberPermissions('KickMembers')
-                .addOption(user => user
+                .addOptions(user => user
                     .setName('member')
                     .setDescription('Kick this mf')
                     .setRequired(true)
-                    .setValidator(async value => !!await util.resolveMentionOrId(value))
-                )
-                .addOption(reason => reason
+                    .setValidator(async value => !!await util.resolveMentionOrId(value)),
+                reason => reason
                     .setName('reason')
                     .setDescription('What\'s your problem with this monkey?')
                     .setRequired(false)

@@ -60,13 +60,12 @@ export class BanModule extends BaseModule {
                 .setName('ban')
                 .setDescription('Ban hammer')
                 .setRequiredMemberPermissions('BanMembers')
-                .addOption(user => user
+                .addOptions(user => user
                     .setName('member')
                     .setDescription('Ban this bitch')
                     .setRequired(true)
-                    .setValidator(async value => !!await util.resolveMentionOrId(value))
-                )
-                .addOption(reason => reason
+                    .setValidator(async value => !!await util.resolveMentionOrId(value)),
+                reason => reason
                     .setName('reason')
                     .setDescription('Reason why you hate this mf')
                     .setRequired(false)

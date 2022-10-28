@@ -47,7 +47,7 @@ export class UnbanModule extends BaseModule {
                 .setName('unban')
                 .setDescription('Unban someone')
                 .setRequiredMemberPermissions('BanMembers')
-                .addOption(user => user
+                .addOptions(user => user
                     .setName('user')
                     .setDescription('Unban this user')
                     .setRequired(true)

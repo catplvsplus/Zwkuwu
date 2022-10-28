@@ -57,7 +57,7 @@ export class CommandHelpModule extends BaseModule {
             new MessageCommandBuilder()
                 .setName('help')
                 .setDescription('Get message commands help')
-                .addOption(filter => filter
+                .addOptions(filter => filter
                     .setName('filter')
                     .setDescription('Filter commands')
                     .setRequired(false)
