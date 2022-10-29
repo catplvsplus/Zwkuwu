@@ -78,7 +78,7 @@ export class ReportModule extends BaseModule {
                                 .addFields(
                                     {
                                         name: `Reason`,
-                                        value: interaction.fields.getTextInputValue('reason') ?? '*No reason provided*',
+                                        value: interaction.fields.getTextInputValue('reason') || '*No reason provided*',
                                         inline: true
                                     },
                                     {
