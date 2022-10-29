@@ -9,13 +9,13 @@ export class PingModule extends BaseModule {
         this.commands = [
             new SlashCommandBuilder()
                 .setName('ping')
-                .setDescription('Show bot\'s ping')
+                .setDescription('Pong')
                 .setExecute(async data => {
                     await data.interaction.reply({ embeds: [this.getPing(client)] });
                 }),
             new MessageCommandBuilder()
                 .setName('ping')
-                .setDescription('Show bot\'s ping')
+                .setDescription('Pong')
                 .setExecute(async data => {
                     await data.message.reply({ embeds: [this.getPing(client)] })
                 })

@@ -62,7 +62,7 @@ export class PlayerSkinManagerModule extends BaseModule {
         this.commands = [
             new SlashCommandBuilder()
                 .setName('skin')
-                .setDescription('Modify minecraft player skin settings')
+                .setDescription('Modify minecraft skin')
                 .addSubcommand(remove => remove
                     .setName('remove')
                     .setDescription('Remove player skkin')

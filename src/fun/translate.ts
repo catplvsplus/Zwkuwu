@@ -10,7 +10,7 @@ export class TranslateModule extends BaseModule {
         this.commands = [
             new SlashCommandBuilder()
                 .setName('translate')
-                .setDescription('Translate a message for you lazy bitch')
+                .setDescription('Translate a message')
                 .addStringOption(message => message
                     .setName('message')
                     .setDescription('Message to translate what else')
@@ -43,7 +43,7 @@ export class TranslateModule extends BaseModule {
                 }),
             new MessageCommandBuilder()
                 .setName('translate')
-                .setDescription('Translate a message for you lazy bitch')
+                .setDescription('Translate a message')
                 .addOptions(message => message
                     .setName('message')
                     .setDescription('Message to translate what else')

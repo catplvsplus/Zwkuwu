@@ -25,7 +25,7 @@ export class MinecraftIP extends BaseModule {
         this.commands = [
             new SlashCommandBuilder()
                 .setName('ip')
-                .setDescription('Ping minecraft server')
+                .setDescription('Show minecraft server status')
                 .setExecute(async data => {
                     const interaction = data.interaction;
                     if (!interaction.inCachedGuild()) return;
@@ -39,7 +39,7 @@ export class MinecraftIP extends BaseModule {
                 }),
             new MessageCommandBuilder()
                 .setName('ip')
-                .setDescription('Ping minecraft server')
+                .setDescription('Show minecraft server status')
                 .setExecute(async data => {
                     const message = data.message;
                     const reply = await this.pingServers(message);

@@ -25,7 +25,7 @@ export class SnipeManagerModule extends BaseModule {
         this.commands = [
             new SlashCommandBuilder()
                 .setName('snipe')
-                .setDescription('Snipe recently deleted message')
+                .setDescription('Snipe deleted messages')
                 .setExecute(async data => {
                     const interaction = data.interaction;
                     if (!interaction.channel) return;
@@ -40,7 +40,7 @@ export class SnipeManagerModule extends BaseModule {
                 }),
             new MessageCommandBuilder()
                 .setName('snipe')
-                .setDescription('Snipe recently deleted message')
+                .setDescription('Snipe deleted messages')
                 .setExecute(async data => {
                     const message = data.message;
 

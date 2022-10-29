@@ -28,7 +28,7 @@ export class ConfessionManagerModule extends BaseModule {
         this.commands = [
             new SlashCommandBuilder()
                 .setName('confess')
-                .setDescription('Send an anonymous message to the confession channel')
+                .setDescription('Create new confession')
                 .setExecute(async data => {
                     const interaction = data.interaction;
 
@@ -90,9 +90,6 @@ export class ConfessionManagerModule extends BaseModule {
         client.commands.additionalApplicationCommands.push(
             new ContextMenuCommandBuilder()
                 .setName('Delete Confession')
-                .setType(ApplicationCommandType.Message),
-            new ContextMenuCommandBuilder()
-                .setName('Create Confession')
                 .setType(ApplicationCommandType.Message)
         );
 

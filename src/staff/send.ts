@@ -20,7 +20,7 @@ export class SendModule extends BaseModule {
                 }),
             new MessageCommandBuilder()
                 .setName('send')
-                .setDescription('Morph your messag as a bot')
+                .setDescription('Morph your message as a bot')
                 .setRequiredMemberPermissions('ManageMessages')
                 .addOptions(content => content
                     .setName('content')

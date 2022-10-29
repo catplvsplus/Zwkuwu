@@ -64,7 +64,7 @@ model SelfPromotions {
   id                String    @id @unique
   authorId          String
   content           String
-  createdAt         DateTime
+  createdAt         DateTime @default(now())
   approvedAt        DateTime?
   approvedById      String?
   approvedMessageId String?
