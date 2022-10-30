@@ -91,11 +91,11 @@ export class WelcomeModule extends BaseModule {
             if (channel && !channel.isDMBased() && channel.isTextBased()) this.leaveChannel.push(channel);
         }
 
-        for (const guild of client.guilds.cache.toJSON()) {
-            for (const member of guild.members.cache.filter(m => m.roles.cache.some(r => this.config.giveRoles.includes(r.id))).toJSON()) {
-                member.roles.add(member.guild.roles.cache.filter(r => this.config.giveRoles.includes(r.id)));
-            }
-        }
+        // for (const guild of client.guilds.cache.toJSON()) {
+        //     for (const member of guild.members.cache.filter(m => m.roles.cache.some(r => this.config.giveRoles.includes(r.id))).toJSON()) {
+        //         member.roles.add(member.guild.roles.cache.filter(r => this.config.giveRoles.includes(r.id)));
+        //     }
+        // }
     }
 
     public async deleteMemberData(member: GuildMember): Promise<void> {
