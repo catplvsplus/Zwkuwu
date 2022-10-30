@@ -134,6 +134,8 @@ export class SettingsPages {
 
                     break;
             }
+
+            pagination.collector?.resetTimer();
         });
 
         return pagination;
