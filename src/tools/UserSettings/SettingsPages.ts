@@ -1,5 +1,5 @@
 import { ButtonPagination, PageResolvable, PaginationControllerType } from '@ghextercortes/djs-pagination';
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, inlineCode, MessageActionRowComponentBuilder, SelectMenuBuilder } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, inlineCode, MessageActionRowComponentBuilder, SelectMenuBuilder, SelectMenuComponentOptionData } from 'discord.js';
 import util from '../util';
 import { UserSettings } from './UserSettings';
 
@@ -19,26 +19,13 @@ export class SettingsPages {
                     .setDescription(`Allows you to use ${snipeCommand?.id ? '</snipe:' + snipeCommand.id + '>' : inlineCode('/snipe')} and allows the bot to snipe your deleted messages.`)
             ],
             components: [
-                new ActionRowBuilder<MessageActionRowComponentBuilder>()
-                    .setComponents(
-                        new SelectMenuBuilder()
-                            .setCustomId(`usersettings-allowsniping`)
-                            .setMaxValues(1)
-                            .setMinValues(1)
-                            .setPlaceholder('Allow/Disable')
-                            .setOptions(
-                                {
-                                    label: `Allow Message Sniping`,
-                                    value: `enabled`,
-                                    default: this.userSettings.allowSniping
-                                },
-                                {
-                                    label: `Disable Message Sniping`,
-                                    value: `disabled`,
-                                    default: !this.userSettings.allowSniping
-                                }
-                            )
-                    )
+                this.toggleComponentBuilder({
+                    customId: 'usersettings-allowsniping',
+                    placeholder: `Enable/Disable message sniping`,
+                    enabled: this.userSettings.allowSniping,
+                    enableOption: `Enable message sniping & snipe command`,
+                    disableOption: `Disable message sniping & snipe command`
+                })
             ]
         };
     }
@@ -50,28 +37,43 @@ export class SettingsPages {
                     .setDescription(`Clears your snipes and will not save your user data when you leave the server. **Confessions and already sniped messages will not be remove**`)
             ],
             components: [
-                new ActionRowBuilder<MessageActionRowComponentBuilder>()
-                    .setComponents(
-                        new SelectMenuBuilder()
-                            .setCustomId(`usersettings-cleandataonleave`)
-                            .setMaxValues(1)
-                            .setMinValues(1)
-                            .setPlaceholder('Allow/Disable')
-                            .setOptions(
-                                {
-                                    label: `Clean Data on Server Leave`,
-                                    value: `enabled`,
-                                    default: this.userSettings.cleanDataOnLeave
-                                },
-                                {
-                                    label: `Keep Data in Server`,
-                                    value: `disabled`,
-                                    default: !this.userSettings.cleanDataOnLeave
-                                }
-                            )
-                    )
+                this.toggleComponentBuilder({
+                    customId: 'usersettings-cleandataonleave',
+                    placeholder: `Enable/Disable saving member data on leave`,
+                    enabled: this.userSettings.cleanDataOnLeave,
+                    enableOption: `Don't save data on leave`,
+                    disableOption: `Keep data in server on leave`
+                })
             ]
         };
+    }
+
+    public toggleComponentBuilder(options: {
+        customId: string;
+        placeholder?: string;
+        enabled?: boolean;
+        enableOption: Omit<SelectMenuComponentOptionData, 'value' | 'default'>|string;
+        disableOption: Omit<SelectMenuComponentOptionData, 'value' | 'default'>|string;
+    }): ActionRowBuilder<MessageActionRowComponentBuilder> {
+        return new ActionRowBuilder<MessageActionRowComponentBuilder>()
+            .setComponents(
+                new SelectMenuBuilder({ placeholder: options.placeholder })
+                    .setCustomId(options.customId)
+                    .setMaxValues(1)
+                    .setMinValues(1)
+                    .setOptions(
+                        {
+                            ...(typeof options.enableOption === 'string' ? { label: options.enableOption } : options.enableOption),
+                            value: 'enable',
+                            default: options.enabled === true
+                        },
+                        {
+                            ...(typeof options.disableOption === 'string' ? { label: options.disableOption } : options.disableOption),
+                            value: 'disable',
+                            default: options.enabled === false
+                        }
+                    )
+            );
     }
 
     public createPagination(): ButtonPagination {
@@ -122,16 +124,14 @@ export class SettingsPages {
                         allowSniping: enabled
                     });
 
-                    await component.editReply({ embeds: [util.smallEmbed(`${enabled ? 'Allowing' : 'Disabled'} message sniping and snipe command`)] });
-
+                    await component.editReply({ embeds: [util.smallEmbed(`${enabled ? 'Enabled' : 'Disabled'} message sniping & snipe command`)] });
                     break;
                 case 'cleandataonleave':
                     await this.userSettings.update({
                         cleanDataOnLeave: enabled
                     });
 
-                    await component.editReply({ embeds: [util.smallEmbed(`${enabled ? 'Allowing' : 'Disabled'} clean member data on server leave`)] });
-
+                    await component.editReply({ embeds: [util.smallEmbed(`${enabled ? 'Clearing' : 'Saving'} member data on server leave`)] });
                     break;
             }
 
