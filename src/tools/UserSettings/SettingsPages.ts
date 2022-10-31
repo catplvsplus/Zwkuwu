@@ -1,4 +1,4 @@
-import { ButtonPaginationBuilder, StaticPageResolvable, PaginationControllerType } from '@falloutstudios/djs-pagination';
+import { ButtonPaginationBuilder, PaginationControllerType, PageResolvable } from '@falloutstudios/djs-pagination';
 import { ActionRowBuilder, APIButtonComponentWithCustomId, ButtonBuilder, ButtonStyle, inlineCode, MessageActionRowComponentBuilder, SelectMenuBuilder, SelectMenuComponentOptionData } from 'discord.js';
 import util from '../util';
 import { UserSettings } from './UserSettings';
@@ -10,7 +10,7 @@ export class SettingsPages {
         this.userSettings = userSettings;
     }
 
-    public allowSnipesSettings(): StaticPageResolvable {
+    public allowSnipesSettings(): PageResolvable {
         const snipeCommand = this.userSettings.client.applicationCommands.get('snipe');
 
         return {
@@ -30,7 +30,7 @@ export class SettingsPages {
         };
     }
 
-    public cleanDataOnLeave(): StaticPageResolvable {
+    public cleanDataOnLeave(): PageResolvable {
         return {
             embeds: [
                 util.smallEmbed('Clean Data on Leave')
