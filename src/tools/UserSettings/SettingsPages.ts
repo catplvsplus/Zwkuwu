@@ -98,6 +98,13 @@ export class SettingsPages {
                         .setLabel('Next')
                         .setStyle(ButtonStyle.Secondary),
                     type: PaginationControllerType.NextPage
+                },
+                {
+                    builder: new ButtonBuilder()
+                        .setCustomId('stop')
+                        .setLabel('Stop Interaction')
+                        .setStyle(ButtonStyle.Danger),
+                    type: PaginationControllerType.Stop
                 }
             ],
         });
@@ -110,7 +117,7 @@ export class SettingsPages {
             if (!component.isSelectMenu() || component.user.id !== this.userSettings.id || !component.customId.startsWith('usersettings-')) return;
 
             const type = component.customId.split('-')[1];
-            const enabled = component.values.shift() === 'enabled';
+            const enabled = component.values.shift() === 'enable';
 
             await component.deferReply({ ephemeral: true });
 

@@ -16,9 +16,9 @@ export class UserSettingsManagerModule extends BaseModule {
                     const interaction = data.interaction;
 
                     await interaction.deferReply({ ephemeral: true });
-
                     const settings = await this.getOrCreateUserSettings(interaction.user.id);
 
+                    await settings.fetch();
                     await settings.pages.createPagination().paginate(interaction, 'EditMessage');
                 })
         ];
