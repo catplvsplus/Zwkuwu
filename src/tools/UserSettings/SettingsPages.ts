@@ -1,5 +1,5 @@
-import { ButtonPagination, PageResolvable, PaginationControllerType } from '@ghextercortes/djs-pagination';
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, inlineCode, MessageActionRowComponentBuilder, SelectMenuBuilder, SelectMenuComponentOptionData } from 'discord.js';
+import { ButtonPaginationBuilder, PageResolvable, PaginationControllerType } from '@falloutstudios/djs-pagination';
+import { ActionRowBuilder, APIButtonComponentWithCustomId, ButtonBuilder, ButtonStyle, inlineCode, MessageActionRowComponentBuilder, SelectMenuBuilder, SelectMenuComponentOptionData } from 'discord.js';
 import util from '../util';
 import { UserSettings } from './UserSettings';
 
@@ -76,13 +76,13 @@ export class SettingsPages {
             );
     }
 
-    public createPagination(): ButtonPagination {
-        const pagination = new ButtonPagination({
+    public createPagination(): ButtonPaginationBuilder {
+        const pagination = new ButtonPaginationBuilder({
             authorId: this.userSettings.id,
             onDisableAction: 'DeleteComponents',
             pages: [
-                this.allowSnipesSettings(),
-                this.cleanDataOnLeave()
+                () => this.allowSnipesSettings(),
+                () => this.cleanDataOnLeave()
             ],
             buttons: {
                 buttons: [
@@ -106,9 +106,9 @@ export class SettingsPages {
             }
         });
 
-        pagination.collectorOptions = {
-            filter: component => component.customId.startsWith('usersettings-') || pagination.buttons!.buttons.some(b => b.customId === component.customId)
-        };
+        pagination.setCollectorOptions({
+            filter: component => component.customId.startsWith('usersettings-') || pagination.buttons.some(b => (b.builder.data as APIButtonComponentWithCustomId).custom_id === component.customId)
+        });
 
         pagination.on('collectorCollect', async component => {
             if (!component.isSelectMenu() || component.user.id !== this.userSettings.id || !component.customId.startsWith('usersettings-')) return;

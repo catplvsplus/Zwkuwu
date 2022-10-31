@@ -1,4 +1,4 @@
-import { ButtonPagination, ButtonPaginationOptions, PaginationControllerType } from '@ghextercortes/djs-pagination';
+import { ButtonPaginationBuilder, ButtonPaginationData, PaginationControllerType } from '@falloutstudios/djs-pagination';
 import { ButtonBuilder, ButtonStyle, escapeCodeBlock, escapeInlineCode, PermissionResolvable, PermissionsBitField } from 'discord.js';
 import { AnyCommandBuilder, CommandType, MessageCommandBuilder, RecipleClient } from 'reciple';
 import BaseModule from '../BaseModule';
@@ -119,22 +119,18 @@ export class CommandHelpModule extends BaseModule {
             });
     }
 
-    public createPagination(commands: CommandUsage[], options?: Partial<ButtonPaginationOptions>): ButtonPagination {
-        const pagination = new ButtonPagination({
-            buttons: {
-                buttons: [
-                    {
-                        button: new ButtonBuilder().setCustomId('prev').setLabel('Previous').setStyle(ButtonStyle.Secondary),
-                        customId: 'prev',
-                        type: PaginationControllerType.PreviousPage
-                    },
-                    {
-                        button: new ButtonBuilder().setCustomId('next').setLabel('Next').setStyle(ButtonStyle.Secondary),
-                        customId: 'next',
-                        type: PaginationControllerType.NextPage
-                    },
-                ]
-            },
+    public createPagination(commands: CommandUsage[], options?: Partial<ButtonPaginationData>): ButtonPaginationBuilder {
+        const pagination = new ButtonPaginationBuilder({
+            buttons: [
+                {
+                    builder: new ButtonBuilder().setCustomId('prev').setLabel('Previous').setStyle(ButtonStyle.Secondary),
+                    type: PaginationControllerType.PreviousPage
+                },
+                {
+                    builder: new ButtonBuilder().setCustomId('next').setLabel('Next').setStyle(ButtonStyle.Secondary),
+                    type: PaginationControllerType.NextPage
+                },
+            ],
             ...options
         });
 
