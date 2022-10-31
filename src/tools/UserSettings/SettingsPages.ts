@@ -79,7 +79,7 @@ export class SettingsPages {
     public createPagination(): ButtonPaginationBuilder {
         const pagination = new ButtonPaginationBuilder({
             authorId: this.userSettings.id,
-            onDisable: 'RemoveComponents',
+            onDisable: 'DisableComponents',
             pages: [
                 () => this.allowSnipesSettings(),
                 () => this.cleanDataOnLeave()
