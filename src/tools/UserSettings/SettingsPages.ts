@@ -106,7 +106,7 @@ export class SettingsPages {
             filter: component => component.customId.startsWith('usersettings-') || pagination.buttons.some(b => (b.builder.data as APIButtonComponentWithCustomId).custom_id === component.customId)
         });
 
-        pagination.on('collectorCollect', async component => {
+        pagination.on('collect', async component => {
             if (!component.isSelectMenu() || component.user.id !== this.userSettings.id || !component.customId.startsWith('usersettings-')) return;
 
             const type = component.customId.split('-')[1];
