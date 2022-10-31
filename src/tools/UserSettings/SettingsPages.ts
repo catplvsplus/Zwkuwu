@@ -1,4 +1,4 @@
-import { ButtonPaginationBuilder, PageResolvable, PaginationControllerType } from '@falloutstudios/djs-pagination';
+import { ButtonPaginationBuilder, StaticPageResolvable, PaginationControllerType } from '@falloutstudios/djs-pagination';
 import { ActionRowBuilder, APIButtonComponentWithCustomId, ButtonBuilder, ButtonStyle, inlineCode, MessageActionRowComponentBuilder, SelectMenuBuilder, SelectMenuComponentOptionData } from 'discord.js';
 import util from '../util';
 import { UserSettings } from './UserSettings';
@@ -10,7 +10,7 @@ export class SettingsPages {
         this.userSettings = userSettings;
     }
 
-    public allowSnipesSettings(): PageResolvable {
+    public allowSnipesSettings(): StaticPageResolvable {
         const snipeCommand = this.userSettings.client.applicationCommands.get('snipe');
 
         return {
@@ -30,7 +30,7 @@ export class SettingsPages {
         };
     }
 
-    public cleanDataOnLeave(): PageResolvable {
+    public cleanDataOnLeave(): StaticPageResolvable {
         return {
             embeds: [
                 util.smallEmbed('Clean Data on Leave')
@@ -79,31 +79,27 @@ export class SettingsPages {
     public createPagination(): ButtonPaginationBuilder {
         const pagination = new ButtonPaginationBuilder({
             authorId: this.userSettings.id,
-            onDisableAction: 'DeleteComponents',
+            onDisable: 'RemoveComponents',
             pages: [
                 () => this.allowSnipesSettings(),
                 () => this.cleanDataOnLeave()
             ],
-            buttons: {
-                buttons: [
-                    {
-                        button: new ButtonBuilder()
-                            .setCustomId('prev')
-                            .setLabel('Previous')
-                            .setStyle(ButtonStyle.Secondary),
-                        customId: 'prev',
-                        type: PaginationControllerType.PreviousPage
-                    },
-                    {
-                        button: new ButtonBuilder()
-                            .setCustomId('next')
-                            .setLabel('Next')
-                            .setStyle(ButtonStyle.Secondary),
-                        customId: 'next',
-                        type: PaginationControllerType.NextPage
-                    }
-                ],
-            }
+            buttons: [
+                {
+                    builder: new ButtonBuilder()
+                        .setCustomId('prev')
+                        .setLabel('Previous')
+                        .setStyle(ButtonStyle.Secondary),
+                    type: PaginationControllerType.PreviousPage
+                },
+                {
+                    builder: new ButtonBuilder()
+                        .setCustomId('next')
+                        .setLabel('Next')
+                        .setStyle(ButtonStyle.Secondary),
+                    type: PaginationControllerType.NextPage
+                }
+            ],
         });
 
         pagination.setCollectorOptions({
