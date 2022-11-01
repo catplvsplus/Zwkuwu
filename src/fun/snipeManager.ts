@@ -97,8 +97,8 @@ export class SnipeManagerModule extends BaseModule {
         const snipedMessage = await this.fetchSnipedMessage({ channelId: channel.id });
         const userSettings = await userSettingsManager.getOrCreateUserSettings(sniper.id);
 
-        if (!snipedMessage) return util.smallEmbed(`No snipes found in this channel`);
-        if (!userSettings.allowSniping) return util.smallEmbed(`Enable message sniping to use this command`);
+        if (!snipedMessage) return util.smallEmbed(`${sniper.tag} ┃ No snipes found in this channel`);
+        if (!userSettings.allowSniping) return util.smallEmbed(`${sniper.tag} ┃ Enable message sniping to use this command`);
 
         const embed = snipedMessage.toEmbed();
         if (sniper) embed.setFooter({ text: `Sniped by ${sniper.tag}`, iconURL: sniper.displayAvatarURL() });
