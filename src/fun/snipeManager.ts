@@ -150,7 +150,7 @@ export class SnipeManagerModule extends BaseModule {
     }
 
     public async snipe(channel: TextBasedChannel, sniper: User): Promise<EmbedBuilder> {
-        const snipedMessage = await this.fetchSnipedMessage({ channelId: channel.id });
+        const snipedMessage = await this.fetchSnipedMessage({ channelId: channel.id }).catch(() => null);
         const userSettings = await userSettingsManager.getOrCreateUserSettings(sniper.id);
 
         if (!snipedMessage) return util.smallEmbed(`${sniper.tag} ┃ No snipes found in this channel`);
