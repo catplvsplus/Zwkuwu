@@ -63,14 +63,13 @@ export class MuteModule extends BaseModule {
                     .setName('member')
                     .setDescription('Mute this annoying piece of shit')
                     .setRequired(true)
-                    .setValidator(value => !!util.resolveMentionOrId(value)),
+                    .setValidator(async value => !!await util.resolveMentionOrId(value)),
                 duration => duration
                     .setName('duration')
                     .setDescription('How long? 1m? 1h? or 1d?')
                     .setRequired(true)
-                    .setValidator(async value => !!(await Promise.resolve(ms(value)).catch(() => false)))
-                )
-                .addOptions(reason => reason
+                    .setValidator(async value => !!(await Promise.resolve(ms(value)).catch(() => false))),
+                reason => reason
                     .setName('reason')
                     .setDescription('Say fuck off')
                     .setRequired(false)
@@ -145,7 +144,7 @@ export class MuteModule extends BaseModule {
                     .setName('member')
                     .setDescription('Mute this annoying piece of shit')
                     .setRequired(true)
-                    .setValidator(value => !!util.resolveMentionOrId(value)),
+                    .setValidator(async value => !!await util.resolveMentionOrId(value)),
                 reason => reason
                     .setName('reason')
                     .setDescription('Why?')

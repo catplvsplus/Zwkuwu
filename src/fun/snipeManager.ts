@@ -46,6 +46,29 @@ export class SnipeManagerModule extends BaseModule {
                         components: [snipeButton]
                     });
                 }),
+            new SlashCommandBuilder()
+                .setName('snipes')
+                .setDescription('Show snipes count in this channel')
+                .addUserOption(user => user
+                    .setName('user')
+                    .setDescription('How many snipes this user has in this channel')
+                    .setRequired(false)
+                )
+                .setExecute(async data => {
+                    const interaction = data.interaction;
+                    const user = interaction.options.getUser('user');
+
+                    await interaction.deferReply();
+
+                    const query = await util.prisma.snipes.count({
+                        where: {
+                            authorId: user?.id,
+                            channelId: interaction.channelId
+                        }
+                    });
+
+                    await interaction.editReply({ embeds: [util.smallEmbed(`**${interaction.user.tag}** ┃ ${query} total snipes in ${interaction.channel}`, true)] });
+                }),
             new MessageCommandBuilder()
                 .setName('snipe')
                 .setDescription('Snipe deleted messages')
@@ -58,6 +81,30 @@ export class SnipeManagerModule extends BaseModule {
                         ],
                         components: [snipeButton]
                     });
+                }),
+            new MessageCommandBuilder()
+                .setName('snipes')
+                .setDescription('Show snipes count in this channel')
+                .addOptions(user => user
+                    .setName('user')
+                    .setDescription('How many snipes this user has in this channel')
+                    .setRequired(false)
+                    .setValidator(async val => !!await util.resolveMentionOrId(val))
+                )
+                .setExecute(async data => {
+                    const message = data.message;
+                    const user = data.options.getValue('user') ? await util.resolveMentionOrId(data.options.getValue('user', true)) : null;
+
+                    const reply = await message.reply({ embeds: [util.smallEmbed('Loading...')] });
+
+                    const query = await util.prisma.snipes.count({
+                        where: {
+                            authorId: user?.id,
+                            channelId: message.channelId
+                        }
+                    });
+
+                    await reply.edit({ embeds: [util.smallEmbed(`**${message.author.tag}** ┃ ${query} total snipes in ${message.channel}`, true)] })
                 })
         ];
 
