@@ -67,7 +67,7 @@ export class SnipeManagerModule extends BaseModule {
                         }
                     });
 
-                    await interaction.editReply({ embeds: [util.smallEmbed(`**${interaction.user.tag}** ┃ ${query} total snipes in ${interaction.channel}`, true)] });
+                    await interaction.editReply({ embeds: [util.smallEmbed(`**${interaction.user.tag}** ┃ ${query} total snipes${user ? 'for ' + user.toString() : ''} in ${interaction.channel}`, true)] });
                 }),
             new MessageCommandBuilder()
                 .setName('snipe')
@@ -104,7 +104,7 @@ export class SnipeManagerModule extends BaseModule {
                         }
                     });
 
-                    await reply.edit({ embeds: [util.smallEmbed(`**${message.author.tag}** ┃ ${query} total snipes in ${message.channel}`, true)] })
+                    await reply.edit({ embeds: [util.smallEmbed(`**${message.author.tag}** ┃ ${query} total snipes${user ? 'for ' + user.toString() : ''} in ${message.channel}`, true)] })
                 })
         ];
 
