@@ -1,14 +1,22 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, Collection, EmbedBuilder, Message, MessageActionRowComponentBuilder, TextBasedChannel, User } from 'discord.js';
-import { MessageCommandBuilder, RecipleClient, SlashCommandBuilder } from 'reciple';
+import { cwd, MessageCommandBuilder, RecipleClient, SlashCommandBuilder } from 'reciple';
 import { RawSnipedMessage, SnipedMessage } from './Snipe/SnipedMessage';
 import { InteractionEventType } from '../tools/InteractionEvents';
 import { Logger } from 'fallout-utility';
 import BaseModule from '../BaseModule';
 import util from '../tools/util';
+import yml from 'yaml';
 import userSettingsManager from '../tools/userSettingsManager';
+import path from 'path';
+import wildcardMatch from 'wildcard-match';
+
+export interface SnipeManagerModuleConfig {
+    ignoredWords: string[];
+}
 
 export class SnipeManagerModule extends BaseModule {
     public cache: Collection<string, SnipedMessage> = new Collection();
+    public config: SnipeManagerModuleConfig = SnipeManagerModule.getConfig();
     public logger!: Logger;
 
     public async onStart(client: RecipleClient<boolean>): Promise<boolean> {
@@ -82,6 +90,7 @@ export class SnipeManagerModule extends BaseModule {
         client.on('messageDelete', async message => {
             if (!message.content && !message.editedAt && !message.attachments.size) return;
             if (!message.inGuild() || message.author.bot || message.author.system) return;
+            if (this.config.ignoredWords.some(word => wildcardMatch(word)(message.content))) return;
 
             const userSettings = await userSettingsManager.getOrCreateUserSettings(message.author.id);
 
@@ -141,6 +150,12 @@ export class SnipeManagerModule extends BaseModule {
 
         await util.prisma.snipes.create({ data: snipeData });
         return (await this.fetchSnipedMessage(message.id))!;
+    }
+
+    public static getConfig(): SnipeManagerModuleConfig {
+        return yml.parse(util.createConfig(path.join(cwd, 'config/snipes/config.yml'), <SnipeManagerModuleConfig>({
+            ignoredWords: ['playerlist']
+        })));
     }
 }
 
