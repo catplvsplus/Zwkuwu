@@ -1,5 +1,5 @@
 import { ButtonPaginationBuilder, PaginationControllerType, PageResolvable } from '@falloutstudios/djs-pagination';
-import { ActionRowBuilder, APIButtonComponentWithCustomId, ButtonBuilder, ButtonStyle, inlineCode, MessageActionRowComponentBuilder, normalizeArray, RestOrArray, SelectMenuBuilder, SelectMenuComponentOptionData } from 'discord.js';
+import { ActionRowBuilder, APIButtonComponentWithCustomId, ButtonBuilder, ButtonStyle, inlineCode, MessageActionRowComponentBuilder, normalizeArray, RestOrArray, SelectMenuComponentOptionData, StringSelectMenuBuilder } from 'discord.js';
 import util from '../util';
 import { UserSettings } from './UserSettings';
 
@@ -57,7 +57,7 @@ export class SettingsPages {
     }): ActionRowBuilder<MessageActionRowComponentBuilder> {
         return new ActionRowBuilder<MessageActionRowComponentBuilder>()
             .setComponents(
-                new SelectMenuBuilder({ placeholder: options.placeholder })
+                new StringSelectMenuBuilder({ placeholder: options.placeholder })
                     .setCustomId(options.customId)
                     .setMaxValues(1)
                     .setMinValues(1)
@@ -114,7 +114,7 @@ export class SettingsPages {
         });
 
         pagination.on('collect', async component => {
-            if (!component.isSelectMenu() || component.user.id !== this.userSettings.id || !component.customId.startsWith('usersettings-')) return;
+            if (!component.isStringSelectMenu() || component.user.id !== this.userSettings.id || !component.customId.startsWith('usersettings-')) return;
 
             const type = component.customId.split('-')[1];
             const enabled = component.values.shift() === 'enable';

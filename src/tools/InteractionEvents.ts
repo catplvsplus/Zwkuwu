@@ -81,7 +81,7 @@ export class InteractionEventsModule extends BaseModule {
             return InteractionEventType.ContextMenu;
         } else if (interaction.isModalSubmit()) {
             return InteractionEventType.ModalSubmit;
-        } else if (interaction.isSelectMenu()) {
+        } else if (interaction.isAnySelectMenu()) {
             return InteractionEventType.SelectMenu;
         }
 

@@ -1,4 +1,4 @@
-import { ActionRowBuilder, ChannelType, ColorResolvable, EmbedBuilder, Guild, Message, Role, SelectMenuBuilder, TextChannel } from 'discord.js';
+import { ActionRowBuilder, ChannelType, ColorResolvable, EmbedBuilder, Guild, Message, Role, StringSelectMenuBuilder, TextChannel } from 'discord.js';
 import { Logger } from 'fallout-utility';
 import path from 'path';
 import { RecipleClient } from 'reciple';
@@ -49,7 +49,7 @@ export class Roles extends BaseModule {
         }
 
         this.client?.on('interactionCreate', async (interaction) => {
-            if (!interaction.isSelectMenu() || !interaction.inCachedGuild()) return;
+            if (!interaction.isStringSelectMenu() || !interaction.inCachedGuild()) return;
 
             const messageConf = this.config.messages.find(m => m.id === interaction.message.id);
             if (!messageConf) return;
@@ -109,7 +109,7 @@ export class Roles extends BaseModule {
             content: messageConf.content || ' ',
             embeds: embeds.filter(e => e) as EmbedBuilder[],
             components: [
-                new ActionRowBuilder<SelectMenuBuilder>()
+                new ActionRowBuilder<StringSelectMenuBuilder>()
                     .setComponents(
                         this.buildMenu(messageConf.roles, messageConf.multiple, `roles_${message.id}`)
                     )
@@ -119,8 +119,8 @@ export class Roles extends BaseModule {
         this.logger.debug(`Edited message ${messageConf.id}`);
     }
 
-    public buildMenu(menuConf: RolesConfig['messages'][0]['roles'], multiple: boolean, id: string): SelectMenuBuilder {
-        const menu = new SelectMenuBuilder().setCustomId(id).setPlaceholder('Select role').setMinValues(0);
+    public buildMenu(menuConf: RolesConfig['messages'][0]['roles'], multiple: boolean, id: string): StringSelectMenuBuilder {
+        const menu = new StringSelectMenuBuilder().setCustomId(id).setPlaceholder('Select role').setMinValues(0);
 
         if (multiple) menu.setMaxValues(menuConf.length).setPlaceholder('Select roles');
 
