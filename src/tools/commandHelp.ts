@@ -1,11 +1,11 @@
-import { ButtonPagination, ButtonPaginationComponentsBuilder, ButtonPaginationOptions, ComponentButtonBuilder, PaginationControllerType } from '@ghextercortes/djs-pagination';
-import { ButtonBuilder, ButtonStyle, EmbedBuilder, escapeCodeBlock, escapeInlineCode, PermissionResolvable, PermissionsBitField } from 'discord.js';
-import { AnyCommandBuilder, CommandBuilderType, MessageCommandBuilder, MessageCommandOptionBuilder, RecipleClient } from 'reciple';
+import { ButtonPaginationBuilder, ButtonPaginationData, PaginationControllerType } from '@falloutstudios/djs-pagination';
+import { ButtonBuilder, ButtonStyle, escapeCodeBlock, escapeInlineCode, PermissionResolvable, PermissionsBitField } from 'discord.js';
+import { AnyCommandBuilder, CommandType, MessageCommandBuilder, RecipleClient } from 'reciple';
 import BaseModule from '../BaseModule';
 import util from './util';
 
 export interface RawCommandUsage {
-    type: CommandBuilderType;
+    type: CommandType;
     name: string;
     description: string;
     options: RawCommandOptionUsage[];
@@ -18,7 +18,7 @@ export interface RawCommandOptionUsage {
 }
 
 export class CommandUsage implements RawCommandUsage {
-    public type: CommandBuilderType;
+    public type: CommandType;
     public name: string;
     public description: string;
     public options: CommandOptionUsage[];
@@ -57,7 +57,7 @@ export class CommandHelpModule extends BaseModule {
             new MessageCommandBuilder()
                 .setName('help')
                 .setDescription('Get message commands help')
-                .addOption(filter => filter
+                .addOptions(filter => filter
                     .setName('filter')
                     .setDescription('Filter commands')
                     .setRequired(false)
@@ -119,22 +119,18 @@ export class CommandHelpModule extends BaseModule {
             });
     }
 
-    public createPagination(commands: CommandUsage[], options?: Partial<ButtonPaginationOptions>): ButtonPagination {
-        const pagination = new ButtonPagination({
-            buttons: {
-                buttons: [
-                    {
-                        button: new ButtonBuilder().setCustomId('prev').setLabel('Previous').setStyle(ButtonStyle.Secondary),
-                        customId: 'prev',
-                        type: PaginationControllerType.PreviousPage
-                    },
-                    {
-                        button: new ButtonBuilder().setCustomId('next').setLabel('Next').setStyle(ButtonStyle.Secondary),
-                        customId: 'next',
-                        type: PaginationControllerType.NextPage
-                    },
-                ]
-            },
+    public createPagination(commands: CommandUsage[], options?: Partial<ButtonPaginationData>): ButtonPaginationBuilder {
+        const pagination = new ButtonPaginationBuilder({
+            buttons: [
+                {
+                    builder: new ButtonBuilder().setCustomId('prev').setLabel('Previous').setStyle(ButtonStyle.Secondary),
+                    type: PaginationControllerType.PreviousPage
+                },
+                {
+                    builder: new ButtonBuilder().setCustomId('next').setLabel('Next').setStyle(ButtonStyle.Secondary),
+                    type: PaginationControllerType.NextPage
+                },
+            ],
             ...options
         });
 
@@ -152,7 +148,7 @@ export class CommandHelpModule extends BaseModule {
                 .addFields(
                     ...chunk.map(command => ({
                         name: command.name,
-                        value: `\`\`\`${escapeCodeBlock((command.type == CommandBuilderType.MessageCommand ? (util.client.config.commands.messageCommand.prefix || '!') : '/') + command.toString())}\`\`\``
+                        value: `\`\`\`${escapeCodeBlock((command.type == CommandType.MessageCommand ? (util.client.config.commands.messageCommand.prefix || '!') : '/') + command.toString())}\`\`\``
                     }))
                 )
             );

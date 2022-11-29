@@ -13,16 +13,16 @@ export class KickModule extends BaseModule {
         this.commands = [
             new SlashCommandBuilder()
                 .setName('kick')
-                .setDescription('Kick an annoying peice of shit')
+                .setDescription('Kick someone')
                 .setRequiredMemberPermissions('KickMembers')
                 .addUserOption(user => user
                     .setName('member')
-                    .setDescription('Kick this mf')
+                    .setDescription('someone')
                     .setRequired(true)
                 )
                 .addStringOption(reason => reason
                     .setName('reason')
-                    .setDescription('What\'s your problem with this monkey?')
+                    .setDescription('Give a reason')
                     .setRequired(false)
                 )
                 .setExecute(async data => {
@@ -51,15 +51,14 @@ export class KickModule extends BaseModule {
                 }),
             new MessageCommandBuilder()
                 .setName('kick')
-                .setDescription('Kick an annoying peice of shit')
+                .setDescription('Kick someone')
                 .setRequiredMemberPermissions('KickMembers')
-                .addOption(user => user
+                .addOptions(user => user
                     .setName('member')
-                    .setDescription('Kick this mf')
+                    .setDescription('someone')
                     .setRequired(true)
-                    .setValidator(async value => !!await util.resolveMentionOrId(value))
-                )
-                .addOption(reason => reason
+                    .setValidator(async value => !!await util.resolveMentionOrId(value)),
+                reason => reason
                     .setName('reason')
                     .setDescription('What\'s your problem with this monkey?')
                     .setRequired(false)
@@ -127,7 +126,7 @@ export class KickModule extends BaseModule {
             }
         ];
 
-        client.additionalApplicationCommands.push(
+        client.commands.additionalApplicationCommands.push(
             new ContextMenuCommandBuilder()
                 .setName('Kick')
                 .setDefaultMemberPermissions(PermissionFlagsBits.KickMembers)

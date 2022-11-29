@@ -10,7 +10,7 @@ export class TranslateModule extends BaseModule {
         this.commands = [
             new SlashCommandBuilder()
                 .setName('translate')
-                .setDescription('Translate a message for you lazy bitch')
+                .setDescription('Translate a message')
                 .addStringOption(message => message
                     .setName('message')
                     .setDescription('Message to translate what else')
@@ -43,8 +43,8 @@ export class TranslateModule extends BaseModule {
                 }),
             new MessageCommandBuilder()
                 .setName('translate')
-                .setDescription('Translate a message for you lazy bitch')
-                .addOption(message => message
+                .setDescription('Translate a message')
+                .addOptions(message => message
                     .setName('message')
                     .setDescription('Message to translate what else')
                     .setRequired(true)
@@ -98,7 +98,7 @@ export class TranslateModule extends BaseModule {
             },
         ];
 
-        client.additionalApplicationCommands.push(
+        client.commands.additionalApplicationCommands.push(
             new ContextMenuCommandBuilder()
                 .setName('Translate')
                 .setType(ApplicationCommandType.Message)

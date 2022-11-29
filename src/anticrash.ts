@@ -1,9 +1,8 @@
 import { cwd, RecipleClient } from 'reciple';
 import BaseModule from './BaseModule';
 import yml from 'yaml';
-import createConfig from './_createConfig';
 import path from 'path';
-import { EmbedBuilder, escapeCodeBlock, Message, TextBasedChannel, User } from 'discord.js';
+import { EmbedBuilder, escapeCodeBlock, TextBasedChannel, User } from 'discord.js';
 import util from './tools/util';
 import { Logger } from 'fallout-utility';
 
@@ -54,10 +53,10 @@ export class AntiCrashModule extends BaseModule {
                 m.setHalt(data => util.haltCommand(data))
                 this.logger.debug(`Added halt function to message command ${m.name}`)
             });
-    
+
             client.commands.slashCommands.forEach(s => {
                 if (s.halt) return;
-    
+
                 s.setHalt(data => util.haltCommand(data))
                 this.logger.debug(`Added halt function to slash command ${s.name}`)
             });
@@ -79,7 +78,7 @@ export class AntiCrashModule extends BaseModule {
     }
 
     public static getConfig(): AntiCrashModuleConfig {
-        return yml.parse(createConfig(path.join(cwd, 'config/anticrash/config.yml'), <AntiCrashModuleConfig>({
+        return yml.parse(util.createConfig(path.join(cwd, 'config/anticrash/config.yml'), <AntiCrashModuleConfig>({
             sendTo: ['000000000000000000', '000000000000000000']
         })));
     }

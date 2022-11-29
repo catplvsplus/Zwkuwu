@@ -1,5 +1,5 @@
 import { PlayerSkinData, PrismaClient } from '@prisma/client';
-import { PlayerSkinModule } from '../playerSkin';
+import { PlayerSkinManagerModule } from '../playerSkinManager';
 import { cwd, RecipleClient } from 'reciple';
 import util from '../util';
 import { createWriteStream, existsSync, readFileSync, rmSync } from 'fs';
@@ -18,7 +18,7 @@ export class SkinData<HasSkin extends boolean = boolean> implements RawSkinData 
     private _createdAt: Date;
     private _deleted: boolean = false;
 
-    readonly playerSkinModule: PlayerSkinModule;
+    readonly playerSkinManagerModule: PlayerSkinManagerModule;
     readonly prisma: PrismaClient;
     readonly client: RecipleClient<true>;
 
@@ -29,8 +29,8 @@ export class SkinData<HasSkin extends boolean = boolean> implements RawSkinData 
     get deleted() { return this._deleted; }
     get filePath(): If<HasSkin, string> { return (this.file ? path.join(cwd, 'config/playerSkinData/skins/', this.file) : null) as If<HasSkin, string>; }
 
-    constructor(playerSkinModule: PlayerSkinModule, rawPlayerData: RawSkinData) {
-        this.playerSkinModule = playerSkinModule;
+    constructor(playerSkinManagerModule: PlayerSkinManagerModule, rawPlayerData: RawSkinData) {
+        this.playerSkinManagerModule = playerSkinManagerModule;
         this.prisma = util.prisma;
         this.client = util.client;
 

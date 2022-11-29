@@ -1,6 +1,6 @@
 import { EmbedBuilder, If, TextBasedChannel, User } from 'discord.js';
 import { PrismaClient, Snipes } from '@prisma/client';
-import { SnipeModule } from '../snipe';
+import { SnipeManagerModule } from '../snipeManager';
 import { RecipleClient } from 'reciple';
 import util from '../../tools/util';
 
@@ -20,7 +20,7 @@ export class SnipedMessage<Fetched extends boolean = boolean> implements RawSnip
     private _repliedToUserId: string | null;
     private _createdAt: Date;
 
-    readonly sniper: SnipeModule;
+    readonly snipeManager: SnipeManagerModule;
     readonly client: RecipleClient<true>;
     readonly prisma: PrismaClient;
 
@@ -37,8 +37,8 @@ export class SnipedMessage<Fetched extends boolean = boolean> implements RawSnip
     get repliedToUserId() { return this._repliedToUserId; }
     get createdAt() { return this._createdAt; }
 
-    constructor(sniper: SnipeModule, rawSnipedMessage: RawSnipedMessage) {
-        this.sniper = sniper;
+    constructor(snipeManager: SnipeManagerModule, rawSnipedMessage: RawSnipedMessage) {
+        this.snipeManager = snipeManager;
         this.client = util.client;
         this.prisma = util.prisma;
 
@@ -135,6 +135,6 @@ export class SnipedMessage<Fetched extends boolean = boolean> implements RawSnip
         });
 
         this._deleted = true;
-        this.sniper.cache.sweep(s => s.deleted);
+        this.snipeManager.cache.sweep(s => s.deleted);
     }
 }

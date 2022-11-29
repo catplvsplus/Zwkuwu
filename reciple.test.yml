@@ -93,7 +93,7 @@ messages:
     ephemeral: true
 
 # Ignored Files
-ignoredFiles: ['BaseModule.js']
+ignoredFiles: ['BaseModule.js', '_*']
 
 
 ####################################################
@@ -114,4 +114,4 @@ modulesFolder: ['modules', 'modules/fun', 'modules/moderation', 'modules/staff',
 disableVersionCheck: false
 
 # Current version
-version: ^5.5.2
+version: ^6.0.0

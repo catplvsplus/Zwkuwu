@@ -1,10 +1,9 @@
-import { ActionRowBuilder, ChannelType, ColorResolvable, EmbedBuilder, Guild, Message, Role, SelectMenuBuilder, TextChannel } from 'discord.js';
+import { ActionRowBuilder, ChannelType, ColorResolvable, EmbedBuilder, Guild, Message, Role, StringSelectMenuBuilder, TextChannel } from 'discord.js';
 import { Logger } from 'fallout-utility';
 import path from 'path';
 import { RecipleClient } from 'reciple';
 import yml from 'yaml';
 import BaseModule from '../BaseModule';
-import createConfig from '../_createConfig';
 import util from './util';
 
 export interface RolesConfig {
@@ -50,10 +49,10 @@ export class Roles extends BaseModule {
         }
 
         this.client?.on('interactionCreate', async (interaction) => {
-            if (!interaction.isSelectMenu() || !interaction.inCachedGuild()) return;
+            if (!interaction.isStringSelectMenu() || !interaction.inCachedGuild()) return;
 
             const messageConf = this.config.messages.find(m => m.id === interaction.message.id);
-            if (!messageConf) throw new Error('ee');
+            if (!messageConf) return;
 
             const selectedRoles = await Promise.all(interaction.values.map(async v => this.getRole(v, interaction.guild)));
             const validRoles = messageConf?.roles;
@@ -110,7 +109,7 @@ export class Roles extends BaseModule {
             content: messageConf.content || ' ',
             embeds: embeds.filter(e => e) as EmbedBuilder[],
             components: [
-                new ActionRowBuilder<SelectMenuBuilder>()
+                new ActionRowBuilder<StringSelectMenuBuilder>()
                     .setComponents(
                         this.buildMenu(messageConf.roles, messageConf.multiple, `roles_${message.id}`)
                     )
@@ -120,8 +119,8 @@ export class Roles extends BaseModule {
         this.logger.debug(`Edited message ${messageConf.id}`);
     }
 
-    public buildMenu(menuConf: RolesConfig['messages'][0]['roles'], multiple: boolean, id: string): SelectMenuBuilder {
-        const menu = new SelectMenuBuilder().setCustomId(id).setPlaceholder('Select role').setMinValues(0);
+    public buildMenu(menuConf: RolesConfig['messages'][0]['roles'], multiple: boolean, id: string): StringSelectMenuBuilder {
+        const menu = new StringSelectMenuBuilder().setCustomId(id).setPlaceholder('Select role').setMinValues(0);
 
         if (multiple) menu.setMaxValues(menuConf.length).setPlaceholder('Select roles');
 
@@ -192,7 +191,7 @@ export class Roles extends BaseModule {
             ]
         };
 
-        return yml.parse(createConfig(configPath, defaultConfig));
+        return yml.parse(util.createConfig(configPath, defaultConfig));
     }
 }
 

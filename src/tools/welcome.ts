@@ -1,17 +1,19 @@
 import { cwd, RecipleClient } from 'reciple';
 import BaseModule from '../BaseModule';
 import yml from 'yaml';
-import createConfig from '../_createConfig';
 import path from 'path';
-import { EmbedBuilder, GuildMember, GuildMemberResolvable, GuildTextBasedChannel, PartialGuildMember } from 'discord.js';
+import { EmbedBuilder, GuildMember, GuildTextBasedChannel, PartialGuildMember } from 'discord.js';
 import util from './util';
 import { SavedMemberData } from '@prisma/client';
+import userSettingsManager from './userSettingsManager';
+import snipeManager from '../fun/snipeManager';
 
 export interface WelcomeModuleConfig {
     giveRoles: string[];
     guilds: string[];
     welcomeChannels: string[];
     leaveChannels: string[];
+    ignoreBots: boolean;
 }
 
 export class WelcomeModule extends BaseModule {
@@ -22,6 +24,7 @@ export class WelcomeModule extends BaseModule {
     public async onStart(client: RecipleClient<boolean>): Promise<boolean> {
         client.on('guildMemberAdd', async member => {
             if (this.config.guilds.length && !this.config.guilds.includes(member.guild.id)) return;
+            if (this.config.ignoreBots && member.user.bot) return;
 
             const embed = new EmbedBuilder()
                 .setAuthor({ name: `Welcome ${member.user.tag}`, iconURL: member.displayAvatarURL() })
@@ -49,11 +52,26 @@ export class WelcomeModule extends BaseModule {
 
         client.on('guildMemberRemove', async member => {
             if (this.config.guilds.length && !this.config.guilds.includes(member.guild.id)) return;
+            if (this.config.ignoreBots && member.user.bot) return;
 
             const embed = new EmbedBuilder().setAuthor({ name: `${member.user.tag} left the server`, iconURL: member.displayAvatarURL() });
 
             for (const channel of this.leaveChannel) {
                 await channel.send({ embeds: [embed] });
+            }
+
+            const userSettings = await userSettingsManager.getOrCreateUserSettings(member.id);
+
+            if (userSettings.cleanDataOnLeave) {
+                await util.prisma.snipes.deleteMany({
+                    where: {
+                        authorId: member.id
+                    }
+                });
+
+                snipeManager.cache.sweep(s => s.authorId === member.id);
+
+                return;
             }
 
             await this.saveMemberData(member);
@@ -72,6 +90,12 @@ export class WelcomeModule extends BaseModule {
             const channel = client.channels.cache.get(channelId) ?? await client.channels.fetch(channelId).catch(() => null);
             if (channel && !channel.isDMBased() && channel.isTextBased()) this.leaveChannel.push(channel);
         }
+
+        // for (const guild of client.guilds.cache.toJSON()) {
+        //     for (const member of guild.members.cache.filter(m => m.roles.cache.some(r => this.config.giveRoles.includes(r.id))).toJSON()) {
+        //         member.roles.add(member.guild.roles.cache.filter(r => this.config.giveRoles.includes(r.id)));
+        //     }
+        // }
     }
 
     public async deleteMemberData(member: GuildMember): Promise<void> {
@@ -92,8 +116,8 @@ export class WelcomeModule extends BaseModule {
         });
     }
 
-    public async saveMemberData(member: GuildMember|PartialGuildMember): Promise<SavedMemberData> {
-        return util.prisma.savedMemberData.create({
+    public async saveMemberData(member: GuildMember|PartialGuildMember): Promise<void> {
+        await util.prisma.savedMemberData.create({
             data: {
                 id: member.id,
                 guildId: member.guild.id,
@@ -104,11 +128,12 @@ export class WelcomeModule extends BaseModule {
     }
 
     public static getConfig(): WelcomeModuleConfig {
-        return yml.parse(createConfig(path.join(cwd, 'config/welcome/config.yml'), <WelcomeModuleConfig>({
+        return yml.parse(util.createConfig(path.join(cwd, 'config/welcome/config.yml'), <WelcomeModuleConfig>({
             giveRoles: ['000000000000000000', '000000000000000000', '000000000000000000'],
             guilds: [],
             welcomeChannels: ['000000000000000000', '000000000000000000', '000000000000000000'],
             leaveChannels: ['000000000000000000', '000000000000000000', '000000000000000000'],
+            ignoreBots: true
         })));
     }
 }

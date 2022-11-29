@@ -36,7 +36,7 @@ export class InteractionEventsModule extends BaseModule {
         client.on('interactionCreate', async interaction => {
             const handlers: (ComponentInteractionEvent|CommandInteractionEvent)[] = [];
 
-            client.modules.forEach(m => handlers.push(...(m.script as BaseModule).interactionEventHandlers));
+            client.modules.modules.forEach(m => handlers.push(...(m.script as BaseModule).interactionEventHandlers));
 
             for (const handler of handlers) {
                 if (handler.type !== InteractionEventsModule.getInteractionEventType(interaction)) continue;
@@ -81,7 +81,7 @@ export class InteractionEventsModule extends BaseModule {
             return InteractionEventType.ContextMenu;
         } else if (interaction.isModalSubmit()) {
             return InteractionEventType.ModalSubmit;
-        } else if (interaction.isSelectMenu()) {
+        } else if (interaction.isAnySelectMenu()) {
             return InteractionEventType.SelectMenu;
         }
 

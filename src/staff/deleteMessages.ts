@@ -41,7 +41,7 @@ export class DeleteMessagesModule extends BaseModule {
             }
         ];
 
-        client.additionalApplicationCommands.push(
+        client.commands.additionalApplicationCommands.push(
             new ContextMenuCommandBuilder()
                 .setName('Prune msgs below')
                 .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages)

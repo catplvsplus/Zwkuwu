@@ -1,6 +1,6 @@
 import { EmbedBuilder, GuildTextBasedChannel, If, Message, User } from 'discord.js';
 import { Confessions, PrismaClient } from '@prisma/client';
-import { ConfessionModule } from '../confession';
+import { ConfessionManagerModule } from '../confessionManager';
 import { RecipleClient } from 'reciple';
 import util from '../../tools/util';
 
@@ -19,7 +19,7 @@ export class Confession<Fetched extends boolean = boolean> implements RawConfess
     private _createdAt: Date;
     private _id: string;
 
-    readonly confessionManager: ConfessionModule;
+    readonly confessionManager: ConfessionManagerModule;
     readonly client: RecipleClient<true>;
     readonly prisma: PrismaClient;
 
@@ -35,7 +35,7 @@ export class Confession<Fetched extends boolean = boolean> implements RawConfess
     get createdAt() { return this._createdAt; }
     get id() { return this._id; }
 
-    constructor(confessionManager: ConfessionModule, rawConfession: RawConfession) {
+    constructor(confessionManager: ConfessionManagerModule, rawConfession: RawConfession) {
         this.confessionManager = confessionManager;
         this.client = util.client;
         this.prisma = util.prisma;

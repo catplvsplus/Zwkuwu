@@ -1,11 +1,10 @@
-import { ActionRowBuilder, ApplicationCommandType, ButtonBuilder, ButtonStyle, Collection, ContextMenuCommandBuilder, EmbedBuilder, GuildTextBasedChannel, ModalBuilder, ModalSubmitInteraction, PermissionResolvable, RepliableInteraction, TextInputBuilder, TextInputStyle, User } from 'discord.js';
-import { cwd, MessageCommandBuilder, RecipleClient, SlashCommandBuilder } from 'reciple';
+import { ActionRowBuilder, ApplicationCommandType, ButtonBuilder, ButtonStyle, Collection, ContextMenuCommandBuilder, EmbedBuilder, GuildTextBasedChannel, ModalBuilder, ModalSubmitInteraction, PermissionResolvable, TextInputBuilder, TextInputStyle, User } from 'discord.js';
+import { cwd, RecipleClient, SlashCommandBuilder } from 'reciple';
 import BaseModule from '../BaseModule';
 import { InteractionEventType } from '../tools/InteractionEvents';
 import util from '../tools/util';
 import { Confession, RawConfession } from './Confessions/Confession';
 import yml from 'yaml';
-import createConfig from '../_createConfig';
 import path from 'path';
 
 export interface ConfessionOptions {
@@ -15,21 +14,21 @@ export interface ConfessionOptions {
     channel: GuildTextBasedChannel;
 }
 
-export interface ConfessionModuleConfig {
+export interface ConfessionManagerModuleConfig {
     confessionChannel: string;
     titleAccessRequiredPermissions: PermissionResolvable[];
 }
 
-export class ConfessionModule extends BaseModule {
+export class ConfessionManagerModule extends BaseModule {
     public cache: Collection<string, Confession> = new Collection();
-    public config: ConfessionModuleConfig = ConfessionModule.getConfig();
+    public config: ConfessionManagerModuleConfig = ConfessionManagerModule.getConfig();
     public confessionChannel!: GuildTextBasedChannel;
 
     public async onStart(client: RecipleClient<boolean>): Promise<boolean> {
         this.commands = [
             new SlashCommandBuilder()
                 .setName('confess')
-                .setDescription('Send an anonymous message to the confession channel')
+                .setDescription('Create new confession')
                 .setExecute(async data => {
                     const interaction = data.interaction;
 
@@ -88,12 +87,9 @@ export class ConfessionModule extends BaseModule {
             }
         ];
 
-        client.additionalApplicationCommands.push(
+        client.commands.additionalApplicationCommands.push(
             new ContextMenuCommandBuilder()
                 .setName('Delete Confession')
-                .setType(ApplicationCommandType.Message),
-            new ContextMenuCommandBuilder()
-                .setName('Create Confession')
                 .setType(ApplicationCommandType.Message)
         );
 
@@ -138,11 +134,11 @@ export class ConfessionModule extends BaseModule {
     }
 
     public async resolveConfession(id: string): Promise<Confession<true>|undefined> {
-        return this.cache.get(id) ?? this.fetchConfession(id);
+        return this.cache.get(id) ?? this.fetchConfession(id).catch(() => undefined);
     }
 
-    public async fetchConfession(filter: string|Partial<RawConfession>, cache: boolean = true): Promise<Confession<true>|undefined> {
-        const find = await util.prisma.confessions.findFirst({
+    public async fetchConfession(filter: string|Partial<RawConfession>, cache: boolean = true): Promise<Confession<true>> {
+        const find = await util.prisma.confessions.findFirstOrThrow({
             where: typeof filter === 'string'
                 ? { id: filter }
                 : filter,
@@ -151,10 +147,9 @@ export class ConfessionModule extends BaseModule {
             },
         });
 
-        if (!find) return undefined;
         const confession = await (new Confession(this, find)).fetch();
-
         if (cache) this.cache.set(confession.id, confession);
+
         return confession;
     }
 
@@ -218,12 +213,12 @@ export class ConfessionModule extends BaseModule {
             )
     }
 
-    public static getConfig(): ConfessionModuleConfig {
-        return yml.parse(createConfig(path.join(cwd, 'config/confession/config.yml'), <ConfessionModuleConfig>({
+    public static getConfig(): ConfessionManagerModuleConfig {
+        return yml.parse(util.createConfig(path.join(cwd, 'config/confession/config.yml'), <ConfessionManagerModuleConfig>({
             confessionChannel: '000000000000000000',
             titleAccessRequiredPermissions: ['ManageChannels']
         })));
     }
 }
 
-export default new ConfessionModule();
+export default new ConfessionManagerModule();

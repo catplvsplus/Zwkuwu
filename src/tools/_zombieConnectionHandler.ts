@@ -4,7 +4,7 @@ import BaseModule from '../BaseModule';
 export class ZombieConnectionHandlerModule extends BaseModule {
     public lastPing: number = -1;
     public checkInterval: number = 10000;
-    public maxMatchedPings: number = 8;
+    public maxMatchedPings: number = 12;
     public matchedPings: number = 0;
     public timer?: NodeJS.Timer;
 

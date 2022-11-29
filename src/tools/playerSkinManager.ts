@@ -6,13 +6,12 @@ import { RawSkinData, SkinData } from './PlayerSkin/SkinData';
 import express, { Express, Request, Response } from 'express';
 import util from './util';
 import yml from 'yaml';
-import createConfig from '../_createConfig';
 import path from 'path';
 import axios from 'axios';
 import { mkdirSync } from 'fs';
 import crypto from 'crypto';
 
-export interface PlayerSkinModuleConfig {
+export interface PlayerSkinManagerModuleConfig {
     port: string;
     fallbackSkin: string;
     gameChatsChannel: string;
@@ -23,8 +22,8 @@ export interface PlayerSkinModuleConfig {
     }
 }
 
-export class PlayerSkinModule extends BaseModule {
-    public config: PlayerSkinModuleConfig = PlayerSkinModule.getConfig();
+export class PlayerSkinManagerModule extends BaseModule {
+    public config: PlayerSkinManagerModuleConfig = PlayerSkinManagerModule.getConfig();
     public cache: Collection<string, SkinData> = new Collection();
     public gameChatsChannel!: GuildTextBasedChannel;
     public logger!: Logger;
@@ -63,7 +62,7 @@ export class PlayerSkinModule extends BaseModule {
         this.commands = [
             new SlashCommandBuilder()
                 .setName('skin')
-                .setDescription('Modify minecraft player skin settings')
+                .setDescription('Modify minecraft skin')
                 .addSubcommand(remove => remove
                     .setName('remove')
                     .setDescription('Remove player skkin')
@@ -250,17 +249,15 @@ export class PlayerSkinModule extends BaseModule {
     }
 
     public async resolveSkinData(player: string): Promise<SkinData|undefined> {
-        return this.cache.get(player) ?? this.fetchSkinData(player);
+        return this.cache.get(player) ?? this.fetchSkinData(player).catch(() => undefined);
     }
 
-    public async fetchSkinData(filter: string|Partial<RawSkinData>, cache: boolean = true): Promise<SkinData|undefined> {
-        const data = await util.prisma.playerSkinData.findFirst({
+    public async fetchSkinData(filter: string|Partial<RawSkinData>, cache: boolean = true): Promise<SkinData> {
+        const data = await util.prisma.playerSkinData.findFirstOrThrow({
             where: typeof filter === 'string'
                 ? { player: filter }
                 : filter
         });
-
-        if (!data) return undefined;
 
         const skinData = new SkinData(this, data);
         if (cache) this.cache.set(skinData.player, skinData);
@@ -279,10 +276,10 @@ export class PlayerSkinModule extends BaseModule {
         return Buffer.from(fileHttp.data);
     }
 
-    public static getConfig(): PlayerSkinModuleConfig {
+    public static getConfig(): PlayerSkinManagerModuleConfig {
         mkdirSync(path.join(cwd, 'config/playerSkinData/skins'), { recursive: true });
 
-        return yml.parse(createConfig(path.join(cwd, 'config/playerSkinData/config.yml'), <PlayerSkinModuleConfig>({
+        return yml.parse(util.createConfig(path.join(cwd, 'config/playerSkinData/config.yml'), <PlayerSkinManagerModuleConfig>({
             port: '',
             fallbackSkin: 'https://crafthead.net/skin/$1',
             gameChatsChannel: '000000000000000000',
@@ -295,4 +292,4 @@ export class PlayerSkinModule extends BaseModule {
     }
 }
 
-export default new PlayerSkinModule();
+export default new PlayerSkinManagerModule();

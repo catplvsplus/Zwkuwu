@@ -10,6 +10,12 @@ datasource db {
   url      = "file:database.db"
 }
 
+model UserSettings {
+  id               String  @id @unique
+  allowSniping     Boolean @default(true)
+  cleanDataOnLeave Boolean @default(false)
+}
+
 model Snipes {
   id              String   @id @unique
   authorId        String
@@ -58,7 +64,7 @@ model SelfPromotions {
   id                String    @id @unique
   authorId          String
   content           String
-  createdAt         DateTime
+  createdAt         DateTime @default(now())
   approvedAt        DateTime?
   approvedById      String?
   approvedMessageId String?

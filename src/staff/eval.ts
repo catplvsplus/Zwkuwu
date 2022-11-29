@@ -28,7 +28,7 @@ export class EvalModule extends BaseModule {
                 .setName('eval')
                 .setDescription('Eval code')
                 .setRequiredMemberPermissions('Administrator')
-                .addOption(code => code
+                .addOptions(code => code
                     .setName('code')
                     .setDescription('Code to evaluate')
                     .setRequired(true)
@@ -42,7 +42,7 @@ export class EvalModule extends BaseModule {
                 }),
         ];
 
-        client.additionalApplicationCommands.push(
+        client.commands.additionalApplicationCommands.push(
             new ContextMenuCommandBuilder()
                 .setName('Evaluate Code')
                 .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)

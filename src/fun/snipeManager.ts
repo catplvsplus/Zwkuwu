@@ -1,13 +1,22 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, Collection, EmbedBuilder, Message, MessageActionRowComponentBuilder, TextBasedChannel, User } from 'discord.js';
-import { MessageCommandBuilder, RecipleClient, SlashCommandBuilder } from 'reciple';
+import { cwd, MessageCommandBuilder, RecipleClient, SlashCommandBuilder } from 'reciple';
 import { RawSnipedMessage, SnipedMessage } from './Snipe/SnipedMessage';
 import { InteractionEventType } from '../tools/InteractionEvents';
 import { Logger } from 'fallout-utility';
 import BaseModule from '../BaseModule';
 import util from '../tools/util';
+import yml from 'yaml';
+import userSettingsManager from '../tools/userSettingsManager';
+import path from 'path';
+import wildcardMatch from 'wildcard-match';
 
-export class SnipeModule extends BaseModule {
+export interface SnipeManagerModuleConfig {
+    ignoredWords: string[];
+}
+
+export class SnipeManagerModule extends BaseModule {
     public cache: Collection<string, SnipedMessage> = new Collection();
+    public config: SnipeManagerModuleConfig = SnipeManagerModule.getConfig();
     public logger!: Logger;
 
     public async onStart(client: RecipleClient<boolean>): Promise<boolean> {
@@ -24,7 +33,7 @@ export class SnipeModule extends BaseModule {
         this.commands = [
             new SlashCommandBuilder()
                 .setName('snipe')
-                .setDescription('Snipe recently deleted message')
+                .setDescription('Snipe deleted messages')
                 .setExecute(async data => {
                     const interaction = data.interaction;
                     if (!interaction.channel) return;
@@ -37,9 +46,32 @@ export class SnipeModule extends BaseModule {
                         components: [snipeButton]
                     });
                 }),
+            new SlashCommandBuilder()
+                .setName('snipes')
+                .setDescription('Show snipes count in this channel')
+                .addUserOption(user => user
+                    .setName('user')
+                    .setDescription('How many snipes this user has in this channel')
+                    .setRequired(false)
+                )
+                .setExecute(async data => {
+                    const interaction = data.interaction;
+                    const user = interaction.options.getUser('user');
+
+                    await interaction.deferReply();
+
+                    const query = await util.prisma.snipes.count({
+                        where: {
+                            authorId: user?.id,
+                            channelId: interaction.channelId
+                        }
+                    });
+
+                    await interaction.editReply({ embeds: [util.smallEmbed(`**${interaction.user.tag}** ┃ **${query}** total snipes${user ? ' for ' + user.toString() : ''} in ${interaction.channel}`, true)] });
+                }),
             new MessageCommandBuilder()
                 .setName('snipe')
-                .setDescription('Snipe recently deleted message')
+                .setDescription('Snipe deleted messages')
                 .setExecute(async data => {
                     const message = data.message;
 
@@ -49,6 +81,30 @@ export class SnipeModule extends BaseModule {
                         ],
                         components: [snipeButton]
                     });
+                }),
+            new MessageCommandBuilder()
+                .setName('snipes')
+                .setDescription('Show snipes count in this channel')
+                .addOptions(user => user
+                    .setName('user')
+                    .setDescription('How many snipes this user has in this channel')
+                    .setRequired(false)
+                    .setValidator(async val => !!await util.resolveMentionOrId(val))
+                )
+                .setExecute(async data => {
+                    const message = data.message;
+                    const user = data.options.getValue('user') ? await util.resolveMentionOrId(data.options.getValue('user', true)) : null;
+
+                    const reply = await message.reply({ embeds: [util.smallEmbed('Loading...')] });
+
+                    const query = await util.prisma.snipes.count({
+                        where: {
+                            authorId: user?.id,
+                            channelId: message.channelId
+                        }
+                    });
+
+                    await reply.edit({ embeds: [util.smallEmbed(`**${message.author.tag}** ┃ **${query}** total snipes${user ? ' for ' + user.toString() : ''} in ${message.channel}`, true)] })
                 })
         ];
 
@@ -81,8 +137,11 @@ export class SnipeModule extends BaseModule {
         client.on('messageDelete', async message => {
             if (!message.content && !message.editedAt && !message.attachments.size) return;
             if (!message.inGuild() || message.author.bot || message.author.system) return;
+            if (this.config.ignoredWords.some(word => wildcardMatch(word)(message.content))) return;
 
-            await this.snipeMessage(message).catch(err => this.logger.err(err));
+            const userSettings = await userSettingsManager.getOrCreateUserSettings(message.author.id);
+
+            if (userSettings.allowSniping) await this.snipeMessage(message).catch(err => this.logger.err(err));
         });
 
         client.on('cacheSweep', () => {
@@ -90,9 +149,12 @@ export class SnipeModule extends BaseModule {
         });
     }
 
-    public async snipe(channel: TextBasedChannel, sniper?: User): Promise<EmbedBuilder> {
-        const snipedMessage = await this.fetchSnipedMessage({ channelId: channel.id });
-        if (!snipedMessage) return util.smallEmbed(`No snipes found in this channel`);
+    public async snipe(channel: TextBasedChannel, sniper: User): Promise<EmbedBuilder> {
+        const snipedMessage = await this.fetchSnipedMessage({ channelId: channel.id }).catch(() => null);
+        const userSettings = await userSettingsManager.getOrCreateUserSettings(sniper.id);
+
+        if (!snipedMessage) return util.smallEmbed(`${sniper.tag} ┃ No snipes found in this channel`);
+        if (!userSettings.allowSniping) return util.smallEmbed(`${sniper.tag} ┃ Enable message sniping to use this command`);
 
         const embed = snipedMessage.toEmbed();
         if (sniper) embed.setFooter({ text: `Sniped by ${sniper.tag}`, iconURL: sniper.displayAvatarURL() });
@@ -102,11 +164,11 @@ export class SnipeModule extends BaseModule {
     }
 
     public async resolveSnipedMessage(id: string): Promise<SnipedMessage<true>|undefined> {
-        return this.cache.get(id) ?? this.fetchSnipedMessage(id);
+        return this.cache.get(id) ?? this.fetchSnipedMessage(id).catch(() => undefined);
     }
 
-    public async fetchSnipedMessage(filter: string|Partial<RawSnipedMessage>, cache: boolean = true): Promise<SnipedMessage<true>|undefined> {
-        const find = await util.prisma.snipes.findFirst({
+    public async fetchSnipedMessage(filter: string|Partial<RawSnipedMessage>, cache: boolean = true): Promise<SnipedMessage<true>> {
+        const find = await util.prisma.snipes.findFirstOrThrow({
             where: typeof filter === 'string'
                 ? { id: filter }
                 : filter,
@@ -115,10 +177,9 @@ export class SnipeModule extends BaseModule {
             },
         });
 
-        if (!find) return undefined;
         const snipedMessage = await (new SnipedMessage(this, find)).fetch();
-
         if (cache) this.cache.set(snipedMessage.id, snipedMessage);
+
         return snipedMessage;
     }
 
@@ -137,6 +198,12 @@ export class SnipeModule extends BaseModule {
         await util.prisma.snipes.create({ data: snipeData });
         return (await this.fetchSnipedMessage(message.id))!;
     }
+
+    public static getConfig(): SnipeManagerModuleConfig {
+        return yml.parse(util.createConfig(path.join(cwd, 'config/snipes/config.yml'), <SnipeManagerModuleConfig>({
+            ignoredWords: ['playerlist']
+        })));
+    }
 }
 
-export default new SnipeModule();
+export default new SnipeManagerModule();
