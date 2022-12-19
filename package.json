@@ -1,5 +1,6 @@
 {
   "name": "jenny",
+  "type": "commonjs",
   "scripts": {
     "clean": "npx rimraf modules",
     "build": "npm run clean && npx tsc",

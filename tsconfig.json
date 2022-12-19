@@ -3,11 +3,13 @@
     "src/**/*"
   ],
   "compilerOptions": {
-    "target": "ES2020",
-    "module": "CommonJS",
+    "target": "ESNext",
+    "module": "NodeNext",
     "rootDir": "./src",
     "outDir": "./modules",
     "esModuleInterop": true,
+    "moduleResolution": "NodeNext",
+    "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "sourceMap": true,
