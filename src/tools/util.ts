@@ -53,7 +53,7 @@ export class UtilModule extends BaseModule {
             if (!message.mentions.parsedUsers.has(client.user?.id || '')) return;
             if (message.author.bot || !message.content || !config.mentionReactions?.length) return;
 
-            const emoji = getRandomKey<EmojiResolvable>(config.mentionReactions);
+            const emoji = getRandomKey(config.mentionReactions);
             await message.react(emoji).catch(this.logger.err);
         });
 
