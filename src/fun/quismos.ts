@@ -28,6 +28,7 @@ export class QuismosEventModule extends BaseModule {
 
         client.on('guildMemberUpdate', async (old, member) => {
             if (!this.isQuismosSeason() && (await userSettingsManager.resolveUserSettings(member.id))?.allowSeasonalNicknames === false) return;
+            if (member.displayName.includes('🎄')) return;
 
             await this.setMemberNickname(member)
                 .then(name => client.logger.debug(`Set ${member.user.tag} nickname to '${name}'`))
