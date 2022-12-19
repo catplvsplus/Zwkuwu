@@ -1,5 +1,6 @@
 import { ButtonPaginationBuilder, PaginationControllerType, PageResolvable } from '@falloutstudios/djs-pagination';
 import { ActionRowBuilder, APIButtonComponentWithCustomId, ButtonBuilder, ButtonStyle, inlineCode, MessageActionRowComponentBuilder, normalizeArray, RestOrArray, SelectMenuComponentOptionData, StringSelectMenuBuilder } from 'discord.js';
+import quismos from '../../fun/quismos';
 import util from '../util';
 import { UserSettings } from './UserSettings';
 
@@ -48,6 +49,24 @@ export class SettingsPages {
         };
     }
 
+    public allowSeasonalNicknames(): PageResolvable {
+        return {
+            embeds: [
+                util.smallEmbed('Allow Seasonal Nicknames')
+                    .setDescription(`Allow bot to edit your nickname. Example when christmas your nickname will have "🎄" prefix`)
+            ],
+            components: [
+                this.toggleComponentBuilder({
+                    customId: 'usersettings-allowseasonalnicknames',
+                    placeholder: `Enable/Disable seasonal nicknames`,
+                    enabled: this.userSettings.allowSeasonalNicknames,
+                    enableOption: `Allow seasonal nicknames`,
+                    disableOption: `Don't edit my nickname`
+                })
+            ]
+        };
+    }
+
     public toggleComponentBuilder(options: {
         customId: string;
         placeholder?: string;
@@ -82,7 +101,8 @@ export class SettingsPages {
             onDisable: 'DisableComponents',
             pages: [
                 () => this.allowSnipesSettings(),
-                () => this.cleanDataOnLeave()
+                () => this.cleanDataOnLeave(),
+                () => this.allowSeasonalNicknames()
             ],
             buttons: [
                 {
@@ -115,6 +135,7 @@ export class SettingsPages {
 
         pagination.on('collect', async component => {
             if (!component.isStringSelectMenu() || component.user.id !== this.userSettings.id || !component.customId.startsWith('usersettings-')) return;
+            if (!component.inCachedGuild()) return;
 
             const type = component.customId.split('-')[1];
             const enabled = component.values.shift() === 'enable';
@@ -135,6 +156,16 @@ export class SettingsPages {
                     });
 
                     await component.editReply({ embeds: [util.smallEmbed(`${enabled ? 'Clearing' : 'Saving'} member data on server leave`)] });
+                    break;
+                case 'allowseasonalnicknames':
+                    await this.userSettings.update({
+                        allowSeasonalNicknames: enabled
+                    });
+
+                    await (quismos.isQuismosSeason() && enabled ? quismos.setMemberNickname(component.member) : quismos.removeNickname(component.member))
+                        .catch(() => {});
+
+                    await component.editReply({ embeds: [util.smallEmbed(`${enabled ? 'Enabled' : 'Disabled'} seasonal nicknames`)] });
                     break;
             }
 

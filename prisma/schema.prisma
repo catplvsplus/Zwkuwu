@@ -11,9 +11,10 @@ datasource db {
 }
 
 model UserSettings {
-  id               String  @id @unique
-  allowSniping     Boolean @default(true)
-  cleanDataOnLeave Boolean @default(false)
+  id                     String  @id @unique
+  allowSniping           Boolean @default(true)
+  cleanDataOnLeave       Boolean @default(false)
+  allowSeasonalNicknames Boolean @default(true)
 }
 
 model Snipes {
@@ -64,7 +65,7 @@ model SelfPromotions {
   id                String    @id @unique
   authorId          String
   content           String
-  createdAt         DateTime @default(now())
+  createdAt         DateTime  @default(now())
   approvedAt        DateTime?
   approvedById      String?
   approvedMessageId String?

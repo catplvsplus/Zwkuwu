@@ -12,6 +12,7 @@ export class UserSettings<Fetched extends boolean = boolean> implements RawUserS
     private _id: string;
     private _allowSniping: boolean;
     private _cleanDataOnLeave: boolean;
+    private _allowSeasonalNicknames: boolean;
     private _deleted: boolean = false;
 
     readonly userSettingsManager: UserSettingsManagerModule;
@@ -23,6 +24,7 @@ export class UserSettings<Fetched extends boolean = boolean> implements RawUserS
     get id() { return this._id; }
     get allowSniping() { return this._allowSniping; }
     get cleanDataOnLeave() { return this._cleanDataOnLeave; }
+    get allowSeasonalNicknames() { return this._allowSeasonalNicknames; }
     get deleted() { return this._deleted; }
 
     constructor(userSettingsManager: UserSettingsManagerModule, rawUserSettings: Partial<RawUserSettings> & { id: string; }) {
@@ -34,6 +36,7 @@ export class UserSettings<Fetched extends boolean = boolean> implements RawUserS
         this._id = rawUserSettings.id;
         this._allowSniping = rawUserSettings.allowSniping ?? true;
         this._cleanDataOnLeave = rawUserSettings.cleanDataOnLeave ?? false;
+        this._allowSeasonalNicknames = rawUserSettings.allowSeasonalNicknames ?? true;
 
         this._user = this.client.users.cache.get(this.id) || null;
     }
@@ -50,6 +53,7 @@ export class UserSettings<Fetched extends boolean = boolean> implements RawUserS
 
         this._allowSniping = data.allowSniping;
         this._cleanDataOnLeave = data.cleanDataOnLeave;
+        this._allowSeasonalNicknames = data.allowSeasonalNicknames;
 
         this._user = await this.client.users.fetch(this.id);
 
@@ -80,6 +84,7 @@ export class UserSettings<Fetched extends boolean = boolean> implements RawUserS
 
         this._allowSniping = data.allowSniping ?? this._allowSniping;
         this._cleanDataOnLeave = data.cleanDataOnLeave ?? this._cleanDataOnLeave;
+        this._allowSeasonalNicknames = data.allowSeasonalNicknames ?? this._allowSeasonalNicknames;
 
         return this;
     }
