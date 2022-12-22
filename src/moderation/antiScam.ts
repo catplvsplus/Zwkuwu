@@ -46,7 +46,7 @@ export class AntiScamModule extends BaseModule {
             const match = this.scamLinks.getMatch(message.content);
             if (!match) return;
 
-            await message.delete();
+            await message.delete().catch(() => {});
             await message.channel.send({
                 content: `Suspicious message from ${message.author}`,
                 embeds: [
