@@ -50,8 +50,7 @@ export class QuismosEventModule extends BaseModule {
 
     public async removeNickname(member: GuildMember): Promise<string|null> {
         let name = member.nickname;
-
-        if (!name || !name.includes('🎄')) return name;
+        if (!name) return name;
 
         name = replaceAll(name, '🎄', '').trim();
         name = name === member.user.username ? null : name;
