@@ -14,7 +14,7 @@ export class QuismosEventModule extends BaseModule {
             const guilds = client.guilds.cache.toJSON();
 
             for (const guild of guilds) {
-                const members = guild.members.cache.filter(member => !member.user.bot).toJSON();
+                const members = guild.members.cache.toJSON();
 
                 for (const member of members) {
                     if ((await userSettingsManager.resolveUserSettings(member.id))?.allowSeasonalNicknames === false) continue;
@@ -51,7 +51,7 @@ export class QuismosEventModule extends BaseModule {
     public async removeNickname(member: GuildMember): Promise<string|null> {
         let name = member.nickname;
 
-        if (!name || !name.includes('GuildMember')) return name;
+        if (!name || !name.includes('🎄')) return name;
 
         name = replaceAll(name, '🎄', '').trim();
         name = name === member.user.username ? null : name;
