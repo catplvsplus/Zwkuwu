@@ -30,13 +30,13 @@ model SnipedMessages {
 }
 
 model Confessions {
-  id        String   @id @unique
-  authorId  String
-  channelId String
-  messageId String   @unique
-  title     String?
-  content   String
-  createdAt DateTime @default(now())
+  id          String   @id @unique
+  authorId    String
+  channelId   String
+  title       String?
+  content     String
+  referenceId String?
+  createdAt   DateTime @default(now())
 }
 
 model MinecraftIPCache {

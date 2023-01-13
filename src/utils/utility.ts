@@ -33,13 +33,13 @@ export class Utility extends BaseModule {
         return true;
     }
 
-    public createSmallEmbed(content: string, options?: { useDescription?: true; }|{ useDescription?: false; disableAvatar?: boolean; }): EmbedBuilder {
-        const embed = new EmbedBuilder().setColor(this.config.embedColor);
+    public createSmallEmbed(content: string, options?: { useDescription?: true; positive?: boolean }|{ useDescription?: false; positive?: boolean; disableAvatar?: boolean; }): EmbedBuilder {
+        const embed = new EmbedBuilder().setColor(options?.positive === false ? this.config.errorEmbedColor : this.config.embedColor);
 
         if (options?.useDescription === true) {
             embed.setDescription(content);
         } else {
-            embed.setAuthor({ name: content, iconURL: (options as { disableAvatar?: boolean; })?.disableAvatar ? this.user.displayAvatarURL() : undefined })
+            embed.setAuthor({ name: content, iconURL: (options as { disableAvatar?: boolean; })?.disableAvatar ? undefined : this.user.displayAvatarURL() })
         }
 
         return embed;

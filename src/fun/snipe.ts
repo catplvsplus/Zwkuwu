@@ -18,14 +18,25 @@ export class SnipeModule extends BaseModule {
                 .setDescription('Snipe deleted messages')
                 .setExecute(async ({ interaction }) => {
                     await interaction.deferReply();
-                    await interaction.editReply(await this.snipeMessage({ channelId: interaction.channelId }));
+                    await interaction.editReply(await this.snipeMessage(interaction.user, { channelId: interaction.channelId }));
                 }),
             new MessageCommandBuilder()
                 .setName('snipe')
                 .setDescription('Snipe deleted messages')
                 .setExecute(async ({ message }) => {
-                    await message.reply(await this.snipeMessage({ channelId: message.channelId }));
+                    await message.reply(await this.snipeMessage(message.author, { channelId: message.channelId }));
                 })
+        ];
+
+        this.interactions = [
+            {
+                type: 'Button',
+                customId: 'snipe',
+                handle: async interaction => {
+                    await interaction.deferReply();
+                    await interaction.editReply(await this.snipeMessage(interaction.user, { channelId: interaction.channelId }));
+                }
+            }
         ];
 
         return true;
@@ -47,7 +58,6 @@ export class SnipeModule extends BaseModule {
                     channelId: message.channel.id,
                     content: message.content,
                     attachmentCount: message.attachments.size,
-                    createdAt: message.createdAt,
                     edited: !!message.editedAt,
                     referencedUserId: message.reference ? (await message.fetchReference()).author.id : null
                 }
@@ -55,18 +65,26 @@ export class SnipeModule extends BaseModule {
         });
     }
 
-    public async snipeMessage(filter?: Partial<SnipedMessages>): Promise<BaseMessageOptions> {
+    public async snipeMessage(sniper: User, filter?: Partial<SnipedMessages>): Promise<BaseMessageOptions> {
+        const settings = await userSettings.fetchUserSettings(sniper.id);
+
+        if (!settings.allowSniping) return {
+            embeds: [
+                utility.createSmallEmbed('Enable your message sniping to use snipe command', { positive: false })
+            ]
+        };
+
         const data = await utility.prisma.snipedMessages.findFirst({
             where: filter,
             orderBy: { createdAt: 'desc' },
             take: 1
         });
 
-        const deleted = data ? await utility.prisma.snipedMessages.delete({ where: data }).catch(() => null) : null;
+        const deleted = data ? await utility.prisma.snipedMessages.delete({ where: { id: data.id } }).catch(() => null) : null;
 
         if (!data || !deleted) return {
             embeds: [
-                utility.createSmallEmbed('No sniped messages found')
+                utility.createSmallEmbed('No sniped messages found', { positive: false })
             ]
         };
 

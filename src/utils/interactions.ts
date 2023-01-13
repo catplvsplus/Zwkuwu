@@ -10,14 +10,12 @@ export interface BaseInteractionEvent<T> {
 
 export interface BaseCommandInteractionEvent<T extends AutocompleteInteraction|ChatInputCommandInteraction|ContextMenuCommandInteraction> extends BaseInteractionEvent<T> {
     type: 'Autocomplete'|'ChatInput'|'ContextMenu';
-    interaction: T;
-    commandName: string|((commandName: string) => Awaitable<void>);
+    commandName: string|((commandName: string) => Awaitable<boolean>);
 }
 
 export interface BaseComponentInteractionEvent<T extends ButtonInteraction|ModalSubmitInteraction|AnySelectMenuInteraction> extends BaseInteractionEvent<T> {
     type: 'Button'|'ModalSubmit'|'SelectMenu';
-    interaction: T;
-    customId: string|((customId: string) => Awaitable<void>);
+    customId: string|((customId: string) => Awaitable<boolean>);
 }
 
 export interface AutocompleteInteractionEvent extends BaseCommandInteractionEvent<AutocompleteInteraction> { type: 'Autocomplete'; }
@@ -44,11 +42,13 @@ export class InteractionHandlerModule extends BaseModule {
 
             await Promise.all(handlers.map(async handler => {
                 if (this.isCommandInteractionHandler(handler)) {
-                    if (!interaction.isAutocomplete() && !interaction.isChatInputCommand() && !interaction.isContextMenuCommand()) return false;
-                    if (typeof handler.commandName === 'string' ? handler.commandName !== interaction.commandName : !handler.commandName(interaction.commandName)) return false;
+                    if (!interaction.isAutocomplete() && !interaction.isChatInputCommand() && !interaction.isContextMenuCommand()) return;
+                    if (typeof handler.commandName === 'string' ? handler.commandName !== interaction.commandName : !handler.commandName(interaction.commandName)) return;
                 } else if (this.isComponentInteractionHandler(handler)) {
-                    if (!interaction.isButton() && !interaction.isModalSubmit() && !interaction.isAnySelectMenu()) return false;
-                    if (typeof handler.customId === 'string' ? handler.customId !== interaction.customId : !handler.customId(interaction.customId)) return false;
+                    if (!interaction.isButton() && !interaction.isModalSubmit() && !interaction.isAnySelectMenu()) return;
+                    if (typeof handler.customId === 'string' ? handler.customId !== interaction.customId : !handler.customId(interaction.customId)) return;
+                } else {
+                    return;
                 }
 
                 switch (handler.type) {
@@ -84,7 +84,7 @@ export class InteractionHandlerModule extends BaseModule {
     }
 
     public isCommandInteractionHandler(maybeCommandInteractionHandler: any): maybeCommandInteractionHandler is AnyCommandInteractionHandler {
-        return ['Autocomplete', 'ChatInput', 'ContextMenu'].includes(maybeCommandInteractionHandler.type) && maybeCommandInteractionHandler.customId !== undefined && maybeCommandInteractionHandler.handle !== undefined;
+        return ['Autocomplete', 'ChatInput', 'ContextMenu'].includes(maybeCommandInteractionHandler.type) && maybeCommandInteractionHandler.commandName !== undefined && maybeCommandInteractionHandler.handle !== undefined;
     }
 }
 
