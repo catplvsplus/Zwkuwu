@@ -1,6 +1,6 @@
 import { RecipleClient } from 'reciple';
+import { Config, defaultconfig } from '../Config.js';
 import { BaseModule } from '../BaseModule.js';
-import { Config, defaultconfig } from './config.js';
 
 export class Utility extends BaseModule {
     public client!: RecipleClient<true>;
