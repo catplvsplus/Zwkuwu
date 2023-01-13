@@ -5,7 +5,7 @@
     "clean": "npx rimraf modules",
     "build": "npm run clean && npx tsc",
     "start": "npx reciple -y -D",
-    "test": "npm run build && npx reciple -D -y -t env:TEST_TOKEN  -c ./reciple.test.yml",
+    "test": "npm run build && npx reciple -D -y -t env:TESTING_TOKEN  -c ./reciple.test.yml",
     "prisma:format": "npx prisma format",
     "prisma:generate": "npm run prisma:format && npx prisma generate",
     "prisma:push": "npm run prisma:format && npx prisma db push",
@@ -14,12 +14,17 @@
   "dependencies": {
     "@prisma/client": "^4.8.1",
     "discord.js": "^14.7.1",
-    "fallout-utility": "^1.5.22",
-    "reciple": "^6.0.4"
+    "fallout-utility": "^2.1.2",
+    "lodash": "^4.17.21",
+    "reciple": "^6.0.4",
+    "wildcard-match": "^5.1.2",
+    "yaml": "^2.2.1"
   },
   "devDependencies": {
+    "@types/lodash": "^4.14.191",
     "@types/node": "^18.11.18",
     "prisma": "^4.8.1",
+    "rimraf": "^4.0.4",
     "typescript": "^4.9.4"
   }
 }

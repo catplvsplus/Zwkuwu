@@ -11,8 +11,53 @@ datasource db {
 }
 
 model UserSettings {
-  id                     String  @id @unique
-  allowSniping           Boolean @default(true)
-  cleanDataOnLeave       Boolean @default(false)
-  allowSeasonalNicknames Boolean @default(true)
+  id                     String   @id @unique
+  allowSniping           Boolean  @default(true)
+  cleanDataOnLeave       Boolean  @default(false)
+  allowSeasonalNicknames Boolean  @default(true)
+  updatedAt              DateTime @updatedAt
+}
+
+model SnipedMessages {
+  id               String   @id @unique
+  authorId         String
+  channelId        String
+  content          String
+  referencedUserId String?
+  edited           Boolean  @default(false)
+  attachmentCount  Int
+  createdAt        DateTime @default(now())
+}
+
+model Confessions {
+  id        String   @id @unique
+  authorId  String
+  channelId String
+  messageId String   @unique
+  title     String?
+  content   String
+  createdAt DateTime @default(now())
+}
+
+model MinecraftIPCache {
+  id        String   @id @unique @default(uuid())
+  host      String   @unique
+  proxy     Boolean
+  createdAt DateTime @default(now())
+}
+
+model PlayerSkinData {
+  username         String   @id @unique
+  authorizedUserId String?
+  file             String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model SavedMemberData {
+  id        String   @id @unique
+  guildId   String
+  nickname  String?
+  roles     String
+  createdAt DateTime @default(now())
 }
