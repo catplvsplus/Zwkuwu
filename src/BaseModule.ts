@@ -1,12 +1,12 @@
 import { AnyCommandBuilder, AnyCommandData, RecipleClient, RecipleScript } from 'reciple';
-import { CommandInteractionEvent, ComponentInteractionEvent } from './tools/InteractionEvents';
+import { AnyModuleInteractionHandler } from './utils/interactions.js';
 
-export default abstract class BaseModule implements RecipleScript {
-    public versions: string|string[] = ['^6.0.0'];
-    public commands: (AnyCommandBuilder|AnyCommandData)[] = [];
-    public interactionEventHandlers: (ComponentInteractionEvent|CommandInteractionEvent)[] = [];
+export abstract class BaseModule implements RecipleScript {
+    public versions: string[] = ['^6'];
+    public commands: (AnyCommandBuilder | AnyCommandData)[] = [];
+    public interactions: AnyModuleInteractionHandler[] = [];
 
-    public abstract onStart(client: RecipleClient<boolean>): boolean | Promise<boolean>;
+    public abstract onStart(client: RecipleClient): boolean | Promise<boolean>;
 
     public onLoad(client: RecipleClient<boolean>): void | Promise<void> {
         return void 0;
