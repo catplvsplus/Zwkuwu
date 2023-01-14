@@ -1,4 +1,4 @@
-import { RecipleClient, SlashCommandBuilder } from 'reciple';
+import { MessageCommandBuilder, RecipleClient, SlashCommandBuilder } from 'reciple';
 import { BaseModule } from '../BaseModule.js';
 import localeCode, { LanguageCode } from 'iso-639-1';
 import { EmbedBuilder, User } from 'discord.js';
@@ -11,7 +11,7 @@ export class TranslateModule extends BaseModule {
             new SlashCommandBuilder()
                 .setName('translate')
                 .setDescription('Translate a message')
-                .addStringOption(message => message
+                .addStringOption(text => text
                     .setName('text')
                     .setDescription('Message you want to traslate')
                     .setMaxLength(500)
@@ -55,6 +55,33 @@ export class TranslateModule extends BaseModule {
                     await interaction.editReply({
                         embeds: [embed]
                     });
+                }),
+            new MessageCommandBuilder()
+                .setName('translate')
+                .setDescription('Translate a text to english')
+                .addOptions(text => text
+                    .setName('text')
+                    .setDescription('Message you want to traslate')
+                    .setRequired(true)
+                )
+                .setExecute(async data => {
+                    const message = data.message;
+                    const content = data.command.args.join(' ');
+
+                    if (content.length > 500) {
+                        await message.reply({
+                            embeds: [
+                                utility.createSmallEmbed('Text is too long', { positive: false })
+                            ]
+                        });
+                        return;
+                    }
+
+                    await message.reply({
+                        embeds: [
+                            await this.translate({ text: content, author: message.author, to: 'en' })
+                        ]
+                    })
                 })
         ];
 
