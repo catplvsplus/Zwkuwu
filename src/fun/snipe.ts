@@ -47,6 +47,7 @@ export class SnipeModule extends BaseModule {
             if (!message.inGuild()) return;
             if (utility.config.snipes.ignoredUsers.includes(message.author.id)) return;
             if (utility.config.snipes.ignoredWords.some(word => message.content.toLowerCase().includes(word.toLowerCase()))) return;
+            if (!message.content && !message.attachments.size && !message.editedAt) return;
 
             const settings = await userSettings.fetchUserSettings(message.author.id);
             if (!settings?.allowSniping) return;
@@ -94,7 +95,7 @@ export class SnipeModule extends BaseModule {
             embeds: [
                 new EmbedBuilder()
                     .setAuthor({ name: user.tag, iconURL: user.displayAvatarURL() })
-                    .setDescription(`${data.content + (data.edited ? ' (edited)' : '')}`)
+                    .setDescription(`${data.content + (data.edited ? ' (edited)' : '')} `)
                     .setTimestamp(data.createdAt)
                     .setColor(utility.config.embedColor)
             ],
