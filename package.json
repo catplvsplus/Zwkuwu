@@ -13,8 +13,10 @@
   },
   "dependencies": {
     "@prisma/client": "^4.8.1",
+    "@vitalets/google-translate-api": "^9.0.0",
     "discord.js": "^14.7.1",
     "fallout-utility": "^2.1.2",
+    "iso-639-1": "^2.1.15",
     "lodash": "^4.17.21",
     "reciple": "^6.0.4",
     "tiktok-scraper-ts": "^1.4.0",
