@@ -48,6 +48,13 @@ export class Utility extends BaseModule {
     public async resolveFromCachedManager<V>(id: string, manager: { cache: Collection<string, V>; fetch(key: string): Promise<V> }): Promise<V> {
         return manager.cache.get(id) ?? manager.fetch(id);
     }
+
+    public formatNumber(number: number): string {
+        if (number >= 1000000000) return (number / 1000000000).toFixed(1).replace(/\.0$/, '') + 'B';
+        if (number >= 1000000) return (number / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+        if (number >= 1000) return (number / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
+        return String(number);
+    }
 }
 
 export default new Utility();

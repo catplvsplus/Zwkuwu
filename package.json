@@ -17,6 +17,7 @@
     "fallout-utility": "^2.1.2",
     "lodash": "^4.17.21",
     "reciple": "^6.0.4",
+    "tiktok-scraper-ts": "^1.4.0",
     "wildcard-match": "^5.1.2",
     "yaml": "^2.2.1"
   },
