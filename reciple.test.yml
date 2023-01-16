@@ -108,7 +108,7 @@ ignoredFiles: ['BaseModule.js', 'Config.js']
 ## Modifying the values below could break reciple ##
 
 # Modules folder
-modulesFolder: ['modules', 'modules/dev', 'modules/utils', 'modules/fun']
+modulesFolder: ['modules', 'modules/dev', 'modules/utils', 'modules/fun', 'modules/moderation']
 
 # Load modules regardless of its supported versions
 disableVersionCheck: false

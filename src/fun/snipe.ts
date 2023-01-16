@@ -11,6 +11,8 @@ export interface SnipeConfig {
 }
 
 export class SnipeModule extends BaseModule {
+    get config() { return utility.config.snipes; }
+
     public async onStart(client: RecipleClient<boolean>): Promise<boolean> {
         this.commands = [
             new SlashCommandBuilder()
@@ -45,8 +47,8 @@ export class SnipeModule extends BaseModule {
     public async onLoad(client: RecipleClient): Promise<void> {
         client.on('messageDelete', async (message) => {
             if (!message.inGuild()) return;
-            if (utility.config.snipes.ignoredUsers.includes(message.author.id)) return;
-            if (utility.config.snipes.ignoredWords.some(word => message.content.toLowerCase().includes(word.toLowerCase()))) return;
+            if (this.config.ignoredUsers.includes(message.author.id)) return;
+            if (this.config.ignoredWords.some(word => message.content.toLowerCase().includes(word.toLowerCase()))) return;
             if (!message.content && !message.attachments.size && !message.editedAt) return;
 
             const settings = await userSettings.fetchUserSettings(message.author.id);

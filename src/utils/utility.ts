@@ -7,6 +7,7 @@ import { createReadFile, path } from 'fallout-utility';
 import yml from 'yaml';
 import lodash from 'lodash';
 import { Collection, EmbedBuilder } from 'discord.js';
+import { writeFileSync } from 'fs';
 
 const { defaultsDeep } = lodash;
 
@@ -25,7 +26,11 @@ export class Utility extends BaseModule {
         this.logger = client.logger.cloneLogger({ loggerName: 'Utility' });
         this.config = createReadFile(path.join(cwd, 'config/config.yml'), defaultconfig, {
             encodeFileData: data => yml.stringify(data),
-            formatReadData: data => defaultsDeep(yml.parse(data.toString()), defaultconfig)
+            formatReadData: data => {
+                const config: Config = defaultsDeep(yml.parse(data.toString()), defaultconfig);
+                writeFileSync(path.join(cwd, 'config/config.yml'), yml.stringify(config));
+                return config;
+            }
         });
 
         this.logger.log('Config loaded:', this.config);
@@ -54,6 +59,10 @@ export class Utility extends BaseModule {
         if (number >= 1000000) return (number / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
         if (number >= 1000) return (number / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
         return String(number);
+    }
+
+    public isValidIP(ip: string): boolean {
+        return /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(ip);
     }
 }
 

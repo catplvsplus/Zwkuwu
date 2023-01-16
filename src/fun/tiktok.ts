@@ -10,7 +10,9 @@ export interface TiktokConfig {
 }
 
 export class TiktokModule extends BaseModule {
-    public tiktokClient: TTScraper = new TTScraper(utility.config.tiktok.cookies || undefined);
+    public tiktokClient: TTScraper = new TTScraper(this.config.cookies || undefined);
+
+    get config() { return utility.config.tiktok; }
 
     public async onStart(client: RecipleClient<boolean>): Promise<boolean> {
         return true;

@@ -14,6 +14,8 @@ export class ConfessionsModule extends BaseModule {
     public confessionsChannel!: TextBasedChannel;
     public titleAccessRequiredPermissions: PermissionResolvable = 'Administrator';
 
+    get config() { return utility.config.confessions; }
+
     public async onStart(client: RecipleClient<boolean>): Promise<boolean> {
         this.commands = [
             new SlashCommandBuilder()
@@ -24,7 +26,7 @@ export class ConfessionsModule extends BaseModule {
                     .setDescription('Create new confession')
                 )
                 .setExecute(async ({ interaction }) => {
-                    const allowTitle = interaction.inCachedGuild() && interaction.member.permissions.has(utility.config.confessions.titleAccessRequiredPermissions);
+                    const allowTitle = interaction.inCachedGuild() && interaction.member.permissions.has(this.config.titleAccessRequiredPermissions);
 
                     await interaction.showModal(this.confessionModal({ allowTitle }));
                 })
@@ -44,7 +46,7 @@ export class ConfessionsModule extends BaseModule {
                 type: 'Button',
                 customId: 'confession-create',
                 handle: async interaction => {
-                    const allowTitle = interaction.inCachedGuild() && interaction.member.permissions.has(utility.config.confessions.titleAccessRequiredPermissions);
+                    const allowTitle = interaction.inCachedGuild() && interaction.member.permissions.has(this.config.titleAccessRequiredPermissions);
                     await interaction.showModal(this.confessionModal({ allowTitle }));
                 }
             },
@@ -52,7 +54,7 @@ export class ConfessionsModule extends BaseModule {
                 type: 'Button',
                 customId: 'confession-reply',
                 handle: async interaction => {
-                    const allowTitle = interaction.inCachedGuild() && interaction.member.permissions.has(utility.config.confessions.titleAccessRequiredPermissions);
+                    const allowTitle = interaction.inCachedGuild() && interaction.member.permissions.has(this.config.titleAccessRequiredPermissions);
                     const replyToId = interaction.message.id;
 
                     await interaction.showModal(this.confessionModal({ allowTitle, replyToId }));
@@ -63,7 +65,7 @@ export class ConfessionsModule extends BaseModule {
                 commandName: 'Reply to confession',
                 handle: async interaction => {
                     if (!interaction.isMessageContextMenuCommand()) return;
-                    const allowTitle = interaction.inCachedGuild() && interaction.member.permissions.has(utility.config.confessions.titleAccessRequiredPermissions);
+                    const allowTitle = interaction.inCachedGuild() && interaction.member.permissions.has(this.config.titleAccessRequiredPermissions);
 
                     await interaction.showModal(this.confessionModal({ replyToId: interaction.targetId, allowTitle }))
                 }
@@ -109,7 +111,7 @@ export class ConfessionsModule extends BaseModule {
                 type: 'ModalSubmit',
                 customId: customId => customId.startsWith('confession-modal'),
                 handle: async interaction => {
-                    const allowTitle = interaction.inCachedGuild() && interaction.member.permissions.has(utility.config.confessions.titleAccessRequiredPermissions);
+                    const allowTitle = interaction.inCachedGuild() && interaction.member.permissions.has(this.config.titleAccessRequiredPermissions);
 
                     const [action, type, replyToId] = interaction.customId.split('-');
 
@@ -213,7 +215,7 @@ export class ConfessionsModule extends BaseModule {
     }
 
     public async onLoad(client: RecipleClient<boolean>): Promise<void> {
-        const channel = await utility.resolveFromCachedManager(utility.config.confessions.confessionsChannelId, client.channels);
+        const channel = await utility.resolveFromCachedManager(this.config.confessionsChannelId, client.channels);
         if (!channel?.isTextBased()) throw new Error('Confessions channel is not a valid text channel');
 
         this.confessionsChannel = channel;
@@ -243,7 +245,7 @@ export class ConfessionsModule extends BaseModule {
                             .setCustomId('content')
                             .setLabel('Content')
                             .setMaxLength(2000)
-                            .setPlaceholder(getRandomKey(utility.config.confessions.modalPlaceholders))
+                            .setPlaceholder(getRandomKey(this.config.modalPlaceholders))
                             .setStyle(TextInputStyle.Paragraph)
                             .setRequired(true)
                     )
