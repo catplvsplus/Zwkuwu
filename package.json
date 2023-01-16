@@ -12,6 +12,7 @@
     "postinstall": "npm run build"
   },
   "dependencies": {
+    "@falloutstudios/djs-scam-links": "^1.2.3",
     "@prisma/client": "^4.8.1",
     "@vitalets/google-translate-api": "^9.0.0",
     "axios": "^1.2.2",
