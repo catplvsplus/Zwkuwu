@@ -52,6 +52,7 @@ export class AntiProxyModule extends BaseModule {
         });
 
         client.on('messageUpdate', async (oldMessage, message) => {
+            console.log(message.content);
             if (!this.config.consoleBotIds.includes(message.author?.id!) || !this.config.consoleChannelIds.includes(message.channel.id)) return;
             if (!message.inGuild()) return;
 
