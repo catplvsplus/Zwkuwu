@@ -47,6 +47,7 @@ export const defaultconfig: BaseConfig = {
     },
     srvStatus: {
         pingTimeout: 10000,
+        updateIntervalMs: 10000,
         embedColor: {
             online: 'Green',
             offline: 'Red',

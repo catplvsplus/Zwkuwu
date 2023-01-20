@@ -16,10 +16,10 @@ export interface SrvStatusConfig {
             channelId: string;
             onlineStatus: string|GuildChannelEditOptions;
             offlineStatus: string|GuildChannelEditOptions;
-            updateIntervalMs: number;
         }
     } & Partial<Omit<SrvStatusConfig, 'servers'>>)[];
     pingTimeout: number;
+    updateIntervalMs: number;
     embedColor: {
         online: ColorResolvable;
         offline: ColorResolvable;
@@ -30,10 +30,10 @@ export interface SrvStatusConfig {
 export type Server = SrvStatusConfig['servers'][0] & {
     statusChannel?: {
         channel: GuildChannel;
-        updateInterval: NodeJS.Timer;
     } & SrvStatusConfig['servers'][0]['statusChannel'];
     status: 'Online'|'Offline';
     lastStatus?: Server['status'];
+    updateInterval: NodeJS.Timer;
     lastPing?: {
         motd?: string;
         version?: string;
@@ -76,6 +76,7 @@ export class SrvStatusModule extends BaseModule {
             const updateChannel = async () => {
                 const data = await this.ping(server.host).catch(() => null);
                 if (data === null || !data.statusChannel) return;
+                if (data.lastStatus == data.status) return;
 
                 const editData = data.status === 'Online' ? data.statusChannel.onlineStatus : data.statusChannel.offlineStatus;
                 data.statusChannel.channel.edit(typeof editData === 'string' ? { name: editData } : editData);
@@ -84,10 +85,10 @@ export class SrvStatusModule extends BaseModule {
             this.servers.set(server.host, {
                 ...server,
                 status: 'Offline',
+                updateInterval: setInterval(() => updateChannel(), server.updateIntervalMs ?? this.config.updateIntervalMs),
                 statusChannel: server.statusChannel ? {
                     ...server.statusChannel,
                     channel: await utility.resolveFromCachedManager(server.statusChannel.channelId, client.channels) as GuildChannel,
-                    updateInterval: setInterval(() => updateChannel(), server.statusChannel.updateIntervalMs)
                 } : undefined
             });
 
@@ -96,11 +97,26 @@ export class SrvStatusModule extends BaseModule {
     }
 
     public async createServerStatusMessage(message: Message, edit: boolean = false): Promise<Message> {
-        const embeds = this.config.servers.map(s => utility.createSmallEmbed(`Pinging ┃ ${this.makeIP(s)}`).setColor(s.embedColor?.pending || this.config.embedColor.pending));
+        const pinging: [string, number][] = [];
+
+        let index: number = 0;
+        const embeds = this.servers.map((s, key) => {
+            if (s.lastStatus === undefined) pinging.push([key, index]);
+
+            index++;
+            return utility.createSmallEmbed(`${s.lastStatus || 'Pinging'} ┃ ${this.makeIP(s)}`)
+                .setColor(s.lastStatus == undefined
+                    ? s.embedColor?.pending || this.config.embedColor.pending
+                    : s.lastStatus === 'Online'
+                        ? s.embedColor?.online || this.config.embedColor.online
+                        : s.embedColor?.offline || this.config.embedColor.offline);
+        });
         const reply = await ( edit ? message.edit({ content: ' ', embeds, components: [] }) : message.reply({ content: ' ', embeds, components: [] }));
 
-        for (const server of this.servers.toJSON()) {
-            const index = this.config.servers.findIndex(s => s.host === server.host);
+        for (const [key, index] of pinging) {
+            const server = this.servers.get(key);
+            if (!server) continue;
+
             const status = await this.ping(server.host);
             const embed = utility.createSmallEmbed(`${status.status === 'Online' ? 'Online' : 'Offline'} ┃ ${this.makeIP(server)}`).setDescription(server.description || null);
 
@@ -131,7 +147,7 @@ export class SrvStatusModule extends BaseModule {
             });
         }
 
-        return message;
+        return reply;
     }
 
     public addCollector(message: Message, command?: Message|string): void {
@@ -178,7 +194,7 @@ export class SrvStatusModule extends BaseModule {
             port: server.port ?? 25565,
             closeTimeout: server.pingTimeout || this.config.pingTimeout
         }).catch(err => {
-            console.error(err);
+            utility.logger.debug(`Ping failed (${this.makeIP(server)}): ${String(err)}`);
             return null;
         });
 
