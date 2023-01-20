@@ -4,6 +4,7 @@ import { ConfessionsConfig } from './fun/confessions.js';
 import { TiktokConfig } from './fun/tiktok.js';
 import { AntiProxyConfig } from './moderation/antiProxy.js';
 import { SrvStatusConfig } from './dev/srvStatus.js';
+import { WelcomerConfig } from './utils/welcomer.js';
 
 export interface BaseConfig {
     embedColor: ColorResolvable;
@@ -13,6 +14,7 @@ export interface BaseConfig {
     tiktok: TiktokConfig;
     antiProxy: AntiProxyConfig;
     srvStatus: SrvStatusConfig;
+    welcomer: WelcomerConfig;
 };
 
 export const snowflake = '0000000000000000000';
@@ -21,8 +23,8 @@ export const defaultconfig: BaseConfig = {
     embedColor: 'Blue',
     errorEmbedColor: 'DarkButNotBlack',
     snipes: {
-        ignoredUsers: [snowflake],
-        ignoredWords: [snowflake]
+        ignoredUsers: [],
+        ignoredWords: []
     },
     confessions: {
         confessionsChannelId: snowflake,
@@ -56,6 +58,16 @@ export const defaultconfig: BaseConfig = {
                 port: 40655,
             }
         ]
+    },
+    welcomer: {
+        guilds: [
+            {
+                guildId: snowflake,
+                welcomeChannelIds: [snowflake],
+                leaveChannelIds: [snowflake],
+            }
+        ],
+        ignoreBots: true
     }
 };
 
