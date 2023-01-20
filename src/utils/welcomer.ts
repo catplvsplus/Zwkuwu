@@ -22,7 +22,7 @@ export class WelcomerModule extends BaseModule {
     }
 
     public async onLoad(client: RecipleClient<boolean>): Promise<void> {
-        client.on('guildMemberAvailable', async member => {
+        client.on('guildMemberAdd', async member => {
             const welcomerData = this.config.guilds.find(i => i.guildId === member.guild.id);
             if (!welcomerData) return;
             if ((welcomerData.ignoreBots ?? this.config.ignoreBots) && member.user.bot) return;
