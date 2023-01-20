@@ -107,6 +107,12 @@ export class SnipeModule extends BaseModule {
         };
     }
 
+    public async clearUserSnipes(userId: string): Promise<void> {
+        await utility.prisma.snipedMessages.deleteMany({
+            where: { authorId: userId }
+        });
+    }
+
     public getSnipeMessageComponents(disabled: boolean = false): ActionRowBuilder<MessageActionRowComponentBuilder> {
         return new ActionRowBuilder<MessageActionRowComponentBuilder>()
             .setComponents(

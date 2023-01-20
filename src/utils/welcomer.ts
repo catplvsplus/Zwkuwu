@@ -3,6 +3,7 @@ import { BaseModule } from '../BaseModule.js';
 import { BaseMessageOptions, EmbedBuilder, GuildMember, Message, PartialGuildMember } from 'discord.js';
 import utility from './utility.js';
 import userSettings from './userSettings.js';
+import snipe from '../fun/snipe.js';
 
 export interface WelcomerConfig {
     guilds: {
@@ -48,7 +49,10 @@ export class WelcomerModule extends BaseModule {
 
             if (member.user.bot) return;
             const settings = await userSettings.fetchUserSettings(member.id);
-            if (settings.cleanDataOnLeave) return;
+            if (settings.cleanDataOnLeave) {
+                await snipe.clearUserSnipes(member.id);
+                return;
+            }
 
             const roles = JSON.stringify(member.roles.cache.toJSON().map(r => r.id));
             const nickname = member.nickname;
