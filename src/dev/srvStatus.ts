@@ -109,7 +109,9 @@ export class SrvStatusModule extends BaseModule {
                     ? s.embedColor?.pending || this.config.embedColor.pending
                     : s.lastStatus === 'Online'
                         ? s.embedColor?.online || this.config.embedColor.online
-                        : s.embedColor?.offline || this.config.embedColor.offline);
+                        : s.embedColor?.offline || this.config.embedColor.offline)
+                .setFooter({ text: 'Last pinged' })
+                .setTimestamp(s.lastPing?.pingAt);
         });
         const reply = await ( edit ? message.edit({ content: ' ', embeds, components: [] }) : message.reply({ content: ' ', embeds, components: [] }));
 
@@ -129,23 +131,24 @@ export class SrvStatusModule extends BaseModule {
             }
 
             embeds[index] = embed;
-            await reply.edit({
-                embeds,
-                components: index === (this.servers.size > 0 ? this.servers.size - 1 : 0) ? [
-                    new ActionRowBuilder<MessageActionRowComponentBuilder>()
-                        .setComponents(
-                            new ButtonBuilder()
-                                .setCustomId('mcip-reload')
-                                .setLabel('Reload')
-                                .setStyle(ButtonStyle.Success),
-                            new ButtonBuilder()
-                                .setCustomId('mcip-delete')
-                                .setLabel('Delete')
-                                .setStyle(ButtonStyle.Secondary)
-                        )
-                ] : []
-            });
+            await reply.edit({ embeds });
         }
+
+        await reply.edit({
+            components: [
+                new ActionRowBuilder<MessageActionRowComponentBuilder>()
+                    .setComponents(
+                        new ButtonBuilder()
+                            .setCustomId('mcip-reload')
+                            .setLabel('Reload')
+                            .setStyle(ButtonStyle.Success),
+                        new ButtonBuilder()
+                            .setCustomId('mcip-delete')
+                            .setLabel('Delete')
+                            .setStyle(ButtonStyle.Secondary)
+                    )
+            ]
+        });
 
         return reply;
     }
