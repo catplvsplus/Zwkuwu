@@ -8,7 +8,7 @@ const oldPrismaClient = new OldPrismaClient();
 
 const console = new Logger();
 
-async function migrateUserSettings(): Promise<void> {
+export async function migrateUserSettings(): Promise<void> {
     console.log(`Migrating user settings...`);
 
     const oldUserSettings = await oldPrismaClient.userSettings.findMany();
@@ -24,7 +24,7 @@ async function migrateUserSettings(): Promise<void> {
     console.log(`Migrated ${oldUserSettings.length} user settings!`);
 }
 
-async function migrateSnipes(): Promise<void> {
+export async function migrateSnipes(): Promise<void> {
     console.log(`Migrating snipes...`);
 
     const oldSnipes = await oldPrismaClient.snipes.findMany();
@@ -49,7 +49,7 @@ async function migrateSnipes(): Promise<void> {
     console.log(`Migrated ${oldSnipes.length} snipes!`);
 }
 
-async function migrateConfessions(): Promise<void> {
+export async function migrateConfessions(): Promise<void> {
     console.log(`Migrating confessions...`);
 
     const oldConfessions = await oldPrismaClient.confessions.findMany();
@@ -73,7 +73,7 @@ async function migrateConfessions(): Promise<void> {
     console.log(`Migrated ${oldConfessions.length} confessions!`);
 }
 
-async function migrateMinecraftIPCache(): Promise<void> {
+export async function migrateMinecraftIPCache(): Promise<void> {
     console.log(`Migrating IP cache...`);
 
     const oldIPCache = await oldPrismaClient.minecraftIPCache.findMany();
@@ -93,7 +93,7 @@ async function migrateMinecraftIPCache(): Promise<void> {
     console.log(`Migrated ${oldIPCache.length} cached IP!`);
 }
 
-async function migrateSavedMemberData(): Promise<void> {
+export async function migrateSavedMemberData(): Promise<void> {
     console.log(`Migrating saved members...`);
 
     const oldSavedMembers = await oldPrismaClient.savedMemberData.findMany();
@@ -109,7 +109,7 @@ async function migrateSavedMemberData(): Promise<void> {
     console.log(`Migrated ${oldSavedMembers.length} saved members`);
 }
 
-async function migrateSkinData(): Promise<void> {
+export async function migrateSkinData(): Promise<void> {
     console.log(`Migrate old skin data...`);
 
     const oldSkinsData = await oldPrismaClient.playerSkinData.findMany();
