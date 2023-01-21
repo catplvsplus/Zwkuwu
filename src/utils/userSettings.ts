@@ -76,8 +76,8 @@ export class UserSettingsModule extends BaseModule {
             if (!component.isStringSelectMenu() || component.user.id !== userId || !component.customId.startsWith('usersettings-')) return;
             if (!component.inCachedGuild()) return;
 
-            const [id, key, _e] = component.customId.split('-');
-            const enabled = _e === 'enabled';
+            const [id, key] = component.customId.split('-');
+            const enabled = component.values[0] === 'enabled';
 
             await component.deferReply({ ephemeral: true });
 
