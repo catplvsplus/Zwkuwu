@@ -77,7 +77,7 @@ export class UserSettingsModule extends BaseModule {
             if (!component.inCachedGuild()) return;
 
             const [id, key] = component.customId.split('-');
-            const enabled = component.values[0] === 'enabled';
+            const enabled = component.values[0] === 'enable';
 
             await component.deferReply({ ephemeral: true });
 
