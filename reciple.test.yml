@@ -93,7 +93,7 @@ messages:
     ephemeral: true
 
 # Ignored Files
-ignoredFiles: ['BaseModule.js', 'Config.js']
+ignoredFiles: ['BaseModule.js', 'Config.js', '_*']
 
 
 ####################################################
