@@ -26,10 +26,6 @@ export class UserSettingsModule extends BaseModule {
                 .setExecute(async ({ interaction }) => {
                     await interaction.deferReply({ ephemeral: true });
 
-                    setTimeout(() => {
-                        throw new Error('eme');
-                    }, 10);
-
                     const pagination = await this.createSettingsPagination(interaction.user.id);
                     await pagination.paginate(interaction, 'EditMessage');
                 })
