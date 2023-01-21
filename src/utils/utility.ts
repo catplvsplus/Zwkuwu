@@ -4,6 +4,7 @@ import { BaseModule } from '../BaseModule.js';
 import { createLogger } from 'reciple';
 import { PrismaClient } from '@prisma/client';
 import { createReadFile, path } from 'fallout-utility';
+import express, { Express } from 'express';
 import yml from 'yaml';
 import lodash from 'lodash';
 import { Collection, EmbedBuilder } from 'discord.js';
@@ -19,6 +20,7 @@ export class Utility extends BaseModule {
     public client!: RecipleClient<true>;
     public config: Config = defaultconfig;
     public prisma: PrismaClient = new PrismaClient();
+    public express: Express = express();
     public logger!: Logger;
 
     get user() { return this.client.user; }
@@ -38,6 +40,12 @@ export class Utility extends BaseModule {
         this.logger.log('Config loaded:', this.config);
 
         return true;
+    }
+
+    public async onLoad(client: RecipleClient<boolean>): Promise<void> {
+        const port = this.config.expressPort || process.env.EXPRESS_PORT || 5133;
+
+        this.express.listen(port, () => this.logger.warn('Server is listening on port ' + port));
     }
 
     public createSmallEmbed(content: string, options?: { useDescription?: true; positive?: boolean }|{ useDescription?: false; positive?: boolean; disableAvatar?: boolean; }): EmbedBuilder {

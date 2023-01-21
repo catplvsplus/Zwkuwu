@@ -1,7 +1,7 @@
 import { RecipleClient, SlashCommandBuilder } from 'reciple';
 import { BaseModule } from '../BaseModule.js';
 import utility, { Logger } from './utility.js';
-import express, { Express, Request, Response } from 'express';
+import { Request, Response } from 'express';
 import { path, replaceAll } from 'fallout-utility';
 import { PlayerSkinData } from '@prisma/client';
 import axios from 'axios';
@@ -9,7 +9,6 @@ import { createCanvas, loadImage } from 'canvas';
 import { AttachmentBuilder, GuildTextBasedChannel, Message, MessageCollector } from 'discord.js';
 
 export interface MinecraftSkinsConfig {
-    port: number|null;
     fallbackSkins: string;
     gameChatsChannelIds: string[];
     gameConsoleChannelIds: string[];
@@ -23,17 +22,14 @@ export interface MinecraftSkinsConfig {
 
 export class MinecraftSkinsModule extends BaseModule {
     public logger!: Logger;
-    public server: Express = express();
     public gameTextChannels: GuildTextBasedChannel[] = [];
     public gameConsoleChannels: GuildTextBasedChannel[] = [];
 
+    get server() { return utility.express; }
     get config() { return utility.config.minecraftSkins; }
 
     public async onStart(client: RecipleClient<boolean>): Promise<boolean> {
-        const port = this.config.port || process.env.SKINS_PORT || 5133;
-
         this.logger = client.logger.cloneLogger({ loggerName: 'MinecraftSkins' });
-        this.server.listen(port, () => this.logger.warn('Server is listening on port ' + port));
 
         this.server.get(path.join('/', this.config.routes.head, ':player/:scale?') as `${string}:player/:scale?`, async (req, res) => {
             const player: PlayerSkinData|null = await this.getPlayerSkinData(req.params.player);

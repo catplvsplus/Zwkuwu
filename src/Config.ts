@@ -11,6 +11,7 @@ import { MinecraftSkinsConfig } from './utils/minecraftSkins.js';
 export interface BaseConfig {
     embedColor: ColorResolvable;
     errorEmbedColor: ColorResolvable;
+    expressPort: number|null;
     snipes: SnipeConfig;
     confessions: ConfessionsConfig;
     tiktok: TiktokConfig;
@@ -26,6 +27,7 @@ export const snowflake = '0000000000000000000';
 export const defaultconfig: BaseConfig = {
     embedColor: 'Blue',
     errorEmbedColor: 'DarkButNotBlack',
+    expressPort: null,
     snipes: {
         ignoredUsers: [],
         ignoredWords: []
@@ -95,15 +97,14 @@ export const defaultconfig: BaseConfig = {
         ]
     },
     minecraftSkins: {
-        port: null,
         fallbackSkins: 'https://crafthead.net/skin/{playername}',
         gameChatsChannelIds: [snowflake],
         gameConsoleChannelIds: [snowflake],
         messageUserApplicationIds: [snowflake],
         routes: {
             cloudHost: '127.0.0.1',
-            head: '/head',
-            skin: '/skin'
+            head: '/skins/head',
+            skin: '/skins/skin'
         }
     }
 };
