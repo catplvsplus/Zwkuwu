@@ -6,8 +6,6 @@ import { existsSync, readFileSync } from 'fs';
 const newPrismaClient = new NewPrismaClient();
 const oldPrismaClient = new OldPrismaClient();
 
-const console = new Logger();
-
 export async function migrateUserSettings(): Promise<void> {
     console.log(`Migrating user settings...`);
 
@@ -121,7 +119,7 @@ export async function migrateSkinData(): Promise<void> {
             const filePath = path.join('config/playerSkinData/skins/', oldSkinData.file);
 
             if (!existsSync(filePath)) {
-                console.err(`Couldn't migrate skin data: ${filePath} doesn't exists`);
+                console.error(`Couldn't migrate skin data: ${filePath} doesn't exists`);
                 continue;
             }
 
