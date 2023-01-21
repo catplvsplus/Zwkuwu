@@ -49,7 +49,7 @@ model MinecraftIPCache {
 model PlayerSkinData {
   username         String   @id @unique
   authorizedUserId String?
-  file             String?
+  skinData         String?
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 }

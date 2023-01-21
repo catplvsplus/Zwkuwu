@@ -6,6 +6,7 @@ import { AntiProxyConfig } from './moderation/antiProxy.js';
 import { SrvStatusConfig } from './dev/srvStatus.js';
 import { WelcomerConfig } from './utils/welcomer.js';
 import { RoleMenuConfig } from './utils/roleMenu.js';
+import { MinecraftSkinsConfig } from './utils/minecraftSkins.js';
 
 export interface BaseConfig {
     embedColor: ColorResolvable;
@@ -17,6 +18,7 @@ export interface BaseConfig {
     srvStatus: SrvStatusConfig;
     welcomer: WelcomerConfig;
     roleMenu: RoleMenuConfig;
+    minecraftSkins: MinecraftSkinsConfig;
 };
 
 export const snowflake = '0000000000000000000';
@@ -91,6 +93,18 @@ export const defaultconfig: BaseConfig = {
                 ]
             }
         ]
+    },
+    minecraftSkins: {
+        port: null,
+        fallbackSkins: 'https://crafthead.net/skin/{playername}',
+        gameChatsChannelIds: [snowflake],
+        gameConsoleChannelIds: [snowflake],
+        messageUserApplicationIds: [snowflake],
+        routes: {
+            cloudHost: '127.0.0.1',
+            head: '/head',
+            skin: '/skin'
+        }
     }
 };
 

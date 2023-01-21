@@ -8,6 +8,7 @@ import yml from 'yaml';
 import lodash from 'lodash';
 import { Collection, EmbedBuilder } from 'discord.js';
 import { writeFileSync } from 'fs';
+import axios from 'axios';
 
 const { defaultsDeep } = lodash;
 
@@ -49,6 +50,11 @@ export class Utility extends BaseModule {
         }
 
         return embed;
+    }
+
+    public async downloadBuffer(url: string, method: 'GET'|'POST'): Promise<Buffer> {
+        const http = await axios({ url, method, responseType: 'arraybuffer' });
+        return http.data;
     }
 
     public async resolveFromCachedManager<V>(id: string, manager: { cache: Collection<string, V>; fetch(key: string): Promise<V|null> }): Promise<V> {
