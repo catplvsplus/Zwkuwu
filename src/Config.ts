@@ -7,6 +7,7 @@ import { SrvStatusConfig } from './dev/srvStatus.js';
 import { WelcomerConfig } from './utils/welcomer.js';
 import { RoleMenuConfig } from './utils/roleMenu.js';
 import { MinecraftSkinsConfig } from './utils/minecraftSkins.js';
+import { AnticrashConfig } from './anticrash.js';
 
 export interface BaseConfig {
     embedColor: ColorResolvable;
@@ -20,6 +21,7 @@ export interface BaseConfig {
     welcomer: WelcomerConfig;
     roleMenu: RoleMenuConfig;
     minecraftSkins: MinecraftSkinsConfig;
+    anticrash: AnticrashConfig;
 };
 
 export const snowflake = '0000000000000000000';
@@ -106,6 +108,10 @@ export const defaultconfig: BaseConfig = {
             head: '/skins/head',
             skin: '/skins/skin'
         }
+    },
+    anticrash: {
+        errorReportsChannelIds: [snowflake],
+        reportToUsers: [snowflake]
     }
 };
 
