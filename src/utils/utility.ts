@@ -1,4 +1,4 @@
-import { RecipleClient, cwd } from 'reciple';
+import { AnyCommandHaltData, CommandHaltReason, CommandType, RecipleClient, SlashCommandHaltData, cwd } from 'reciple';
 import { Config, defaultconfig } from '../Config.js';
 import { BaseModule } from '../BaseModule.js';
 import { createLogger } from 'reciple';
@@ -7,9 +7,11 @@ import { createReadFile, path } from 'fallout-utility';
 import express, { Express } from 'express';
 import yml from 'yaml';
 import lodash from 'lodash';
-import { Collection, EmbedBuilder } from 'discord.js';
+import { BaseMessageOptions, Collection, EmbedBuilder } from 'discord.js';
 import { writeFileSync } from 'fs';
 import axios from 'axios';
+import anticrash from '../anticrash.js';
+import ms from 'ms';
 
 const { defaultsDeep } = lodash;
 
@@ -58,6 +60,82 @@ export class Utility extends BaseModule {
         }
 
         return embed;
+    }
+
+    public isSlashCommandHaltData(haltData: AnyCommandHaltData): haltData is SlashCommandHaltData {
+        return haltData.executeData.builder.type === CommandType.SlashCommand;
+    }
+
+    public async haltCommand(haltData: AnyCommandHaltData): Promise<boolean> {
+        const repliable = (message: BaseMessageOptions) => this.isSlashCommandHaltData(haltData)
+            ? haltData.executeData.interaction.deferred && !haltData.executeData.interaction.replied
+                ? haltData.executeData.interaction.editReply(message)
+                : haltData.executeData.interaction.deferred && haltData.executeData.interaction.replied
+                    ? haltData.executeData.interaction.followUp(message)
+                    : haltData.executeData.interaction.reply(message)
+            : haltData.executeData.message.reply(message);
+
+        const author = this.isSlashCommandHaltData(haltData) ? haltData.executeData.interaction.user : haltData.executeData.message.author;
+        const replyBase = { ephemeral: this.config.ephemeralHaltMessages, failtIfNotExists: false };
+
+        switch (haltData.reason) {
+            case CommandHaltReason.Cooldown:
+                await repliable({
+                    ...replyBase,
+                    embeds: [
+                        this.createSmallEmbed(`Wait \`${ms(haltData.expireTime - Date.now(), { long: true })}\` to execute this command.`)
+                    ]
+                });
+
+                return true;
+            case CommandHaltReason.Error:
+                await repliable({
+                    ...replyBase,
+                    embeds: [
+                        this.createSmallEmbed(`An error occured executing this command.`, { positive: false })
+                    ]
+                });
+
+                await anticrash.report(haltData.error);
+
+                return true;
+            case CommandHaltReason.InvalidArguments:
+                await repliable({
+                    ...replyBase,
+                    embeds: [
+                        this.createSmallEmbed(`Invalid command argumentst${haltData.invalidArguments.length > 1 ? 's' : ''} ${haltData.invalidArguments.map(m => `\`${m.name}\``).join(' ')}`, { positive: false })
+                    ]
+                });
+
+                return true;
+            case CommandHaltReason.MissingArguments:
+                await repliable({
+                    ...replyBase,
+                    embeds: [
+                        this.createSmallEmbed(`Missing required command argument${haltData.missingArguments.length > 1 ? 's' : ''} ${haltData.missingArguments.map(m => `\`${m.name}\``).join(' ')}`, { positive: false })
+                    ]
+                });
+
+                return true;
+            case CommandHaltReason.MissingBotPermissions:
+                await repliable({
+                    ...replyBase,
+                    embeds: [
+                        this.createSmallEmbed(`${this.client.user?.tag} doesn't have enough permissions in this channel.`, { positive: false })
+                    ]
+                });
+
+                return true;
+            case CommandHaltReason.MissingMemberPermissions:
+                await repliable({
+                    ...replyBase,
+                    embeds: [
+                        this.createSmallEmbed(`You do not have enough permissions to this command.`, { positive: false })
+                    ]
+                });
+
+                return true;
+        }
     }
 
     public async downloadBuffer(url: string, method: 'GET'|'POST'): Promise<Buffer> {

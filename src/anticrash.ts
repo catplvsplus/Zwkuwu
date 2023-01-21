@@ -40,6 +40,24 @@ export class AnticrashModule extends BaseModule {
             if (!user?.dmChannel) await user?.createDM().catch(() => null);
             if (user?.dmChannel) this.reportChannels.push(user.dmChannel);
         }
+
+        client.once('recipleRegisterApplicationCommands', () => {
+            client.commands.messageCommands.forEach(m => {
+                m.setValidateOptions(true);
+
+                if (m.halt) return;
+
+                m.setHalt(data => utility.haltCommand(data))
+                this.logger.debug(`Added halt function to message command ${m.name}`)
+            });
+
+            client.commands.slashCommands.forEach(s => {
+                if (s.halt) return;
+
+                s.setHalt(data => utility.haltCommand(data))
+                this.logger.debug(`Added halt function to slash command ${s.name}`)
+            });
+        });
     }
 
     public async report(error: unknown): Promise<void> {

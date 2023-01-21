@@ -12,6 +12,7 @@ import { AnticrashConfig } from './anticrash.js';
 export interface BaseConfig {
     embedColor: ColorResolvable;
     errorEmbedColor: ColorResolvable;
+    ephemeralHaltMessages: boolean;
     expressPort: number|null;
     snipes: SnipeConfig;
     confessions: ConfessionsConfig;
@@ -29,6 +30,7 @@ export const snowflake = '0000000000000000000';
 export const defaultconfig: BaseConfig = {
     embedColor: 'Blue',
     errorEmbedColor: 'DarkButNotBlack',
+    ephemeralHaltMessages: true,
     expressPort: null,
     snipes: {
         ignoredUsers: [],
