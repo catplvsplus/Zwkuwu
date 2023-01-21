@@ -1,6 +1,6 @@
 import { RecipleClient } from 'reciple';
-import { Logger } from 'fallout-utility';
-import BaseModule from '../BaseModule';
+import { BaseModule } from '../BaseModule.js';
+import { Logger } from './utility.js';
 
 export class FetchMembersModule extends BaseModule {
     public logger!: Logger;

@@ -1,6 +1,6 @@
 # Your bot token here
 # To use env variable as a token just do it like this env:TOKEN_ENV
-token: env:TESTING_TOKEN
+token: env:TOKEN
 
 # Commands options
 commands:
@@ -93,7 +93,7 @@ messages:
     ephemeral: true
 
 # Ignored Files
-ignoredFiles: ['BaseModule.js', '_*']
+ignoredFiles: ['BaseModule.js', 'Config.js']
 
 
 ####################################################
@@ -108,7 +108,7 @@ ignoredFiles: ['BaseModule.js', '_*']
 ## Modifying the values below could break reciple ##
 
 # Modules folder
-modulesFolder: ['modules', 'modules/fun', 'modules/moderation', 'modules/staff', 'modules/tools']
+modulesFolder: ['modules', 'modules/dev', 'modules/utils', 'modules/fun', 'modules/moderation']
 
 # Load modules regardless of its supported versions
 disableVersionCheck: false

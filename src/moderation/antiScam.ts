@@ -1,7 +1,7 @@
 import { RecipleClient, SlashCommandBuilder } from 'reciple';
-import BaseModule from '../BaseModule';
+import { BaseModule } from '../BaseModule.js';
 import { DiscordScamLinks } from '@falloutstudios/djs-scam-links';
-import util from '../tools/util';
+import utility from '../utils/utility.js';
 import { EmbedBuilder, inlineCode } from 'discord.js';
 
 export class AntiScamModule extends BaseModule {
@@ -25,7 +25,7 @@ export class AntiScamModule extends BaseModule {
                     switch (command) {
                         case 'refresh':
                             await this.scamLinks.refreshDomains();
-                            await interaction.editReply({ embeds: [util.smallEmbed(`Refreshed scam domain cache! ${this.scamLinks.allDomains.length} loaded`)] });
+                            await interaction.editReply({ embeds: [utility.createSmallEmbed(`Refreshed scam domain cache! ${this.scamLinks.allDomains.length} loaded`)] });
                             break;
                     }
                 })
@@ -52,8 +52,8 @@ export class AntiScamModule extends BaseModule {
                 embeds: [
                     new EmbedBuilder()
                         .setAuthor({ name: `Anti sus links`, iconURL: message.member?.displayAvatarURL() })
-                        .setDescription(`The url you sent contains ${inlineCode(match)} domain and is marked sus <a:sussss:868475033088032769>`)
-                        .setColor(util.errorEmbedColor)
+                        .setDescription(`The url you sent contains ${inlineCode(match)} domain and is marked as suspicious <a:sussss:868475033088032769>`)
+                        .setColor(utility.config.errorEmbedColor)
                 ]
             });
         });

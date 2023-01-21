@@ -1,9 +1,9 @@
-import translate, { languages } from '@vitalets/google-translate-api';
-import { ApplicationCommandType, ContextMenuCommandBuilder, EmbedBuilder, User } from 'discord.js';
 import { MessageCommandBuilder, RecipleClient, SlashCommandBuilder } from 'reciple';
-import BaseModule from '../BaseModule';
-import { InteractionEventType } from '../tools/InteractionEvents';
-import util from '../tools/util';
+import { BaseModule } from '../BaseModule.js';
+import localeCode, { LanguageCode } from 'iso-639-1';
+import { EmbedBuilder, User } from 'discord.js';
+import { translate } from '@vitalets/google-translate-api';
+import utility from '../utils/utility.js';
 
 export class TranslateModule extends BaseModule {
     public async onStart(client: RecipleClient<boolean>): Promise<boolean> {
@@ -11,116 +11,113 @@ export class TranslateModule extends BaseModule {
             new SlashCommandBuilder()
                 .setName('translate')
                 .setDescription('Translate a message')
-                .addStringOption(message => message
-                    .setName('message')
-                    .setDescription('Message to translate what else')
+                .addStringOption(text => text
+                    .setName('text')
+                    .setDescription('Message you want to traslate')
+                    .setMaxLength(500)
                     .setRequired(true)
                 )
                 .addStringOption(translateTo => translateTo
                     .setName('translate-to')
                     .setDescription('Translate to what language?')
                     .setAutocomplete(true)
-                    .setRequired(false)
                 )
                 .addStringOption(translateFrom => translateFrom
                     .setName('translate-from')
                     .setDescription('Translate from what language?')
                     .setAutocomplete(true)
-                    .setRequired(false)
                 )
-                .setExecute(async data => {
-                    const interaction = data.interaction;
-                    const content = interaction.options.getString('message', true);
-                    const translateTo = interaction.options.getString('translate-to') ? languages.getCode(interaction.options.getString('translate-to')!) : undefined;
-                    const translateFrom = interaction.options.getString('translate-from') ? languages.getCode(interaction.options.getString('translate-from')!) : undefined;
+                .setExecute(async ({ interaction }) => {
+                    const content = interaction.options.getString('text', true);
+
+                    const languages = localeCode.getLanguages(localeCode.getAllCodes());
+
+                    const translateToRaw = interaction.options.getString('translate-to') || 'en';
+                    const translateFromRaw = interaction.options.getString('translate-from') || undefined;
+
+                    const translateTo = languages.find(lang => lang.code === translateToRaw || lang.name.toLowerCase() === translateFromRaw?.toLocaleLowerCase() || lang.nativeName.toLowerCase() === translateFromRaw?.toLocaleLowerCase())?.code;
+                    const translateFrom = languages.find(lang => lang.code === translateFromRaw || lang.name.toLowerCase() === translateFromRaw?.toLocaleLowerCase() || lang.nativeName.toLowerCase() === translateFromRaw?.toLocaleLowerCase())?.code;
+
+                    if (translateToRaw && !translateTo || translateFromRaw && !translateFrom) {
+                        await interaction.reply({
+                            embeds: [
+                                utility.createSmallEmbed('Invalid language name or code', { positive: false })
+                            ],
+                            ephemeral: true
+                        });
+                        return;
+                    }
 
                     await interaction.deferReply();
+
+                    const embed = await this.translate({ text: content, author: interaction.user, from: translateFrom, to: translateTo });
+
                     await interaction.editReply({
-                        embeds: [
-                            await this.translate(content, interaction.user, typeof translateTo !== 'boolean' ? translateTo : undefined, typeof translateFrom !== 'boolean' ? translateFrom : undefined)
-                        ]
+                        embeds: [embed]
                     });
                 }),
             new MessageCommandBuilder()
                 .setName('translate')
-                .setDescription('Translate a message')
-                .addOptions(message => message
-                    .setName('message')
-                    .setDescription('Message to translate what else')
+                .setDescription('Translate a text to english')
+                .addOptions(text => text
+                    .setName('text')
+                    .setDescription('Message you want to traslate')
                     .setRequired(true)
                 )
                 .setExecute(async data => {
                     const message = data.message;
                     const content = data.command.args.join(' ');
 
+                    if (content.length > 500) {
+                        await message.reply({
+                            embeds: [
+                                utility.createSmallEmbed('Text is too long', { positive: false })
+                            ]
+                        });
+                        return;
+                    }
+
                     await message.reply({
                         embeds: [
-                            await this.translate(content, message.author)
+                            await this.translate({ text: content, author: message.author, to: 'en' })
                         ]
-                    });
+                    })
                 })
         ];
 
-        this.interactionEventHandlers = [
+        this.interactions = [
             {
-                type: InteractionEventType.AutoComplete,
+                type: 'Autocomplete',
                 commandName: 'translate',
                 handle: async interaction => {
-                    if (!interaction.isAutocomplete()) return;
-
-                    const langs = Object.values(languages).filter(t => typeof t !== 'function' && t !== 'Automatic') as string[];
                     const query = interaction.options.getFocused().toLowerCase();
+                    const langs = localeCode.getLanguages(localeCode.getAllCodes()).filter(lang => !query || lang.name.toLowerCase() === query || lang.nativeName.toLowerCase() === query || lang.code.toLowerCase() === query || lang.name.toLowerCase().includes(query) || lang.nativeName.toLowerCase().includes(query));
 
-                    interaction.respond(
-                        langs
-                            .filter(lang => lang.toLowerCase() == query || lang.toLowerCase().startsWith(query) || lang.toLowerCase().includes(query))
-                            .slice(0, 15)
-                            .map(lang => ({
-                                name: lang,
-                                value: languages.getCode(lang) as string
-                            }))
+                    await interaction.respond(
+                        langs.map(lang => ({
+                            name: lang.name + (lang.name !== lang.nativeName ? ` (${lang.nativeName})` : ''),
+                            value: lang.code
+                        })).slice(0, 25)
                     );
                 }
-            },
-            {
-                type: InteractionEventType.ContextMenu,
-                commandName: 'Translate',
-                handle: async interaction => {
-                    if (!interaction.isMessageContextMenuCommand() || !interaction.inCachedGuild()) return;
-
-                    await interaction.deferReply();
-                    await interaction.editReply({
-                        embeds: [
-                            await this.translate(interaction.targetMessage.content, interaction.user)
-                        ]
-                    });
-                }
-            },
+            }
         ];
-
-        client.commands.additionalApplicationCommands.push(
-            new ContextMenuCommandBuilder()
-                .setName('Translate')
-                .setType(ApplicationCommandType.Message)
-        );
 
         return true;
     }
 
-    public async translate(content: string, author?: User, translateTo?: string, translateFrom?: string): Promise<EmbedBuilder> {
-        if (!content) return util.errorEmbed('No content to translate');
+    public async translate(options: { text: string; author?: User; from?: LanguageCode; to?: LanguageCode; }): Promise<EmbedBuilder> {
+        if (!options.text) return utility.createSmallEmbed('Cannot translate empty text', { positive: false });
 
-        const translated = await translate(content, { to: translateTo, from: translateFrom, autoCorrect: true }).catch(() => null);
-        if (!translated) return util.errorEmbed('Failed to translate');
+        const translateData = await translate(options.text, options).catch(() => null);
+        if (!translateData?.text) return utility.createSmallEmbed('Failed to translate text', { positive: false });
 
         const embed = new EmbedBuilder()
-            .setDescription(translated.text)
-            .setColor(util.embedColor)
-            .setFooter({ text: `Translated from "${content}"` });
+            .setDescription(translateData.text)
+            .setColor(utility.config.embedColor)
+            .setFooter({ text: `Translated from "${options.text}"` });
 
-        if (author) embed.setAuthor({ name: author.tag, iconURL: author.displayAvatarURL() });
-        if (translated.pronunciation) embed.addFields({ name: 'Pronunciation', value: translated.pronunciation, inline: true });
-
+        if (options.author) embed.setAuthor({ name: options.author.tag, iconURL: options.author.displayAvatarURL() });
         return embed;
     }
 }

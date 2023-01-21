@@ -93,7 +93,7 @@ messages:
     ephemeral: true
 
 # Ignored Files
-ignoredFiles: ['BaseModule.js']
+ignoredFiles: ['BaseModule.js', 'Config.js']
 
 
 ####################################################
@@ -108,7 +108,7 @@ ignoredFiles: ['BaseModule.js']
 ## Modifying the values below could break reciple ##
 
 # Modules folder
-modulesFolder: ['modules', 'modules/fun', 'modules/moderation', 'modules/staff', 'modules/tools']
+modulesFolder: ['modules', 'modules/dev', 'modules/utils', 'modules/fun', 'modules/moderation']
 
 # Load modules regardless of its supported versions
 disableVersionCheck: false

@@ -1,193 +1,175 @@
-import { MinecraftIPCache } from '@prisma/client';
+import { RecipleClient } from 'reciple';
+import { BaseModule } from '../BaseModule.js';
+import utility, { Logger } from '../utils/utility.js';
+import { Collection, Message, PartialMessage } from 'discord.js';
 import axios from 'axios';
-import { Collection, Message } from 'discord.js';
-import { Logger, replaceAll } from 'fallout-utility';
-import { cwd, RecipleClient } from 'reciple';
-import BaseModule from '../BaseModule';
-import util from '../tools/util';
-import yml from 'yaml';
-import path from 'path';
+import { MinecraftIPCache } from '@prisma/client';
+import { replaceAll } from 'fallout-utility';
 
 export type FetchIPStatus = 'ok'|'error'|'warning'|'denied';
 
 export interface PartialRawIP {
     proxy: 'yes'|'no';
+    vpn: 'yes'|'no';
     type: 'Residential'|'Wireless'|'Business'|'Hosting'|'TOR'|'SOCKS'|'SOCKS4'|'SOCKS4A'|'SOCKS5'|'SOCKS5H'|'Shadowsocks'|'HTTP'|'HTTPS'|'Compromised Server'|'Inference Engine'|'OpenVPN'|'VPN'|`whitelisted by ${string}`|`blacklisted by ${string}`;
 }
 
-export interface CachedIP extends MinecraftIPCache {}
-
-export interface Player {
+export interface PlayerInfo {
     ip: string;
     port: number;
-    name: string;
+    username: string;
 }
 
-export interface AntiProxyModuleConfig {
-    token?: string;
+export interface AntiProxyConfig {
+    token: string|null;
     consoleBotIds: string[];
     consoleChannelIds: string[];
-    banIpCommand: `ban-ip $1 $2`;
-    banCommand: `ban $1 $2`;
-    banReason: string;
-    afterBanMessages: string[];
+    punishmentCommands: string[];
 }
 
 export class AntiProxyModule extends BaseModule {
     public logger!: Logger;
-    public checkedIPs: Collection<string, Player & { message: Message; proxy: boolean; }> = new Collection();
-    public config: AntiProxyModuleConfig = AntiProxyModule.getConfig();
+    public cache: Collection<string, Collection<string, PlayerInfo>> = new Collection();
+
+    get config() { return utility.config.antiProxy; }
+    get token() { return this.config.token || process.env.PROXYCHECK_TOKEN }
 
     public async onStart(client: RecipleClient<boolean>): Promise<boolean> {
-        this.logger = client.logger.cloneLogger({ loggerName: 'AntiProxyModule' });
-
-        if (!this.config.token && !process.env.PROXY_TOKEN) {
-            this.logger.error('No token provided. Please set the PROXY_TOKEN environment variable.');
-            return false;
-        }
+        this.logger = client.logger.cloneLogger({ loggerName: 'AntiProxy' });
 
         return true;
     }
 
-    public onLoad(client: RecipleClient<boolean>): void {
+    public async onLoad(client: RecipleClient<boolean>): Promise<void> {
         client.on('messageCreate', async message => {
             if (!this.config.consoleBotIds.includes(message.author?.id!) || !this.config.consoleChannelIds.includes(message.channel.id)) return;
             if (!message.inGuild()) return;
 
-            const players = this.parseMessage(message.content);
-            const proxyBitches = await this.filterSuspiciousPlayers(players, message);
+            const players = this.parseMessage(message);
+            const proxyBitches = await this.filterSuspiciousPlayers(message, players);
 
-            await this.banPlayers(proxyBitches, message);
+            await this.punishPlayers(message, proxyBitches);
         });
-        client.on('messageUpdate', async message => {
+
+        client.on('messageUpdate', async (oldMessage, message) => {
             if (!this.config.consoleBotIds.includes(message.author?.id!) || !this.config.consoleChannelIds.includes(message.channel.id)) return;
             if (!message.inGuild()) return;
 
-            const players = this.parseMessage(message.content);
-            const proxyBitches = await this.filterSuspiciousPlayers(players, message);
+            const players = this.parseMessage(message);
+            const proxyBitches = await this.filterSuspiciousPlayers(message, players);
 
-            await this.banPlayers(proxyBitches, message);
+            await this.punishPlayers(message, proxyBitches);
         });
     }
 
-    public async banPlayers(players: Player[], message: Message) {
-        for (const player of players) {
-            this.logger?.warn(`Banned ${player.name} (${player.ip})`);
-            await message.channel.send(this.config.banIpCommand.replace('$1', player.ip).replace('$2', this.config.banReason)).catch(err => this.logger.err(err));
-
-            if (player.name) await message.channel.send(this.config.banCommand.replace('$1', player.name).replace('$2', this.config.banReason)).catch(err => this.logger.err(err));
-
-            this.checkedIPs.set(player.ip, {
-                ...player,
-                message,
-                proxy: true
-            });
-
-            for (const msg of this.config.afterBanMessages) {
-                await message.channel.send(AntiProxyModule.messagePlaceholder(msg, player)).catch(err => this.logger.err(err));
-            }
-        }
-    }
-
-    public async filterSuspiciousPlayers(players: Player[], message: Message): Promise<Player[]> {
-        const filteredPlayers: Player[] = [];
-
-        for (const player of players) {
-            if (this.checkedIPs.some((c, k) => c.message.id === message.id && k === player.ip)) continue;
-
-            const isProxy = await this.isProxy(player.ip, player.port);
-
-            if (isProxy) {
-                filteredPlayers.push(player);
-                this.logger.warn(`${player.name}[${player.ip}] is marked as suspicious connection`);
-            }
-        }
-
-        return filteredPlayers;
-    }
-
-    public async isProxy(ip: string, port?: number): Promise<boolean> {
-        const cached = await this.findCache({ host: ip, port });
+    public async isProxy(host: string): Promise<boolean> {
+        const cached = await this.findCache({ host });
         if (cached) return cached.proxy;
 
-        const raw = await this.fetchIP(ip, port);
+        const raw = await this.fetchIP(host);
         if (raw) return raw.proxy === 'yes';
 
         return false;
     }
 
-    public async findCache(query: Partial<CachedIP>): Promise<CachedIP|null> {
-        const find = await util.prisma.minecraftIPCache.findFirst({
+    public async findCache(query: Partial<MinecraftIPCache>): Promise<MinecraftIPCache|null> {
+        const find = await utility.prisma.minecraftIPCache.findFirst({
             where: query
         });
 
         return find;
     }
 
-    public async fetchIP(ip: string, port?: number): Promise<PartialRawIP|null> {
-        const fetch = await axios({
-            url: `https://proxycheck.io/v2/${ip}?key=${this.config.token || process.env.PROXY_TOKEN}&vpn=1`,
+    public async fetchIP(host: string): Promise<PartialRawIP> {
+        const fetch: PartialRawIP = await axios<{ [ip: string]: PartialRawIP }>({
+            url: `https://proxycheck.io/v2/${host}?key=${this.config.token || process.env.PROXY_TOKEN}&vpn=1`,
             method: 'GET',
             responseType: 'json'
-        }).then(res => res.data.status === 'ok' ? res.data[ip] as PartialRawIP : null).catch(() => null);
-        if (!fetch) return null;
+        }).then(res => res.data[host]).catch(() => ({ proxy: 'no', vpn: 'no', type: 'HTTP' }));
 
-        await util.prisma.minecraftIPCache.create({
-            data: {
-                host: ip,
-                port,
-                proxy: fetch.proxy === 'yes',
-            }
+        await utility.prisma.minecraftIPCache.upsert({
+            update: {
+                host,
+                proxy: fetch?.proxy === 'yes' || fetch?.vpn === 'yes',
+            },
+            create: {
+                host,
+                proxy: fetch?.proxy === 'yes' || fetch?.vpn === 'yes',
+            },
+            where: { host }
         });
 
         return fetch;
     }
 
-    public parseMessage(message: string): Player[] {
-        const lines = message.split('\n');
-        const players = [];
+    public async punishPlayers(message: Message, players: PlayerInfo[]): Promise<void> {
+        for (const player of players) {
+            const commands = this.config.punishmentCommands.map(cmd => replaceAll(cmd, ['{player_name}', '{player_host}', '{player_port}'], [player.username, player.ip, String(player.port)]));
+
+            for (const command of commands) {
+                await message.channel.send(command).catch(err => this.logger.err(`Cannot send message to channel ${message.channel.id}`, err));
+            }
+
+            this.addToCache(message.id, player);
+            this.logger.warn(`Punished ${player.username} [${player.ip}:${player.port}] for using VPN/Proxy`)
+        }
+    }
+
+    public async filterSuspiciousPlayers(message: Message, players: PlayerInfo[]): Promise<PlayerInfo[]> {
+        const suspiciousPlayers: PlayerInfo[] = [];
+
+        for (const player of players) {
+            if (this.cache.some((checkedPlayers, messageId) => messageId === message.id && checkedPlayers.some(checkedPlayer => checkedPlayer.ip === player.ip))) continue;
+
+            const isProxy = await this.isProxy(player.ip);
+
+            if (isProxy) {
+                suspiciousPlayers.push(player);
+                this.logger.warn(`${player.username}[${player.ip}] is marked as suspicious connection`);
+                continue;
+            }
+
+            this.addToCache(message.id, player);
+        }
+
+        return suspiciousPlayers;
+    }
+
+    public parseMessage(message: Message): PlayerInfo[] {
+        const lines = message.content.split('\n');
+        const players: PlayerInfo[] = [];
 
         for (const line of lines) {
             const words = line.split(' ');
 
             const ip = words.find(word => /\[(.*?)\]/g.test(word));
             const cleanedIP = ip ? ip.replace(/\[(.*?)\]/g, '$1').split('/')[1] ?? undefined : undefined;
-            if (!cleanedIP || !ip || !AntiProxyModule.isValidIP(cleanedIP.split(':')[0])) continue;
+            if (!cleanedIP || !ip || !utility.isValidIP(cleanedIP.split(':')[0])) continue;
 
-            const playername = words.find(name => name.endsWith(ip))?.replace(/\[(.*?)\]/g, '');
-            if (!playername) continue;
+            const username = words.find(name => name.endsWith(ip))?.replace(/\[(.*?)\]/g, '');
+            if (!username) continue;
 
-            const player: Player = {
+            const player: PlayerInfo = {
                 ip: cleanedIP.split(':')[0],
                 port: parseInt(cleanedIP.split(':')[1], 10),
-                name: playername
+                username
             };
 
-            this.logger.debug(`Player ${player.name}[${player.ip}] joined the game`);
+            this.logger.debug(`Player ${player.username}[${player.ip}] joined the game`);
             players.push(player);
         }
 
         return players;
     }
 
-    public static messagePlaceholder(message: string, player: Player) {
-        return replaceAll(message, ['{name}', '{ip}', '{port}'], [player.name ?? 'Unknown', player.ip, `${player.port}`]);
-    }
+    public addToCache(messageId: string, player: PlayerInfo): this {
+        if (!this.cache.get(messageId)) {
+            this.cache.set(messageId, new Collection([[player.username, player]]));
+        } else {
+            this.cache.get(messageId)?.set(player.username, player);
+        }
 
-    public static getConfig(): AntiProxyModuleConfig {
-        return yml.parse(util.createConfig(path.join(cwd, 'config/antiproxy/config.yml'), <AntiProxyModuleConfig>({
-            token: '',
-            consoleBotIds: [],
-            consoleChannelIds: [],
-            banIpCommand: 'ban-ip $1 $2',
-            banCommand: 'ban $1 $2',
-            banReason: 'Your IP address was found using a proxy. This is not allowed for security reasons.',
-            afterBanMessages: ['say {name} was detected using a proxy/vpn and has been banned.']
-        })));
-    }
-
-    public static isValidIP(ip: string) {
-        return /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(ip);
+        return this;
     }
 }
 

@@ -7,43 +7,51 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url      = "file:database.db"
+  url      = "file:../config/database.db"
 }
 
 model UserSettings {
-  id                     String  @id @unique
-  allowSniping           Boolean @default(true)
-  cleanDataOnLeave       Boolean @default(false)
-  allowSeasonalNicknames Boolean @default(true)
+  id                     String   @id @unique
+  allowSniping           Boolean  @default(true)
+  cleanDataOnLeave       Boolean  @default(false)
+  allowSeasonalNicknames Boolean  @default(true)
+  updatedAt              DateTime @updatedAt
 }
 
-model Snipes {
-  id              String   @id @unique
-  authorId        String
-  channelId       String
-  content         String
-  repliedToUserId String?
-  edited          Boolean  @default(false)
-  attachments     Int      @default(0)
-  createdAt       DateTime @default(now())
+model SnipedMessages {
+  id               String   @id @unique
+  authorId         String
+  channelId        String
+  content          String
+  referencedUserId String?
+  edited           Boolean  @default(false)
+  attachmentCount  Int
+  createdAt        DateTime @default(now())
 }
 
 model Confessions {
-  id        String   @id @unique
-  authorId  String
-  channelId String
-  messageId String   @unique
-  title     String?
-  content   String
-  createdAt DateTime @default(now())
+  id          String   @id @unique
+  authorId    String
+  channelId   String
+  title       String?
+  content     String
+  referenceId String?
+  createdAt   DateTime @default(now())
 }
 
 model MinecraftIPCache {
-  id        Int      @id @unique @default(autoincrement())
-  host      String
-  port      Int?
+  id        String   @id @unique @default(uuid())
+  host      String   @unique
   proxy     Boolean
   createdAt DateTime @default(now())
+}
+
+model PlayerSkinData {
+  username         String   @id @unique
+  authorizedUserId String?
+  skinData         String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 }
 
 model SavedMemberData {
@@ -52,22 +60,4 @@ model SavedMemberData {
   nickname  String?
   roles     String
   createdAt DateTime @default(now())
-}
-
-model PlayerSkinData {
-  player        String   @id @unique
-  file          String?
-  lastUpdatedAt DateTime @default(now())
-  createdAt     DateTime @default(now())
-}
-
-model SelfPromotions {
-  id                String    @id @unique
-  authorId          String
-  content           String
-  createdAt         DateTime  @default(now())
-  approvedAt        DateTime?
-  approvedById      String?
-  approvedMessageId String?
-  approvedChannelId String?
 }
