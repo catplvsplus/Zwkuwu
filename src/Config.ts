@@ -5,6 +5,7 @@ import { TiktokConfig } from './fun/tiktok.js';
 import { AntiProxyConfig } from './moderation/antiProxy.js';
 import { SrvStatusConfig } from './dev/srvStatus.js';
 import { WelcomerConfig } from './utils/welcomer.js';
+import { RoleMenuConfig } from './utils/roleMenu.js';
 
 export interface BaseConfig {
     embedColor: ColorResolvable;
@@ -15,6 +16,7 @@ export interface BaseConfig {
     antiProxy: AntiProxyConfig;
     srvStatus: SrvStatusConfig;
     welcomer: WelcomerConfig;
+    roleMenu: RoleMenuConfig;
 };
 
 export const snowflake = '0000000000000000000';
@@ -69,6 +71,26 @@ export const defaultconfig: BaseConfig = {
             }
         ],
         ignoreBots: true
+    },
+    roleMenu: {
+        roleMenus: [
+            {
+                label: 'Untitled role menu',
+                messageId: snowflake,
+                channelId: snowflake,
+                messageData: 'Select roles',
+                menu: {
+                    placeholder: 'Select roles',
+                    multiple: true
+                },
+                roles: [
+                    {
+                        roleId: snowflake,
+                        label: 'Untitled role'
+                    }
+                ]
+            }
+        ]
     }
 };
 

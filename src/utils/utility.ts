@@ -12,6 +12,7 @@ import { writeFileSync } from 'fs';
 const { defaultsDeep } = lodash;
 
 export type Logger = ReturnType<typeof createLogger>;
+export type DoNothing<T> = T;
 
 export class Utility extends BaseModule {
     public client!: RecipleClient<true>;
@@ -50,8 +51,10 @@ export class Utility extends BaseModule {
         return embed;
     }
 
-    public async resolveFromCachedManager<V>(id: string, manager: { cache: Collection<string, V>; fetch(key: string): Promise<V> }): Promise<V> {
-        return manager.cache.get(id) ?? manager.fetch(id);
+    public async resolveFromCachedManager<V>(id: string, manager: { cache: Collection<string, V>; fetch(key: string): Promise<V|null> }): Promise<V> {
+        const data = manager.cache.get(id) ?? await manager.fetch(id);
+        if (data === null) throw new Error(`Couldn't fetch (${id}) from manager`);
+        return data;
     }
 
     public formatNumber(number: number): string {
