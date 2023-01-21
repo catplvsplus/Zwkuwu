@@ -12,6 +12,7 @@
     "postinstall": "npm run build"
   },
   "dependencies": {
+    "@falloutstudios/djs-pagination": "^1.2.3",
     "@falloutstudios/djs-scam-links": "^1.2.3",
     "@prisma/client": "^4.9.0",
     "@vitalets/google-translate-api": "^9.0.0",
