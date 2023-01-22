@@ -156,11 +156,7 @@ export class HiddenPlayer<Ready extends boolean = boolean> extends TypedEmitter<
 
         this.bot.on('time', async () => {
             nearestMob = this.bot?.nearestEntity(entity => entity.kind == "Hostile mobs") ?? null;
-
-            if (!nearestMob) {
-                await this.bot?.pvp.stop();
-                return;
-            }
+            if (!nearestMob) return;
 
             if (!this.bot?.pvp.target) {
                 await this.bot?.pvp.attack(nearestMob);
