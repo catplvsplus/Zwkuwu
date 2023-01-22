@@ -8,6 +8,7 @@ import { WelcomerConfig } from './utils/welcomer.js';
 import { RoleMenuConfig } from './utils/roleMenu.js';
 import { MinecraftSkinsConfig } from './utils/minecraftSkins.js';
 import { AnticrashConfig } from './anticrash.js';
+import { HiddenPlayerConfig } from './utils/hiddenplayer.js';
 
 export interface BaseConfig {
     embedColor: ColorResolvable;
@@ -23,6 +24,7 @@ export interface BaseConfig {
     roleMenu: RoleMenuConfig;
     minecraftSkins: MinecraftSkinsConfig;
     anticrash: AnticrashConfig;
+    hiddenplayer: HiddenPlayerConfig;
 };
 
 export const snowflake = '0000000000000000000';
@@ -114,6 +116,34 @@ export const defaultconfig: BaseConfig = {
     anticrash: {
         errorReportsChannelIds: [snowflake],
         reportToUsers: [snowflake]
+    },
+    hiddenplayer: {
+        enabled: false,
+        bot: {
+            host: 'ourworld6.aternos.me',
+            port: 40655,
+            version: '1.18',
+            authentication: {
+                type: 'Offline',
+                username: 'HiddenPlayer'
+            },
+            firstMessages: {
+                messages: [
+                    '/register someoneyouknow someoneyouknow',
+                    '/login someoneyouknow'
+                ],
+                messageTimeout: 3000
+            },
+            leaveIfNotEmpty: {
+                enabled: true,
+                pingInterval: 5000
+            },
+            reconnect: {
+                enabled: true,
+                reconnectTimeout: 5000
+            }
+        },
+        loginOptions: {}
     }
 };
 

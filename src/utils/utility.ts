@@ -20,24 +20,24 @@ export type DoNothing<T> = T;
 
 export class Utility extends BaseModule {
     public client!: RecipleClient<true>;
-    public config: Config = defaultconfig;
     public prisma: PrismaClient = new PrismaClient();
     public express: Express = express();
     public logger!: Logger;
+
+    public config: Config = createReadFile(path.join(cwd, 'config/config.yml'), defaultconfig, {
+        encodeFileData: data => yml.stringify(data),
+        formatReadData: data => {
+            const config: Config = defaultsDeep(yml.parse(data.toString()), defaultconfig);
+            writeFileSync(path.join(cwd, 'config/config.yml'), yml.stringify(config));
+            return config;
+        }
+    });
 
     get user() { return this.client.user; }
 
     public async onStart(client: RecipleClient<boolean>): Promise<boolean> {
         this.client = client;
         this.logger = client.logger.cloneLogger({ loggerName: 'Utility' });
-        this.config = createReadFile(path.join(cwd, 'config/config.yml'), defaultconfig, {
-            encodeFileData: data => yml.stringify(data),
-            formatReadData: data => {
-                const config: Config = defaultsDeep(yml.parse(data.toString()), defaultconfig);
-                writeFileSync(path.join(cwd, 'config/config.yml'), yml.stringify(config));
-                return config;
-            }
-        });
 
         this.logger.log('Config loaded:', this.config);
 
@@ -75,7 +75,6 @@ export class Utility extends BaseModule {
                     : haltData.executeData.interaction.reply(message)
             : haltData.executeData.message.reply(message);
 
-        const author = this.isSlashCommandHaltData(haltData) ? haltData.executeData.interaction.user : haltData.executeData.message.author;
         const replyBase = { ephemeral: this.config.ephemeralHaltMessages, failtIfNotExists: false };
 
         switch (haltData.reason) {

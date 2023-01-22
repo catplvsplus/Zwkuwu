@@ -1,9 +1,14 @@
 import { randomUUID } from 'crypto';
-import { If } from 'fallout-utility';
+import { Awaitable, If } from 'fallout-utility';
 import minecraftProtocol from 'minecraft-protocol';
 import { Bot, BotOptions, createBot } from 'mineflayer';
 import { setTimeout } from 'timers/promises';
 import srvStatus from '../../dev/srvStatus.js';
+import { TypedEmitter } from 'tiny-typed-emitter';
+import movement from 'mineflayer-movement';
+import armorManager from 'mineflayer-armor-manager';
+import pathfinder from 'mineflayer-pathfinder';
+import pvp from 'mineflayer-pvp';
 
 const { ping } = minecraftProtocol;
 
@@ -34,8 +39,16 @@ export interface HiddenPlayerOptions {
 }
 
 export type LoginOptions = Omit<BotOptions, 'host'|'port'|'auth'|'username'|'password'>;
+export type Entity = Bot["entity"];
 
-export class HiddenPlayer<Ready extends boolean = boolean> {
+export interface HiddenPlayerEvents {
+    'reconnect': () => Awaitable<void>;
+    'disconnect': (reason: string) => Awaitable<void>;
+    'ready': () => Awaitable<void>;
+    'message': (message: string) => Awaitable<void>;
+}
+
+export class HiddenPlayer<Ready extends boolean = boolean> extends TypedEmitter<HiddenPlayerEvents> {
     private _bot: Bot|null = null;
     private _loginOptions?: LoginOptions;
 
@@ -45,6 +58,8 @@ export class HiddenPlayer<Ready extends boolean = boolean> {
     get bot() { return this._bot as If<Ready, Bot>; }
 
     constructor(options: HiddenPlayerOptions) {
+        super();
+
         this.options = options;
     }
 
@@ -62,6 +77,14 @@ export class HiddenPlayer<Ready extends boolean = boolean> {
                 : { auth: this.options.authentication.type.toLowerCase() as ('mojang'|'microsoft'), username: this.options.authentication.email, password: this.options.authentication.password }
             )
         });
+
+        // @ts-expect-error
+        const movementPlugin = movement.getPlugin(new movement.heuristics.ProximityHeuristic(0.7), new movement.heuristics.ConformityHeuristic(0.4), new movement.heuristics.DistanceHeuristic(1, 6, 5), new movement.heuristics.DangerHeuristic(2, 2, 5, 0.2));
+
+        this._bot.loadPlugin(movementPlugin);
+        this._bot.loadPlugin(pvp.plugin);
+        this._bot.loadPlugin(armorManager);
+        this._bot.loadPlugin(pathfinder.pathfinder);
 
         this._handleBotEvents();
 
@@ -83,6 +106,7 @@ export class HiddenPlayer<Ready extends boolean = boolean> {
         if (this.options.reconnect?.reconnectTimeout) await setTimeout(this.options.reconnect.reconnectTimeout);
         this.login(this._loginOptions);
 
+        this.emit('reconnect');
         return this as HiddenPlayer<true>;
     }
 
@@ -93,10 +117,10 @@ export class HiddenPlayer<Ready extends boolean = boolean> {
     private _handleBotEvents(): void {
         if (!this.isReady()) throw new Error('Cannot listen to bot events: Bot not ready');
 
-        this.bot.once('spawn', async () => {
+        let nearestMob: Entity|null = null;
 
-            const isEmpty = await this._isServerEmpty();
-            if (!isEmpty) return;
+        this.bot.once('spawn', async () => {
+            this.emit('ready');
 
             for (const message of (this.options.firstMessages?.messages ?? [])) {
                 if (!this.isReady()) break;
@@ -104,9 +128,12 @@ export class HiddenPlayer<Ready extends boolean = boolean> {
 
                 if (this.options.firstMessages?.messageTimeout) await setTimeout(this.options.firstMessages.messageTimeout);
             }
+
+            await this._isServerEmpty();
         });
 
         this.bot.on('end', async reason => {
+            this.emit('disconnect', reason);
 
             if (!this.options.reconnect?.enabled) return;
             if (['destroy', 'reconnect'].includes(reason)) return;
@@ -119,9 +146,39 @@ export class HiddenPlayer<Ready extends boolean = boolean> {
 
             await this.reconnect();
         });
+
+        this.bot.on('playerCollect', collector => {
+            if (collector.username !== this.bot?.player.username) return;
+
+            // @ts-expect-error
+            this.bot?.armorManager.equipAll();
+        });
+
+        this.bot.on('time', async () => {
+            nearestMob = this.bot?.nearestEntity(entity => entity.kind == "Hostile mobs") ?? null;
+
+            if (!nearestMob) {
+                await this.bot?.pvp.stop();
+                return;
+            }
+
+            if (!this.bot?.pvp.target) {
+                await this.bot?.pvp.attack(nearestMob);
+                return;
+            }
+
+            if (nearestMob.uuid !== this.bot.pvp.target.uuid) {
+                await this.bot.pvp.stop();
+                await this.bot?.pvp.attack(nearestMob);
+            }
+        });
+
+        this.bot.on('message', (message) => { this.emit('message', message.toString()); });
     }
 
-    private async _isServerEmpty(): Promise<boolean> {
+    private async _isServerEmpty(): Promise<void> {
+        if (!this.options.leaveIfNotEmpty?.enabled) return;
+
         const pingData = await ping(this.options).catch(() => null);
 
         let onlinePlayers = (srvStatus.isNewPingData(pingData) ? pingData.players.online : pingData?.playerCount) ?? 0;
@@ -129,11 +186,10 @@ export class HiddenPlayer<Ready extends boolean = boolean> {
 
         if (onlinePlayers > 0) {
             this.destroy('notEmpty');
-            return true;
+            return;
         }
 
-        await this._isServerEmpty();
-        return false;
+        return this._isServerEmpty();
     }
 
     private async _joinIfEmpty(): Promise<void> {
