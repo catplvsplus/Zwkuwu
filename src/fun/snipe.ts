@@ -46,7 +46,7 @@ export class SnipeModule extends BaseModule {
 
     public async onLoad(client: RecipleClient): Promise<void> {
         client.on('messageDelete', async (message) => {
-            if (!message.inGuild()) return;
+            if (!message.inGuild() || message.author.bot || message.author.system) return;
             if (this.config.ignoredUsers.includes(message.author.id)) return;
             if (this.config.ignoredWords.some(word => message.content.toLowerCase().includes(word.toLowerCase()))) return;
             if (!message.content && !message.attachments.size && !message.editedAt) return;
