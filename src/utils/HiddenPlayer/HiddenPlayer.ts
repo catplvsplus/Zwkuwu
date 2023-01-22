@@ -94,7 +94,6 @@ export class HiddenPlayer<Ready extends boolean = boolean> {
         if (!this.isReady()) throw new Error('Cannot listen to bot events: Bot not ready');
 
         this.bot.once('spawn', async () => {
-            console.log(`Spawned!`);
 
             const isEmpty = await this._isServerEmpty();
             if (!isEmpty) return;
@@ -102,14 +101,12 @@ export class HiddenPlayer<Ready extends boolean = boolean> {
             for (const message of (this.options.firstMessages?.messages ?? [])) {
                 if (!this.isReady()) break;
                 this.bot?.chat(message);
-                console.log(`Sent to chat: ${message}`)
 
                 if (this.options.firstMessages?.messageTimeout) await setTimeout(this.options.firstMessages.messageTimeout);
             }
         });
 
         this.bot.on('end', async reason => {
-            console.log(`Bot ended: ${reason}`);
 
             if (!this.options.reconnect?.enabled) return;
             if (['destroy', 'reconnect'].includes(reason)) return;
@@ -130,8 +127,6 @@ export class HiddenPlayer<Ready extends boolean = boolean> {
         let onlinePlayers = (srvStatus.isNewPingData(pingData) ? pingData.players.online : pingData?.playerCount) ?? 0;
             onlinePlayers = onlinePlayers - 1 >= 0 ? onlinePlayers - 1 : onlinePlayers;
 
-        console.log(`isServerEmpty(): ${onlinePlayers}`);
-
         if (onlinePlayers > 0) {
             this.destroy('notEmpty');
             return true;
@@ -146,8 +141,6 @@ export class HiddenPlayer<Ready extends boolean = boolean> {
 
         const pingData = await ping(this.options).catch(() => null);
         const onlinePlayers = (srvStatus.isNewPingData(pingData) ? pingData.players.online : pingData?.playerCount);
-
-        console.log(`joinIfEmpty(): ${onlinePlayers}`);
 
         if (onlinePlayers !== 0) {
             await setTimeout(this.options.leaveIfNotEmpty.pingInterval);
