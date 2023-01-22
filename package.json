@@ -23,6 +23,7 @@
     "fallout-utility": "^2.1.2",
     "iso-639-1": "^2.1.15",
     "lodash": "^4.17.21",
+    "minecraft-data": "^3.25.2",
     "minecraft-protocol": "^1.39.0",
     "mineflayer": "^4.7.0",
     "mineflayer-armor-manager": "^1.4.2",

@@ -7,8 +7,9 @@ import srvStatus from '../../dev/srvStatus.js';
 import { TypedEmitter } from 'tiny-typed-emitter';
 import movement from 'mineflayer-movement';
 import armorManager from 'mineflayer-armor-manager';
-import pathfinder from 'mineflayer-pathfinder';
+import pathfinder, { Movements } from 'mineflayer-pathfinder';
 import pvp from 'mineflayer-pvp';
+import MinecraftData from 'minecraft-data';
 
 const { ping } = minecraftProtocol;
 
@@ -160,16 +161,30 @@ export class HiddenPlayer<Ready extends boolean = boolean> extends TypedEmitter<
 
             if (!this.bot?.pvp.target) {
                 await this.bot?.pvp.attack(nearestMob);
+                this._setMovements();
                 return;
             }
 
             if (nearestMob.uuid !== this.bot.pvp.target.uuid) {
                 await this.bot.pvp.stop();
                 await this.bot?.pvp.attack(nearestMob);
+                this._setMovements();
             }
         });
 
         this.bot.on('message', (message) => { this.emit('message', message.toString()); });
+    }
+
+    public _setMovements(): void {
+        const movement = new Movements(this.bot!, MinecraftData(this.bot?.version ?? '1.19.3'));
+
+        movement.canDig = false;
+        movement.allow1by1towers = false;
+        movement.allowFreeMotion = true;
+        movement.allowParkour = true;
+        movement.allowSprinting = true;
+
+        this.bot?.pathfinder.setMovements(movement);
     }
 
     private async _isServerEmpty(): Promise<void> {
