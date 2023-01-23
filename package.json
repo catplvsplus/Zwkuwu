@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@falloutstudios/djs-pagination": "^1.2.3",
-    "@falloutstudios/djs-scam-links": "^1.2.3",
+    "@falloutstudios/djs-scam-links": "^1.2.4",
     "@prisma/client": "^4.9.0",
     "@vitalets/google-translate-api": "^9.0.0",
     "axios": "^1.2.2",

@@ -56,6 +56,8 @@ export class HiddenPlayer<Ready extends boolean = boolean> extends TypedEmitter<
     readonly id: string = randomUUID();
     readonly options: HiddenPlayerOptions;
 
+    public disconnected: boolean = false;
+
     get bot() { return this._bot as If<Ready, Bot>; }
 
     constructor(options: HiddenPlayerOptions) {
@@ -88,6 +90,7 @@ export class HiddenPlayer<Ready extends boolean = boolean> extends TypedEmitter<
         this._bot.loadPlugin(pathfinder.pathfinder);
 
         this._handleBotEvents();
+        this.disconnected = false;
 
         return this as HiddenPlayer<true>;
     }
@@ -133,8 +136,9 @@ export class HiddenPlayer<Ready extends boolean = boolean> extends TypedEmitter<
             await this._isServerEmpty();
         });
 
-        this.bot.on('end', async reason => {
+        this.bot.on('end', async reason => {    
             this.emit('disconnect', reason);
+            this.disconnected = true;
 
             if (!this.options.reconnect?.enabled) return;
             if (['destroy', 'reconnect'].includes(reason)) return;
@@ -176,7 +180,8 @@ export class HiddenPlayer<Ready extends boolean = boolean> extends TypedEmitter<
     }
 
     public _setMovements(): void {
-        const movement = new Movements(this.bot!, MinecraftData(this.bot?.version ?? '1.19.3'));
+        if (!this.isReady()) return;
+        const movement = new Movements(this.bot, MinecraftData(this.bot.version));
 
         movement.canDig = false;
         movement.allow1by1towers = false;
@@ -184,11 +189,12 @@ export class HiddenPlayer<Ready extends boolean = boolean> extends TypedEmitter<
         movement.allowParkour = true;
         movement.allowSprinting = true;
 
-        this.bot?.pathfinder.setMovements(movement);
+        this.bot.pathfinder.setMovements(movement);
     }
 
-    private async _isServerEmpty(): Promise<void> {
+    private async _isServerEmpty(loop: boolean = true): Promise<void> {
         if (!this.options.leaveIfNotEmpty?.enabled) return;
+        if (this.disconnected && !this.bot?._client.ended) return this.bot?.end('destroy');
 
         const pingData = await ping(this.options).catch(() => null);
 
@@ -200,11 +206,12 @@ export class HiddenPlayer<Ready extends boolean = boolean> extends TypedEmitter<
             return;
         }
 
-        return this._isServerEmpty();
+        return loop ? this._isServerEmpty() : void 0;
     }
 
     private async _joinIfEmpty(): Promise<void> {
         if (!this.options.leaveIfNotEmpty?.enabled) return;
+        if (this.disconnected) return;
 
         const pingData = await ping(this.options).catch(() => null);
         const onlinePlayers = (srvStatus.isNewPingData(pingData) ? pingData.players.online : pingData?.playerCount);
