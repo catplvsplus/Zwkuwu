@@ -1,10 +1,14 @@
 import { RecipleClient, SlashCommandBuilder } from 'reciple';
 import { BaseModule } from '../BaseModule.js';
-import { HiddenPlayer, HiddenPlayerOptions, LoginOptions } from './HiddenPlayer/HiddenPlayer.js';
-import utility from './utility.js';
-import { disconnect } from 'process';
+import { HiddenPlayerOptions, LoginOptions } from './HiddenPlayer/classes/HiddenPlayer.js';
+import utility, { Logger } from './utility.js';
 import { inlineCode } from 'discord.js';
-import ms from 'ms';
+import { ChildProcess, exec, fork, spawn } from 'child_process';
+import { fileURLToPath } from 'url';
+import { path } from 'fallout-utility';
+
+var __filename = fileURLToPath(import.meta.url);
+var __dirname = path.dirname(__filename);
 
 export interface HiddenPlayerConfig {
     enabled: boolean;
@@ -13,13 +17,13 @@ export interface HiddenPlayerConfig {
 }
 
 export class HiddenPlayerModule extends BaseModule {
-    public bot!: HiddenPlayer;
+    public bot: ChildProcess = fork('./HiddenPlayer/bot.js', { cwd: path.join(__dirname) });
+    public logger!: Logger;
 
     get config() { return utility.config.hiddenplayer; }
 
     public async onStart(client: RecipleClient<boolean>): Promise<boolean> {
-
-        this.bot = new HiddenPlayer(this.config.bot);
+        this.logger = client.logger.cloneLogger({ loggerName: 'HiddenPlayer' });
         this.commands = [
             new SlashCommandBuilder()
                 .setName('hiddenplayer')
@@ -46,10 +50,6 @@ export class HiddenPlayerModule extends BaseModule {
                         .setRequired(true)
                     )
                 )
-                .addSubcommand(ping => ping
-                    .setName('ping')
-                    .setDescription('Get bot latency')
-                )
                 .setExecute(async ({ interaction }) => {
                     const command = interaction.options.getSubcommand() as `${'re'|'dis'}connect`|'chat'|'ping';
                     const reason = interaction.options.getString('reason');
@@ -58,29 +58,34 @@ export class HiddenPlayerModule extends BaseModule {
 
                     switch (command) {
                         case 'disconnect':
-                            await this.bot.destroy(reason || undefined);
+                            this.bot.send({ type: 'disconnect', reason: reason || null });
                             await interaction.editReply({ embeds: [utility.createSmallEmbed(`HiddenPlayer disconnected: ${inlineCode(reason || 'No reason')}`, { useDescription: true })] });
                             break;
                         case 'reconnect':
-                            await this.bot.reconnect();
+                            this.bot.send({ type: 'reconnect' });
                             await interaction.editReply({ embeds: [utility.createSmallEmbed(`HiddenPlayer reconnecting`)] });
                             break;
                         case 'chat':
-                            this.bot.bot?.chat(interaction.options.getString('message', true));
+                            this.bot.send({ type: 'chat', message: interaction.options.getString('message', true) });
                             await interaction.editReply({ embeds: [utility.createSmallEmbed(`Message sent to chat`)] });
-                            break;
-                        case 'ping':
-                            await interaction.editReply({ embeds: [utility.createSmallEmbed(`Bot ping ${inlineCode(ms(this.bot.bot?._client.latency ?? 0, { long: true }))}`, { useDescription: true })] });
                             break;
                     }
                 })
         ];
 
+        this.bot.stdout?.on('data', async msg => this.logger.log(msg.toString()));
+        this.bot.stderr?.on('data', async msg => this.logger.err(msg.toString()));
+        this.bot.on('message', async msg => `[Message] `+this.logger.log(msg.toString()));
+
         return true;
     }
 
     public async onLoad(client: RecipleClient<boolean>): Promise<void> {
-        await this.bot.login(this.config.loginOptions);
+        this.bot.send({ type: 'login' });
+    }
+
+    public async onUnload(reason: unknown, client: RecipleClient<true>): Promise<void> {
+        this.bot.kill();
     }
 }
 

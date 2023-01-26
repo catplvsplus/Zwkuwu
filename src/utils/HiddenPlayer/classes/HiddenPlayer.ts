@@ -3,7 +3,7 @@ import { Awaitable, If } from 'fallout-utility';
 import minecraftProtocol from 'minecraft-protocol';
 import { Bot, BotOptions, createBot } from 'mineflayer';
 import { setTimeout } from 'timers/promises';
-import srvStatus from '../../dev/srvStatus.js';
+import srvStatus from '../../../dev/srvStatus.js';
 import { TypedEmitter } from 'tiny-typed-emitter';
 import movement from 'mineflayer-movement';
 import armorManager from 'mineflayer-armor-manager';
