@@ -46,7 +46,11 @@ export const defaultconfig: BaseConfig = {
             'I farted',
             'I hate you',
             'WTF'
-        ]
+        ],
+        disableConfessionReply: false,
+        filtering: {
+            checkSuspiciousLinks: true
+        }
     },
     tiktok: {
         cookies: ''

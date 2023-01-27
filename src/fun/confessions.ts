@@ -3,11 +3,16 @@ import { BaseModule } from '../BaseModule.js';
 import { ActionRowBuilder, ApplicationCommandType, ButtonBuilder, ButtonStyle, ContextMenuCommandBuilder, Embed, EmbedBuilder, Message, MessageActionRowComponentBuilder, MessageCreateOptions, ModalActionRowComponentBuilder, ModalBuilder, PermissionResolvable, TextBasedChannel, TextInputBuilder, TextInputStyle } from 'discord.js';
 import utility from '../utils/utility.js';
 import { getRandomKey } from 'fallout-utility';
+import antiScam from '../moderation/antiScam.js';
 
 export interface ConfessionsConfig {
     confessionsChannelId: string;
     titleAccessRequiredPermissions: PermissionResolvable;
     modalPlaceholders: string[];
+    disableConfessionReply: boolean;
+    filtering: {
+        checkSuspiciousLinks: boolean;
+    };
 }
 
 export class ConfessionsModule extends BaseModule {
@@ -33,9 +38,11 @@ export class ConfessionsModule extends BaseModule {
         ];
 
         client.commands.addAddtionalApplicationCommand(
-            new ContextMenuCommandBuilder()
-                .setName('Reply to confession')
-                .setType(ApplicationCommandType.Message),
+            ...(!this.config.disableConfessionReply
+                    ? [new ContextMenuCommandBuilder()
+                        .setName('Reply to confession')
+                        .setType(ApplicationCommandType.Message)]
+                    : []),
             new ContextMenuCommandBuilder()
                 .setName('Delete confession')
                 .setType(ApplicationCommandType.Message)
@@ -122,7 +129,25 @@ export class ConfessionsModule extends BaseModule {
 
                     await interaction.deferReply({ ephemeral: true });
 
+                    if (await this.isConfessionNotAllowed(content)) {
+                        await interaction.editReply({
+                            embeds: [
+                                utility.createSmallEmbed('Confession content is not allowed', { positive: false })
+                            ]
+                        });
+                        return;
+                    }
+
                     if (replyToId) {
+                        if (this.config.disableConfessionReply && !allowTitle) {
+                            await interaction.editReply({
+                                embeds: [
+                                    utility.createSmallEmbed('Confession replies are disabled', { positive: false })
+                                ]
+                            });
+                            return;
+                        }
+
                         const targetConfessionData = await utility.prisma.confessions.findFirst({ where: { id: replyToId } });
                         if (!targetConfessionData) {
                             await interaction.editReply({
@@ -161,7 +186,7 @@ export class ConfessionsModule extends BaseModule {
                                 .setAuthor({ name: title || 'Anonymous', iconURL: client.user?.displayAvatarURL() })
                                 .setDescription(content)
                                 .setColor(utility.config.embedColor)
-                                .addFields(replyTo ? [
+                                .addFields(replyTo && replyTo.channelId !== this.confessionsChannel.id ? [
                                     {
                                         name: 'Replied to',
                                         inline: true,
@@ -177,10 +202,12 @@ export class ConfessionsModule extends BaseModule {
                                         .setCustomId('confession-create')
                                         .setLabel('Create Confession')
                                         .setStyle(ButtonStyle.Primary),
-                                    new ButtonBuilder()
-                                        .setCustomId('confession-reply')
-                                        .setLabel('Reply to Confession')
-                                        .setStyle(ButtonStyle.Secondary)
+                                    ...(!this.config.disableConfessionReply
+                                            ? [new ButtonBuilder()
+                                                .setCustomId('confession-reply')
+                                                .setLabel('Reply to Confession')
+                                                .setStyle(ButtonStyle.Secondary)]
+                                            : [])
                                 )
                         ]
                     };
@@ -219,6 +246,10 @@ export class ConfessionsModule extends BaseModule {
         if (!channel?.isTextBased()) throw new Error('Confessions channel is not a valid text channel');
 
         this.confessionsChannel = channel;
+    }
+
+    public async isConfessionNotAllowed(content: string): Promise<boolean> {
+        return this.config.filtering.checkSuspiciousLinks && antiScam.scamLinks.isMatch(content);
     }
 
     public confessionModal(options?: { replyToId?: string; allowTitle?: boolean; }): ModalBuilder {
