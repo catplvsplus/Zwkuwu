@@ -1,3 +1,4 @@
+import '@tensorflow/tfjs-node';
 import toxicity from '@tensorflow-models/toxicity';
 import { BaseModule } from '../BaseModule.js';
 import { RecipleClient } from 'reciple';
