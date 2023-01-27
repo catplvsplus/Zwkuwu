@@ -9,6 +9,7 @@ import { RoleMenuConfig } from './utils/roleMenu.js';
 import { MinecraftSkinsConfig } from './utils/minecraftSkins.js';
 import { AnticrashConfig } from './anticrash.js';
 import { HiddenPlayerConfig } from './utils/hiddenplayer.js';
+import { ToxicMessagesConfig } from './moderation/toxicMessages.js';
 
 export interface BaseConfig {
     embedColor: ColorResolvable;
@@ -25,6 +26,7 @@ export interface BaseConfig {
     minecraftSkins: MinecraftSkinsConfig;
     anticrash: AnticrashConfig;
     hiddenplayer: HiddenPlayerConfig;
+    toxicMessages: ToxicMessagesConfig;
 };
 
 export const snowflake = '0000000000000000000';
@@ -148,6 +150,10 @@ export const defaultconfig: BaseConfig = {
             }
         },
         loginOptions: {}
+    },
+    toxicMessages: {
+        predictionThreshold: 0.9,
+        ignoredToxicityLabels: []
     }
 };
 
