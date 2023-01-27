@@ -51,7 +51,8 @@ export const defaultconfig: BaseConfig = {
         ],
         disableConfessionReply: false,
         filtering: {
-            checkSuspiciousLinks: true
+            checkSuspiciousLinks: true,
+            checkToxicity: true
         }
     },
     tiktok: {

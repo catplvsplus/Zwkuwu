@@ -4,6 +4,7 @@ import { ActionRowBuilder, ApplicationCommandType, ButtonBuilder, ButtonStyle, C
 import utility from '../utils/utility.js';
 import { getRandomKey } from 'fallout-utility';
 import antiScam from '../moderation/antiScam.js';
+import toxicMessages from '../moderation/toxicMessages.js';
 
 export interface ConfessionsConfig {
     confessionsChannelId: string;
@@ -12,6 +13,7 @@ export interface ConfessionsConfig {
     disableConfessionReply: boolean;
     filtering: {
         checkSuspiciousLinks: boolean;
+        checkToxicity: boolean;
     };
 }
 
@@ -129,7 +131,7 @@ export class ConfessionsModule extends BaseModule {
 
                     await interaction.deferReply({ ephemeral: true });
 
-                    if (await this.isConfessionNotAllowed(content)) {
+                    if (!allowTitle && await this.isConfessionNotAllowed(content)) {
                         await interaction.editReply({
                             embeds: [
                                 utility.createSmallEmbed('Confession content is not allowed', { positive: false })
@@ -249,7 +251,12 @@ export class ConfessionsModule extends BaseModule {
     }
 
     public async isConfessionNotAllowed(content: string): Promise<boolean> {
-        return this.config.filtering.checkSuspiciousLinks && antiScam.scamLinks.isMatch(content);
+        let isAllowed: boolean = true;
+
+        if (this.config.filtering.checkSuspiciousLinks) isAllowed = antiScam.scamLinks.isMatch(content);
+        if (this.config.filtering.checkToxicity) isAllowed = !isAllowed ? (await toxicMessages.isToxic(content)).isToxic : isAllowed;
+
+        return isAllowed;
     }
 
     public confessionModal(options?: { replyToId?: string; allowTitle?: boolean; }): ModalBuilder {
