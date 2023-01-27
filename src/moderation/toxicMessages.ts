@@ -49,8 +49,6 @@ export class ToxicMessagesModule extends BaseModule {
         const response = await this.model.classify(content);
         const isToxic = response.some(c => !this.config.ignoredToxicityLabels.includes(this.getLabel(c.label as ToxicMessageLabelValues)) && c.results.some(r => !!r.match))
 
-        console.log(response.map(r => r.results.map(i => i.probabilities)));
-
         return {
             isToxic,
             ignoredLabels: this.config.ignoredToxicityLabels.map(l => this.getLabel(l)),
