@@ -46,9 +46,9 @@ export class ToxicMessagesModule extends BaseModule {
         return true;
     }
 
-    public async isToxic(content: string): Promise<MessageToxicity> {
+    public async isToxic(content: string, ignoredLabels?: (keyof typeof ToxicMessageLabel)[]): Promise<MessageToxicity> {
         const response = await this.model.classify(content);
-        const isToxic = response.some(c => !this.config.ignoredToxicityLabels.includes(this.getLabel(c.label as ToxicMessageLabelValues)) && c.results.some(r => !!r.match))
+        const isToxic = response.some(c => !(ignoredLabels ?? this.config.ignoredToxicityLabels).includes(this.getLabel(c.label as ToxicMessageLabelValues)) && c.results.some(r => !!r.match))
 
         return {
             isToxic,

@@ -209,7 +209,7 @@ export class HiddenPlayer<Ready extends boolean = boolean> extends TypedEmitter<
         return loop ? this._isServerEmpty() : void 0;
     }
 
-    private async _joinIfEmpty(): Promise<void> {
+    private async _joinIfEmpty(loop: boolean = true): Promise<void> {
         if (!this.options.leaveIfNotEmpty?.enabled) return;
         if (this.disconnected) return;
 
@@ -217,6 +217,8 @@ export class HiddenPlayer<Ready extends boolean = boolean> extends TypedEmitter<
         const onlinePlayers = (srvStatus.isNewPingData(pingData) ? pingData.players.online : pingData?.playerCount);
 
         if (onlinePlayers !== 0) {
+            if (!loop) return;
+
             await setTimeout(this.options.leaveIfNotEmpty.pingInterval);
             return this._joinIfEmpty();
         }

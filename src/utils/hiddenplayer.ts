@@ -2,10 +2,11 @@ import { RecipleClient, SlashCommandBuilder } from 'reciple';
 import { BaseModule } from '../BaseModule.js';
 import { HiddenPlayerOptions, LoginOptions } from './HiddenPlayer/classes/HiddenPlayer.js';
 import utility, { Logger } from './utility.js';
-import { inlineCode } from 'discord.js';
+import { codeBlock, escapeCodeBlock, inlineCode } from 'discord.js';
 import { ChildProcess, exec, fork, spawn } from 'child_process';
 import { fileURLToPath } from 'url';
-import { path } from 'fallout-utility';
+import { limitString, path } from 'fallout-utility';
+import { inspect } from 'util';
 
 var __filename = fileURLToPath(import.meta.url);
 var __dirname = path.dirname(__filename);
@@ -17,7 +18,8 @@ export interface HiddenPlayerConfig {
 }
 
 export class HiddenPlayerModule extends BaseModule {
-    public bot: ChildProcess = fork('./HiddenPlayer/bot.js', { cwd: path.join(__dirname) });
+    public bot!: ChildProcess;
+    public logged: string = '';
     public logger!: Logger;
 
     get config() { return utility.config.hiddenplayer; }
@@ -50,8 +52,16 @@ export class HiddenPlayerModule extends BaseModule {
                         .setRequired(true)
                     )
                 )
+                .addSubcommand(logs => logs
+                    .setName('logs')
+                    .setDescription('Get bot logs')
+                )
+                .addSubcommand(respawn => respawn
+                    .setName('respawn')
+                    .setDescription('Respawn HiddeplPlayer child process')
+                )
                 .setExecute(async ({ interaction }) => {
-                    const command = interaction.options.getSubcommand() as `${'re'|'dis'}connect`|'chat'|'ping';
+                    const command = interaction.options.getSubcommand() as `${'re'|'dis'}connect`|'chat'|'ping'|'logs'|'respawn';
                     const reason = interaction.options.getString('reason');
 
                     await interaction.deferReply({ ephemeral: true });
@@ -69,24 +79,98 @@ export class HiddenPlayerModule extends BaseModule {
                             this.bot.send({ type: 'chat', message: interaction.options.getString('message', true) });
                             await interaction.editReply({ embeds: [utility.createSmallEmbed(`Message sent to chat`)] });
                             break;
+                        case 'logs':
+                            await interaction.editReply({ embeds: [utility.createSmallEmbed('Latest logs').setDescription(codeBlock(escapeCodeBlock(this.logged)))] });
+                            break;
+                        case 'respawn':
+                            const pid = await this.newChildProcess();
+                            await interaction.editReply({ embeds: [utility.createSmallEmbed(`Started new child process: ${inlineCode('PID ' + pid)}`, { useDescription: true })] });
                     }
                 })
         ];
-
-        this.bot.stdout?.on('data', async msg => this.logger.log(msg.toString()));
-        this.bot.stderr?.on('data', async msg => this.logger.err(msg.toString()));
-        this.bot.on('message', async msg => `[Message] `+this.logger.log(msg.toString()));
 
         return true;
     }
 
     public async onLoad(client: RecipleClient<boolean>): Promise<void> {
-        this.bot.send({ type: 'login' });
+        this.newChildProcess();
     }
 
     public async onUnload(reason: unknown, client: RecipleClient<true>): Promise<void> {
         this.bot.kill();
     }
+
+    public addLogs(logs: string): this {
+        logs = `${this.logged}\n${logs.trim()}`.trim();
+
+        this.logged = logs.split('\n').slice(-20).join('\n');
+
+        return this;
+    }
+
+    public async killChildProcess(signal?: number|NodeJS.Signals, timeout: number = 10000): Promise<boolean> {
+        if (!this.bot || this.bot.killed || !this.bot.connected) return true;
+
+        this.bot.removeAllListeners();
+        this.bot.kill(signal);
+
+        return await (new Promise((res, rej) => {
+            let resolved = false;
+
+            const timer = setTimeout(() => {
+                resolved = true;
+                res(false);
+            }, timeout);
+
+            do {
+                if (resolved || this.bot.killed) break;
+            } while(!this.bot.killed);
+
+            if (!resolved && this.bot.killed) {
+                resolved = true;
+                clearTimeout(timer);
+                res(true);
+            }
+        }));
+    }
+
+    public async newChildProcess(respawnSelf: boolean = true): Promise<number|undefined> {
+        if (!await this.killChildProcess('SIGTERM')) throw new Error(`Couldn't kill PID ${this.bot.pid}`);
+
+        this.bot = fork('./HiddenPlayer/bot.js', { cwd: path.join(__dirname) });
+
+        this.logged = '';
+        this.logger.warn(`HiddenPlayer child process PID: ${this.bot.pid}`);
+
+        this.bot.stdout?.on('data', async msg => {
+            this.addLogs(msg.toString());
+            this.logger.log(msg.toString());
+        });
+
+        this.bot.stderr?.on('data', async msg => {
+            this.addLogs(msg.toString());
+            this.logger.err(msg.toString());
+        });
+
+        this.bot.on('error', async error => {
+            this.addLogs(inspect(error));
+            this.logger.err(error);
+        });
+
+        this.bot.on('message', async msg => {
+            this.addLogs(msg.toString());
+            this.logger.log(msg.toString());
+        });
+
+        this.bot.once('exit', () => {
+            this.logger.warn(`Child process exited with exit code: ${this.bot.exitCode || 'unknown'}`, `Respawning child process...`);
+            this.newChildProcess();
+        });
+
+        this.bot.send({ type: 'login' });
+
+        return this.bot.pid;
+    } 
 }
 
 export default new HiddenPlayerModule();
