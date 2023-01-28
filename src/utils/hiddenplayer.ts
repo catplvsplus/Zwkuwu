@@ -111,6 +111,8 @@ export class HiddenPlayerModule extends BaseModule {
     public async killChildProcess(signal?: number|NodeJS.Signals, timeout: number = 10000): Promise<boolean> {
         if (!this.bot || this.bot.killed || !this.bot.connected) return true;
 
+        this.logger.warn(`Killing PID ${this.bot.pid}`);
+
         this.bot.removeAllListeners();
         this.bot.kill(signal);
 
