@@ -92,55 +92,55 @@ export class RoleMenuModule extends BaseModule {
 
     public async onLoad(client: RecipleClient<boolean>): Promise<void> {
         for (const roleMenuData of this.config.roleMenus) {
-            const channel = await utility.resolveFromCachedManager(roleMenuData.channelId, client.channels);
-            if (!channel?.isTextBased() || channel.isDMBased()) {
-                utility.logger.err(`Invalid guild text based channel (${roleMenuData.channelId})`);
-                continue;
-            }
-
-            const message = await utility.resolveFromCachedManager(roleMenuData.messageId, channel.messages);
-            if (!message?.editable) {
-                utility.logger.err(`Invalid bot message (${roleMenuData.messageId})`);
-                continue;
-            }
-
-            const messageData = typeof roleMenuData.messageData == 'string' ? { content: roleMenuData.messageData } : roleMenuData.messageData;
-            const selectMenu = new StringSelectMenuBuilder().setCustomId(`rolemenu`).setMinValues(1);
-
-            if (roleMenuData.menu.multiple === false) selectMenu.setMaxValues(1);
-            if (roleMenuData.menu.placeholder) selectMenu.setPlaceholder(roleMenuData.menu.placeholder);
-
-            const roles: RoleMenu['roles'] = await Promise.all(roleMenuData.roles.map(async roleData => {
-                const role = await utility.resolveFromCachedManager(roleData.roleId, channel.guild.roles);
-
-                selectMenu.addOptions({
-                    ...roleData,
-                    label: roleData.label ?? role.name,
-                    value: role.id
-                });
-
-                return {
-                    ...roleData,
-                    role
-                };
-            }));
-
-            await message.edit({
-                ...messageData,
-                components: [
-                    new ActionRowBuilder<MessageActionRowComponentBuilder>()
-                        .setComponents(selectMenu)
-                ]
-            });
-
-            this.roleMenus.set(message.id, {
-                ...roleMenuData,
-                messageData,
-                channel,
-                message,
-                roles
-            });
+            await this.addRoleMenu(roleMenuData).catch(err => utility.logger.err(`Couldn't add role menu for "${roleMenuData.channelId}/${roleMenuData.messageId}": ${roleMenuData.label ?? 'Not labled'}`, err));
         }
+    }
+
+    public async addRoleMenu(roleMenuData: RoleMenuConfig['roleMenus'][0]): Promise<RoleMenu> {
+        const channel = await utility.resolveFromCachedManager(roleMenuData.channelId, utility.client.channels);
+        if (!channel?.isTextBased() || channel.isDMBased()) throw new Error(`Invalid guild text based channel (${roleMenuData.channelId})`);
+
+        const message = await utility.resolveFromCachedManager(roleMenuData.messageId, channel.messages);
+        if (!message?.editable) throw new Error(`Invalid bot message (${roleMenuData.messageId})`);
+
+        const messageData = typeof roleMenuData.messageData == 'string' ? { content: roleMenuData.messageData } : roleMenuData.messageData;
+        const selectMenu = new StringSelectMenuBuilder().setCustomId(`rolemenu`).setMinValues(1);
+
+        if (roleMenuData.menu.multiple === false) selectMenu.setMaxValues(1);
+        if (roleMenuData.menu.placeholder) selectMenu.setPlaceholder(roleMenuData.menu.placeholder);
+
+        const roles: RoleMenu['roles'] = await Promise.all(roleMenuData.roles.map(async roleData => {
+            const role = await utility.resolveFromCachedManager(roleData.roleId, channel.guild.roles);
+
+            selectMenu.addOptions({
+                ...roleData,
+                label: roleData.label ?? role.name,
+                value: role.id
+            });
+
+            return {
+                ...roleData,
+                role
+            };
+        }));
+
+        await message.edit({
+            ...messageData,
+            components: [
+                new ActionRowBuilder<MessageActionRowComponentBuilder>()
+                    .setComponents(selectMenu)
+            ]
+        });
+
+        this.roleMenus.set(message.id, {
+            ...roleMenuData,
+            messageData,
+            channel,
+            message,
+            roles
+        });
+
+        return this.roleMenus.get(message.id)!;
     }
 }
 
