@@ -140,7 +140,7 @@ export class HiddenPlayer<Ready extends boolean = boolean> extends TypedEmitter<
             this.emit('disconnect', reason);
             this.disconnected = true;
 
-            if (reason === 'destroy') return;
+            if (['destroy', 'reconnect'].includes(reason)) return;
 
             if (reason === 'notEmpty') {
                 await setTimeout(this.options.leaveIfNotEmpty?.pingInterval);
@@ -148,10 +148,7 @@ export class HiddenPlayer<Ready extends boolean = boolean> extends TypedEmitter<
                 return;
             }
 
-            if (reason === 'reconnect') {
-                if (!this.options.reconnect?.enabled) return;
-                await this.reconnect();
-            }
+            if (this.options.reconnect?.enabled) await this.reconnect();
         });
 
         this.bot.on('playerCollect', collector => {
