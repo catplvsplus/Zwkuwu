@@ -213,7 +213,6 @@ export class HiddenPlayer<Ready extends boolean = boolean> extends TypedEmitter<
 
     private async _joinIfEmpty(loop: boolean = true): Promise<void> {
         if (!this.options.leaveIfNotEmpty?.enabled) return;
-        if (!this.disconnected) return;
 
         const pingData = await ping(this.options).catch(() => null);
         const onlinePlayers = (srvStatus.isNewPingData(pingData) ? pingData.players.online : pingData?.playerCount);
