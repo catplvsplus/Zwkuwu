@@ -57,6 +57,8 @@ export class AntiScamModule extends BaseModule {
                 ]
             });
         });
+
+        this.scamLinks.on('error', (err) => {});
     }
 }
 
