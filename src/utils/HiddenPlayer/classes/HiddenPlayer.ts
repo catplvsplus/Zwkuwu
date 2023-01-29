@@ -140,8 +140,7 @@ export class HiddenPlayer<Ready extends boolean = boolean> extends TypedEmitter<
             this.emit('disconnect', reason);
             this.disconnected = true;
 
-            if (!this.options.reconnect?.enabled) return;
-            if (['destroy', 'reconnect'].includes(reason)) return;
+            if (reason === 'destroy') return;
 
             if (reason === 'notEmpty') {
                 await setTimeout(this.options.leaveIfNotEmpty?.pingInterval);
@@ -149,7 +148,10 @@ export class HiddenPlayer<Ready extends boolean = boolean> extends TypedEmitter<
                 return;
             }
 
-            await this.reconnect();
+            if (reason === 'reconnect') {
+                if (!this.options.reconnect?.enabled) return;
+                await this.reconnect();
+            }
         });
 
         this.bot.on('playerCollect', collector => {
@@ -211,7 +213,7 @@ export class HiddenPlayer<Ready extends boolean = boolean> extends TypedEmitter<
 
     private async _joinIfEmpty(loop: boolean = true): Promise<void> {
         if (!this.options.leaveIfNotEmpty?.enabled) return;
-        if (this.disconnected) return;
+        if (!this.disconnected) return;
 
         const pingData = await ping(this.options).catch(() => null);
         const onlinePlayers = (srvStatus.isNewPingData(pingData) ? pingData.players.online : pingData?.playerCount);
