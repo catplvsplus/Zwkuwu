@@ -214,7 +214,7 @@ export class HiddenPlayer<Ready extends boolean = boolean> extends TypedEmitter<
         const pingData = await ping(this.options).catch(() => null);
         const onlinePlayers = (srvStatus.isNewPingData(pingData) ? pingData.players.online : pingData?.playerCount);
 
-        if (onlinePlayers !== 0) {
+        if (onlinePlayers !== null && onlinePlayers !== 0) {
             if (!loop) return;
 
             await setTimeout(this.options.leaveIfNotEmpty.pingInterval);
