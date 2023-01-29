@@ -141,8 +141,8 @@ export class HiddenPlayerModule extends BaseModule {
 
         this.bot = fork('./HiddenPlayer/bot.js', { cwd: path.join(__dirname) });
 
-        this.logged = '';
-        this.logger.warn(`HiddenPlayer child process PID: ${this.bot.pid}`);
+        this.logged = `Child process PID: ${this.bot.pid}`;
+        this.logger.warn(`Spawned new child process PID: ${this.bot.pid}`);
 
         this.bot.stdout?.on('data', async msg => {
             this.addLogs(msg.toString());
