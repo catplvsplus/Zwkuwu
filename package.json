@@ -4,7 +4,7 @@
   "scripts": {
     "clean": "npx rimraf modules",
     "build": "npm run clean && npx tsc",
-    "start": "npx reciple -y -D",
+    "start": "npx reciple -y",
     "test": "npm run build && npx reciple -D -y -t env:TESTING_TOKEN  -c ./reciple.test.yml",
     "prisma:format": "npx prisma format",
     "prisma:generate": "npm run prisma:format && npx prisma generate",
