@@ -163,7 +163,7 @@ export class HiddenPlayer<Ready extends boolean = boolean> extends TypedEmitter<
             if (!nearestMob) return;
 
             if (!this.bot?.pvp.target) {
-                await this.bot?.pvp.attack(nearestMob);
+                this.bot?.pvp.attack(nearestMob);
                 this._setMovements();
                 return;
             }
