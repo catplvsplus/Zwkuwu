@@ -170,7 +170,7 @@ export class HiddenPlayer<Ready extends boolean = boolean> extends TypedEmitter<
 
             if (nearestMob.uuid !== this.bot.pvp.target.uuid) {
                 await this.bot.pvp.stop();
-                await this.bot?.pvp.attack(nearestMob);
+                this.bot?.pvp.attack(nearestMob);
                 this._setMovements();
             }
         });
