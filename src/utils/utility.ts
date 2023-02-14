@@ -22,7 +22,7 @@ export class Utility extends BaseModule {
     public client!: RecipleClient<true>;
     public prisma: PrismaClient = new PrismaClient();
     public express: Express = express();
-    public logger!: Logger;
+    public logger?: Logger;
 
     public config: Config = createReadFile(path.join(cwd, 'config/config.yml'), defaultconfig, {
         encodeFileData: data => yml.stringify(data),
@@ -37,9 +37,9 @@ export class Utility extends BaseModule {
 
     public async onStart(client: RecipleClient<boolean>): Promise<boolean> {
         this.client = client;
-        this.logger = client.logger.cloneLogger({ loggerName: 'Utility' });
+        this.logger = client.logger?.clone({ name: 'Utility' });
 
-        this.logger.log('Config loaded:', this.config);
+        this.logger?.log('Config loaded:', this.config);
 
         return true;
     }
@@ -47,7 +47,7 @@ export class Utility extends BaseModule {
     public async onLoad(client: RecipleClient<boolean>): Promise<void> {
         const port = this.config.expressPort || process.env.EXPRESS_PORT || 5133;
 
-        this.express.listen(port, () => this.logger.warn('Server is listening on port ' + port));
+        this.express.listen(port, () => this.logger?.warn('Server is listening on port ' + port));
     }
 
     public createSmallEmbed(content: string, options?: { useDescription?: true; positive?: boolean }|{ useDescription?: false; positive?: boolean; disableAvatar?: boolean; }): EmbedBuilder {
@@ -62,12 +62,8 @@ export class Utility extends BaseModule {
         return embed;
     }
 
-    public isSlashCommandHaltData(haltData: AnyCommandHaltData): haltData is SlashCommandHaltData {
-        return haltData.executeData.builder.type === CommandType.SlashCommand;
-    }
-
     public async haltCommand(haltData: AnyCommandHaltData): Promise<boolean> {
-        const repliable = (message: BaseMessageOptions) => this.isSlashCommandHaltData(haltData)
+        const repliable = (message: BaseMessageOptions) => haltData.commandType === CommandType.SlashCommand || haltData.commandType === CommandType.ContextMenuCommand
             ? haltData.executeData.interaction.deferred && !haltData.executeData.interaction.replied
                 ? haltData.executeData.interaction.editReply(message)
                 : haltData.executeData.interaction.deferred && haltData.executeData.interaction.replied
@@ -82,7 +78,7 @@ export class Utility extends BaseModule {
                 await repliable({
                     ...replyBase,
                     embeds: [
-                        this.createSmallEmbed(`Wait \`${ms(haltData.expireTime - Date.now(), { long: true })}\` to execute this command.`)
+                        this.createSmallEmbed(`Wait \`${ms(haltData.cooldownData.endsAt.getTime() - Date.now(), { long: true })}\` to execute this command.`)
                     ]
                 });
 
@@ -102,7 +98,7 @@ export class Utility extends BaseModule {
                 await repliable({
                     ...replyBase,
                     embeds: [
-                        this.createSmallEmbed(`Invalid command argumentst${haltData.invalidArguments.length > 1 ? 's' : ''} ${haltData.invalidArguments.map(m => `\`${m.name}\``).join(' ')}`, { positive: false })
+                        this.createSmallEmbed(`Invalid command argumentst${haltData.invalidArguments.size > 1 ? 's' : ''} ${haltData.invalidArguments.map(m => `\`${m.name}\``).join(' ')}`, { positive: false })
                     ]
                 });
 
@@ -111,7 +107,7 @@ export class Utility extends BaseModule {
                 await repliable({
                     ...replyBase,
                     embeds: [
-                        this.createSmallEmbed(`Missing required command argument${haltData.missingArguments.length > 1 ? 's' : ''} ${haltData.missingArguments.map(m => `\`${m.name}\``).join(' ')}`, { positive: false })
+                        this.createSmallEmbed(`Missing required command argument${haltData.missingArguments.size > 1 ? 's' : ''} ${haltData.missingArguments.map(m => `\`${m.name}\``).join(' ')}`, { positive: false })
                     ]
                 });
 
@@ -130,6 +126,24 @@ export class Utility extends BaseModule {
                     ...replyBase,
                     embeds: [
                         this.createSmallEmbed(`You do not have enough permissions to this command.`, { positive: false })
+                    ]
+                });
+
+                return true;
+            case CommandHaltReason.NoExecuteHandler:
+                await repliable({
+                    ...replyBase,
+                    embeds: [
+                        this.createSmallEmbed(`Couldn't execute this command`)
+                    ]
+                });
+
+                return true;
+            case CommandHaltReason.ValidateOptionError:
+                await repliable({
+                    ...replyBase,
+                    embeds: [
+                        this.createSmallEmbed(`Failed to validate an option`)
                     ]
                 });
 

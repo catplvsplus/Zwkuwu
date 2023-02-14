@@ -197,7 +197,7 @@ export class SrvStatusModule extends BaseModule {
             port: server.port ?? 25565,
             closeTimeout: server.pingTimeout || this.config.pingTimeout
         }).catch(err => {
-            utility.logger.debug(`Ping failed (${this.makeIP(server)}): ${String(err)}`);
+            utility.logger?.debug(`Ping failed (${this.makeIP(server)}): ${String(err)}`);
             return null;
         });
 

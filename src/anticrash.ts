@@ -1,4 +1,4 @@
-import { RecipleClient } from 'reciple';
+import { RecipleClient, RecipleModule } from 'reciple';
 import { BaseModule } from './BaseModule.js';
 import utility, { Logger } from './utils/utility.js';
 import { EmbedBuilder, TextBasedChannel, escapeCodeBlock } from 'discord.js';
@@ -9,13 +9,13 @@ export interface AnticrashConfig {
 }
 
 export class AnticrashModule extends BaseModule {
-    public logger!: Logger;
+    public logger?: Logger;
     public reportChannels: TextBasedChannel[] = [];
 
     get config() { return utility.config.anticrash; }
 
     public async onStart(client: RecipleClient<boolean>): Promise<boolean> {
-        this.logger = client.logger.cloneLogger({ loggerName: 'AntiCrash' });
+        this.logger = client.logger?.clone({ name: 'AntiCrash' });
 
         return true;
     }
@@ -25,10 +25,10 @@ export class AnticrashModule extends BaseModule {
         process.on('uncaughtException', err => this.report(err));
 
         client.on('error', err => this.report(err));
-        client.on('debug', debug => this.logger.debug(debug));
-        client.on('warn', warn => this.logger.debug(warn));
+        client.on('debug', debug => this.logger?.debug(debug));
+        client.on('warn', warn => this.logger?.debug(warn));
 
-        this.logger.warn(`Listening to process error events!`);
+        this.logger?.warn(`Listening to process error events!`);
 
         for (const channelId of this.config.errorReportsChannelIds) {
             const channel = await utility.resolveFromCachedManager(channelId, client.channels).catch(() => null);
@@ -48,20 +48,20 @@ export class AnticrashModule extends BaseModule {
                 if (m.halt) return;
 
                 m.setHalt(data => utility.haltCommand(data))
-                this.logger.debug(`Added halt function to message command ${m.name}`)
+                this.logger?.debug(`Added halt function to message command ${m.name}`)
             });
 
             client.commands.slashCommands.forEach(s => {
                 if (s.halt) return;
 
                 s.setHalt(data => utility.haltCommand(data))
-                this.logger.debug(`Added halt function to slash command ${s.name}`)
+                this.logger?.debug(`Added halt function to slash command ${s.name}`)
             });
         });
     }
 
     public async report(error: unknown): Promise<void> {
-        this.logger.error(error);
+        this.logger?.error(error);
 
         const embed = new EmbedBuilder()
             .setAuthor({ name: `Caught Crash Error`, iconURL: utility.client.user?.displayAvatarURL() })
@@ -72,7 +72,7 @@ export class AnticrashModule extends BaseModule {
         for (const channel of this.reportChannels) {
             await channel?.send({
                 embeds: [embed]
-            }).catch(err => this.logger.debug(`Failed to send error report to ${channel.id}:`, err));
+            }).catch(err => this.logger?.debug(`Failed to send error report to ${channel.id}:`, err));
         }
     }
 }

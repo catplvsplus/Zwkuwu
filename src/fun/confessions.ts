@@ -1,6 +1,6 @@
-import { RecipleClient, SlashCommandBuilder } from 'reciple';
+import { RecipleClient, SlashCommandBuilder, ContextMenuCommandBuilder } from 'reciple';
 import { BaseModule } from '../BaseModule.js';
-import { ActionRowBuilder, ApplicationCommandType, ButtonBuilder, ButtonStyle, ContextMenuCommandBuilder, Embed, EmbedBuilder, Message, MessageActionRowComponentBuilder, MessageCreateOptions, ModalActionRowComponentBuilder, ModalBuilder, PermissionResolvable, TextBasedChannel, TextInputBuilder, TextInputStyle } from 'discord.js';
+import { ActionRowBuilder, ApplicationCommandType, ButtonBuilder, ButtonStyle, Embed, EmbedBuilder, Message, MessageActionRowComponentBuilder, MessageCreateOptions, ModalActionRowComponentBuilder, ModalBuilder, PermissionResolvable, TextBasedChannel, TextInputBuilder, TextInputStyle } from 'discord.js';
 import utility from '../utils/utility.js';
 import { getRandomKey } from 'fallout-utility';
 import antiScam from '../moderation/antiScam.js';
@@ -36,53 +36,20 @@ export class ConfessionsModule extends BaseModule {
                     const allowTitle = interaction.inCachedGuild() && interaction.member.permissions.has(this.config.titleAccessRequiredPermissions);
 
                     await interaction.showModal(this.confessionModal({ allowTitle }));
-                })
-        ];
-
-        client.commands.addAddtionalApplicationCommand(
-            ...(!this.config.disableConfessionReply
-                    ? [new ContextMenuCommandBuilder()
-                        .setName('Reply to confession')
-                        .setType(ApplicationCommandType.Message)]
-                    : []),
+                }),
             new ContextMenuCommandBuilder()
-                .setName('Delete confession')
+                .setName('Reply to confession')
                 .setType(ApplicationCommandType.Message)
-        );
-
-        this.interactions = [
-            {
-                type: 'Button',
-                customId: 'confession-create',
-                handle: async interaction => {
-                    const allowTitle = interaction.inCachedGuild() && interaction.member.permissions.has(this.config.titleAccessRequiredPermissions);
-                    await interaction.showModal(this.confessionModal({ allowTitle }));
-                }
-            },
-            {
-                type: 'Button',
-                customId: 'confession-reply',
-                handle: async interaction => {
-                    const allowTitle = interaction.inCachedGuild() && interaction.member.permissions.has(this.config.titleAccessRequiredPermissions);
-                    const replyToId = interaction.message.id;
-
-                    await interaction.showModal(this.confessionModal({ allowTitle, replyToId }));
-                }
-            },
-            {
-                type: 'ContextMenu',
-                commandName: 'Reply to confession',
-                handle: async interaction => {
+                .setExecute(async ({ interaction }) => {
                     if (!interaction.isMessageContextMenuCommand()) return;
                     const allowTitle = interaction.inCachedGuild() && interaction.member.permissions.has(this.config.titleAccessRequiredPermissions);
 
                     await interaction.showModal(this.confessionModal({ replyToId: interaction.targetId, allowTitle }))
-                }
-            },
-            {
-                type: 'ContextMenu',
-                commandName: 'Delete confession',
-                handle: async interaction => {
+                }),
+            new ContextMenuCommandBuilder()
+                .setName('Delete confession')
+                .setType(ApplicationCommandType.Message)
+                .setExecute(async ({ interaction }) => {
                     if (!interaction.isMessageContextMenuCommand()) return;
                     await interaction.deferReply({ ephemeral: true });
 
@@ -114,6 +81,26 @@ export class ConfessionsModule extends BaseModule {
                             utility.createSmallEmbed('Confession deleted')
                         ]
                     });
+                })
+        ];
+
+        this.interactions = [
+            {
+                type: 'Button',
+                customId: 'confession-create',
+                handle: async interaction => {
+                    const allowTitle = interaction.inCachedGuild() && interaction.member.permissions.has(this.config.titleAccessRequiredPermissions);
+                    await interaction.showModal(this.confessionModal({ allowTitle }));
+                }
+            },
+            {
+                type: 'Button',
+                customId: 'confession-reply',
+                handle: async interaction => {
+                    const allowTitle = interaction.inCachedGuild() && interaction.member.permissions.has(this.config.titleAccessRequiredPermissions);
+                    const replyToId = interaction.message.id;
+
+                    await interaction.showModal(this.confessionModal({ allowTitle, replyToId }));
                 }
             },
             {

@@ -20,12 +20,12 @@ export interface HiddenPlayerConfig {
 export class HiddenPlayerModule extends BaseModule {
     public bot!: ChildProcess;
     public logged: string = '';
-    public logger!: Logger;
+    public logger?: Logger;
 
     get config() { return utility.config.hiddenplayer; }
 
     public async onStart(client: RecipleClient<boolean>): Promise<boolean> {
-        this.logger = client.logger.cloneLogger({ loggerName: 'HiddenPlayer' });
+        this.logger = client.logger?.clone({ name: 'HiddenPlayer' });
         this.commands = [
             new SlashCommandBuilder()
                 .setName('hiddenplayer')
@@ -96,7 +96,7 @@ export class HiddenPlayerModule extends BaseModule {
         this.newChildProcess();
     }
 
-    public async onUnload(reason: unknown, client: RecipleClient<true>): Promise<void> {
+    public async onUnload(): Promise<void> {
         this.bot.kill();
     }
 
@@ -111,7 +111,7 @@ export class HiddenPlayerModule extends BaseModule {
     public async killChildProcess(signal?: number|NodeJS.Signals, timeout: number = 10000): Promise<boolean> {
         if (!this.bot || this.bot.killed || !this.bot.connected) return true;
 
-        this.logger.warn(`Killing PID ${this.bot.pid}`);
+        this.logger?.warn(`Killing PID ${this.bot.pid}`);
 
         this.bot.removeAllListeners();
         this.bot.kill(signal);
@@ -142,30 +142,30 @@ export class HiddenPlayerModule extends BaseModule {
         this.bot = fork('./HiddenPlayer/bot.js', { cwd: path.join(__dirname) });
 
         this.logged = `Child process PID: ${this.bot.pid}`;
-        this.logger.warn(`Spawned new child process PID: ${this.bot.pid}`);
+        this.logger?.warn(`Spawned new child process PID: ${this.bot.pid}`);
 
         this.bot.stdout?.on('data', async msg => {
             this.addLogs(msg.toString());
-            this.logger.log(msg.toString());
+            this.logger?.log(msg.toString());
         });
 
         this.bot.stderr?.on('data', async msg => {
             this.addLogs(msg.toString());
-            this.logger.err(msg.toString());
+            this.logger?.err(msg.toString());
         });
 
         this.bot.on('error', async error => {
             this.addLogs(inspect(error));
-            this.logger.err(error);
+            this.logger?.err(error);
         });
 
         this.bot.on('message', async msg => {
             this.addLogs(msg.toString());
-            this.logger.log(msg.toString());
+            this.logger?.log(msg.toString());
         });
 
         this.bot.once('exit', () => {
-            this.logger.warn(`Child process exited with exit code: ${this.bot.exitCode || 'unknown'}`, `Respawning child process...`);
+            this.logger?.warn(`Child process exited with exit code: ${this.bot.exitCode || 'unknown'}`, `Respawning child process...`);
             this.newChildProcess();
         });
 

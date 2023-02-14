@@ -21,7 +21,7 @@ export interface MinecraftSkinsConfig {
 }
 
 export class MinecraftSkinsModule extends BaseModule {
-    public logger!: Logger;
+    public logger?: Logger;
     public gameTextChannels: GuildTextBasedChannel[] = [];
     public gameConsoleChannels: GuildTextBasedChannel[] = [];
 
@@ -29,7 +29,7 @@ export class MinecraftSkinsModule extends BaseModule {
     get config() { return utility.config.minecraftSkins; }
 
     public async onStart(client: RecipleClient<boolean>): Promise<boolean> {
-        this.logger = client.logger.cloneLogger({ loggerName: 'MinecraftSkins' });
+        this.logger = client.logger?.clone({ name: 'MinecraftSkins' });
 
         this.server.get(path.join('/', this.config.routes.head, ':player/:scale?') as `${string}:player/:scale?`, async (req, res) => {
             const player: PlayerSkinData|null = await this.getPlayerSkinData(req.params.player);

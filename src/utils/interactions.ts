@@ -76,7 +76,7 @@ export class InteractionHandlerModule extends BaseModule {
     }
 
     public handleEventError(error: Error): void {
-        Utility.logger.error(error);
+        Utility.logger?.error(error);
     }
 
     public isComponentInteractionHandler(maybeComponentInteractionHandler: any): maybeComponentInteractionHandler is AnyComponentInteractionHandler {

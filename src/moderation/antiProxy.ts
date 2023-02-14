@@ -28,14 +28,14 @@ export interface AntiProxyConfig {
 }
 
 export class AntiProxyModule extends BaseModule {
-    public logger!: Logger;
+    public logger?: Logger;
     public cache: Collection<string, Collection<string, PlayerInfo>> = new Collection();
 
     get config() { return utility.config.antiProxy; }
     get token() { return this.config.token || process.env.PROXYCHECK_TOKEN }
 
     public async onStart(client: RecipleClient<boolean>): Promise<boolean> {
-        this.logger = client.logger.cloneLogger({ loggerName: 'AntiProxy' });
+        this.logger = client.logger?.clone({ name: 'AntiProxy' });
 
         return true;
     }
@@ -107,11 +107,11 @@ export class AntiProxyModule extends BaseModule {
             const commands = this.config.punishmentCommands.map(cmd => replaceAll(cmd, ['{player_name}', '{player_host}', '{player_port}'], [player.username, player.ip, String(player.port)]));
 
             for (const command of commands) {
-                await message.channel.send(command).catch(err => this.logger.err(`Cannot send message to channel ${message.channel.id}`, err));
+                await message.channel.send(command).catch(err => this.logger?.err(`Cannot send message to channel ${message.channel.id}`, err));
             }
 
             this.addToCache(message.id, player);
-            this.logger.warn(`Punished ${player.username} [${player.ip}:${player.port}] for using VPN/Proxy`)
+            this.logger?.warn(`Punished ${player.username} [${player.ip}:${player.port}] for using VPN/Proxy`)
         }
     }
 
@@ -125,7 +125,7 @@ export class AntiProxyModule extends BaseModule {
 
             if (isProxy) {
                 suspiciousPlayers.push(player);
-                this.logger.warn(`${player.username}[${player.ip}] is marked as suspicious connection`);
+                this.logger?.warn(`${player.username}[${player.ip}] is marked as suspicious connection`);
                 continue;
             }
 
@@ -155,7 +155,7 @@ export class AntiProxyModule extends BaseModule {
                 username
             };
 
-            this.logger.debug(`Player ${player.username}[${player.ip}] joined the game`);
+            this.logger?.debug(`Player ${player.username}[${player.ip}] joined the game`);
             players.push(player);
         }
 

@@ -92,7 +92,7 @@ export class RoleMenuModule extends BaseModule {
 
     public async onLoad(client: RecipleClient<boolean>): Promise<void> {
         for (const roleMenuData of this.config.roleMenus) {
-            await this.addRoleMenu(roleMenuData).catch(err => utility.logger.err(`Couldn't add role menu for "${roleMenuData.channelId}/${roleMenuData.messageId}": ${roleMenuData.label ?? 'Not labled'}`, err));
+            await this.addRoleMenu(roleMenuData).catch(err => utility.logger?.err(`Couldn't add role menu for "${roleMenuData.channelId}/${roleMenuData.messageId}": ${roleMenuData.label ?? 'Not labled'}`, err));
         }
     }
 

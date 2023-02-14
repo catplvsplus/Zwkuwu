@@ -30,7 +30,7 @@ export class TiktokModule extends BaseModule {
             const video = await this.tiktokClient.video(content[0]).catch(() => null);
 
             if (!video) {
-                client.logger.error(`An error occured while trying to fetch TikTok URL: ${content[0]}`);
+                client.logger?.error(`An error occured while trying to fetch TikTok URL: ${content[0]}`);
                 return;
             }
 
