@@ -52,7 +52,7 @@ commands:
 # Application commands register config
 applicationCommandRegister:
   enabled: true
-  registerToGuilds: ['830456204735807529']
+  registerToGuilds: ['876039624814899220']
   # Wether allow all application commands to be registered globally
   #   This ignores their specific configs
   allowRegisterGlobally: false
