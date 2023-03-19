@@ -16,7 +16,7 @@ commands:
       # Allow commands to be registered globally
       registerGlobally: true
       # Allow commands to be registered a given guilds/servers
-      registerToGuilds: ['876039624814899220']
+      registerToGuilds: []
     # If enabled, the client will accept replied interactions of this type
     acceptRepliedInteractions: false
   slashCommand:
@@ -29,9 +29,16 @@ commands:
       # Allow commands to be registered globally
       registerGlobally: true
       # Allow commands to be registered a given guilds/servers
-      registerToGuilds: ['876039624814899220']
+      registerToGuilds: []
     # If enabled, the client will accept replied interactions of this type
     acceptRepliedInteractions: false
+  additionalApplicationCommands:
+    # Command register config
+    registerCommands:
+      # Allow commands to be registered globally
+      registerGlobally: true
+      # Allow commands to be registered a given guilds/servers
+      registerToGuilds: []
   messageCommand:
     # If false, the client will ignore this type of command when executed
     enabled: true
@@ -41,16 +48,11 @@ commands:
     commandArgumentSeparator: ' '
     # Command prefix
     prefix: '!'
-  additionalApplicationCommands:
-    # Command register config
-    registerCommands:
-      # Allow commands to be registered globally
-      registerGlobally: true
-      # Allow commands to be registered a given guilds/servers
-      registerToGuilds: ['876039624814899220']
 
 # Application commands register config
 applicationCommandRegister:
+  enabled: true
+  registerToGuilds: ['830456204735807529']
   # Wether allow all application commands to be registered globally
   #   This ignores their specific configs
   allowRegisterGlobally: false
