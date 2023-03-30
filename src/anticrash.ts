@@ -30,17 +30,6 @@ export class AnticrashModule extends BaseModule {
 
         this.logger?.warn(`Listening to process error events!`);
 
-        for (const channelId of this.config.errorReportsChannelIds) {
-            const channel = await utility.resolveFromCachedManager(channelId, client.channels).catch(() => null);
-            if (channel?.isTextBased()) this.reportChannels.push(channel);
-        }
-
-        for (const userId of this.config.reportToUsers) {
-            const user = await utility.resolveFromCachedManager(userId, client.users).catch(() => null);
-            if (!user?.dmChannel) await user?.createDM().catch(() => null);
-            if (user?.dmChannel) this.reportChannels.push(user.dmChannel);
-        }
-
         client.once('recipleRegisterApplicationCommands', () => {
             client.commands.messageCommands.forEach(m => {
                 m.setValidateOptions(true);
@@ -57,7 +46,20 @@ export class AnticrashModule extends BaseModule {
                 s.setHalt(data => utility.haltCommand(data))
                 this.logger?.debug(`Added halt function to slash command ${s.name}`)
             });
+
+            console.log('eee');
         });
+
+        for (const channelId of this.config.errorReportsChannelIds) {
+            const channel = await utility.resolveFromCachedManager(channelId, client.channels).catch(() => null);
+            if (channel?.isTextBased()) this.reportChannels.push(channel);
+        }
+
+        for (const userId of this.config.reportToUsers) {
+            const user = await utility.resolveFromCachedManager(userId, client.users).catch(() => null);
+            if (!user?.dmChannel) await user?.createDM().catch(() => null);
+            if (user?.dmChannel) this.reportChannels.push(user.dmChannel);
+        }
     }
 
     public async report(error: unknown): Promise<void> {
