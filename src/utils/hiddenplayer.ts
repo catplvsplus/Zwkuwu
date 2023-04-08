@@ -25,6 +25,11 @@ export class HiddenPlayerModule extends BaseModule {
     get config() { return utility.config.hiddenplayer; }
 
     public async onStart(client: RecipleClient<boolean>): Promise<boolean> {
+        if (!this.config.enabled) {
+            this.logger?.warn(`HiddenPlayer is disabled`);
+            return false;
+        }
+
         this.logger = client.logger?.clone({ name: 'HiddenPlayer' });
         this.commands = [
             new SlashCommandBuilder()
