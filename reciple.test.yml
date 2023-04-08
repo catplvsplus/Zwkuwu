@@ -1,5 +1,7 @@
 extends: ./reciple.yml
 
+token: env:TESTING_TOKEN
+
 applicationCommandRegister:
   enabled: true
   registerToGuilds: ['876039624814899220']
