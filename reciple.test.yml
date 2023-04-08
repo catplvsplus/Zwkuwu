@@ -1,55 +1,5 @@
-# The bot token
-#   You can directly set the bot token as value or use token from env
-#   To use token from env set the value like this:
-#     token: env:TOKEN
-token: env:TOKEN
+extends: ./reciple.yml
 
-# Commands Config
-commands:
-  contextMenuCommand:
-    # If false, the client will ignore this type of command when executed
-    enabled: true
-    # Enable user command cooldowns if available
-    enableCooldown: true
-    # Command register config
-    registerCommands:
-      # Allow commands to be registered globally
-      registerGlobally: true
-      # Allow commands to be registered a given guilds/servers
-      registerToGuilds: []
-    # If enabled, the client will accept replied interactions of this type
-    acceptRepliedInteractions: false
-  slashCommand:
-    # If false, the client will ignore this type of command when executed
-    enabled: true
-    # Enable user command cooldowns if available
-    enableCooldown: true
-    # Command register config
-    registerCommands:
-      # Allow commands to be registered globally
-      registerGlobally: true
-      # Allow commands to be registered a given guilds/servers
-      registerToGuilds: []
-    # If enabled, the client will accept replied interactions of this type
-    acceptRepliedInteractions: false
-  additionalApplicationCommands:
-    # Command register config
-    registerCommands:
-      # Allow commands to be registered globally
-      registerGlobally: true
-      # Allow commands to be registered a given guilds/servers
-      registerToGuilds: []
-  messageCommand:
-    # If false, the client will ignore this type of command when executed
-    enabled: true
-    # Enable user command cooldowns if available
-    enableCooldown: true
-    # String separator for command options
-    commandArgumentSeparator: ' '
-    # Command prefix
-    prefix: '!'
-
-# Application commands register config
 applicationCommandRegister:
   enabled: true
   registerToGuilds: ['876039624814899220']
@@ -64,41 +14,4 @@ applicationCommandRegister:
 
 # Logger config
 logger:
-  # Enables client logger
-  enabled: true
-  # Enables logger debug mode
-  debugmode: false
-  # Enables colored console logs
-  coloredMessages: true
-  # File file config
-  logToFile:
-    # Enables log file
-    enabled: true
-    # Sets the log file folder
-    logsFolder: './logs'
-
-# Modules config
-modules:
-  # Reciple modules folders
-  #   You can add multiple folders by adding the folder path or using glob patterns
-  modulesFolders: ['./modules', 'modules/*']
-  # Excluded files or folders
-  #   You can add the file/folder name or use glob patterns
-  exclude: ['BaseModule.js', 'Config.js', '_*']
-  # If false, the client will still load unsupported modules
-  disableModuleVersionCheck: false
-
-# Discord.js client options
-client:
-  failIfNotExists: false
-  allowedMentions:
-    repliedUser: false
-    parse: ['users', 'roles']
-  intents:
-    - Guilds
-    - GuildMembers
-    - GuildMessages
-    - MessageContent
-
-# Don't change this value
-version: ^7.0.1
+  debugmode: true
