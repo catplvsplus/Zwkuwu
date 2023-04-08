@@ -46,8 +46,6 @@ export class AnticrashModule extends BaseModule {
                 s.setHalt(data => utility.haltCommand(data))
                 this.logger?.debug(`Added halt function to slash command ${s.name}`)
             });
-
-            console.log('eee');
         });
 
         for (const channelId of this.config.errorReportsChannelIds) {
